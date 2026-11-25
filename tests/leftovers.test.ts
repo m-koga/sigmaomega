@@ -13,7 +13,7 @@ const { api, html } = load();
 const part = (s: string, re: RegExp) => re.exec(s)?.[0] ?? '';
 // The script of the page without the dictionary and the change log (they name every key and old features)
 const script = ([...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].pop()?.[1] ?? '')
-  .replace(/const I18N\s*=\s*\{[\s\S]*?\n(?=\s*const LANGS)/, '')
+  .replace(/const I18N\s*=\s*\{[\s\S]*?\n(?=\s*\/\*\* The display languages)/, '')
   .replace(/const CHANGELOG\s*=\s*\[[\s\S]*?\n\];/, '');
 const style = part(html, /<style>[\s\S]*?<\/style>/);
 const body = part(html, /<body>[\s\S]*?(?=<script>)/);

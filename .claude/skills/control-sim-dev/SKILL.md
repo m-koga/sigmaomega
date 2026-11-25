@@ -32,7 +32,8 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
   - 画面：ヘッダーの下のメニューバー（ファイル、表示する図、系の設定、解析・設計、図の並び方、指標の表示）。その下に設定パネル（選んだカード 1 枚だけ）と図の区画。新しいプルダウンは `20-menubar.ts` の `dropdown()` を使う。
 - 型：`src/ts/types.d.ts`（import なし＝グローバル）。`src/ts/element-ids.d.ts` と `tests/app-api.d.ts` は生成物。
 - 拡張は表に 1 項目を足す方式：
-  - `PLANTS`、`CONTROLLERS`、`PLOTS`：`03-definitions.ts`
+  - `PLANTS`、`CONTROLLERS`、`PLOTS`、パラメータ（`PARAMS`・`CTRL` ほか。入力範囲 `hard`、記号 `sym`、掃引の値 `sweep`）、設計仕様 `SPECS`：`03-definitions.ts`（設計仕様の測り方は `14-specs.ts` の `SPEC_MEASURES`）
+  - 言語 `LANGUAGES`：`02-i18n.ts`
   - `TUNE_RULES`：`13-tuning.ts`
   - `INFO_AREAS`：`17-events-layout.ts`（図の下のタブ付き区画）
   - `tests/kinds.test.ts` が全項目を確かめる。

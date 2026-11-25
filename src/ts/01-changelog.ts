@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.73.8',
+    d: '2026-11-25',
+    en: [
+      'Development: each parameter carries its own limits for typed values, its symbol and its first sweep values (they were in three separate lists), the design specifications are one table (label, unit, smallest limit, direction, default and measurement) from which the rows of the card, the defaults and the checks are made, and the languages are one table (page language, name, font of the plots, language of the manual) from which the language menu is made; adding a parameter, a specification or a language is now one entry, checked by the tests; the page and the plots are unchanged (pixel comparison identical)',
+      'Development: the test that no Japanese is written in the script outside the dictionary now checks the whole script (it had stopped at the dictionary)',
+    ],
+    ja: [
+      '開発：入力できる範囲・記号・掃引の最初の値を各パラメータの定義に持たせた（3 つの別の表にあった）。設計仕様を 1 つの表（表示名・単位・最小値・向き・既定値・測り方）にし、カードの行・既定値・判定をそこから作るようにした。言語を 1 つの表（ページの言語・名前・図のフォント・マニュアルの言語）にし、言語のメニューをそこから作るようにした。パラメータ・設計仕様・言語の追加は 1 項目の追加で済み、テストが確かめる。画面と図は変わらない（ピクセル比較で一致）',
+      '開発：辞書の外のスクリプトに日本語が書かれていないかのテストが、スクリプト全体を確かめるようにした（辞書のところで止まっていた）',
+    ],
+  },
+  {
     v: '1.73.7',
     d: '2026-11-25',
     en: [

@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="version" content="1.73.7">
+<meta name="version" content="1.73.8">
 <title>SigmaOmega — Feedback Control Simulator</title>
 <meta name="author" content="Masanobu Koga">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id%3D%22so-bg%22 x1%3D%220%22 y1%3D%220%22 x2%3D%220%22 y2%3D%221%22%3E%3Cstop offset%3D%220%22 stop-color%3D%22%232a3142%22%2F%3E%3Cstop offset%3D%221%22 stop-color%3D%22%23171b25%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect width%3D%2264%22 height%3D%2264%22 rx%3D%2214%22 fill%3D%22url(%23so-bg)%22%2F%3E%3Cpath d%3D%22M8 47H56M32.5 11V51%22 stroke%3D%22%2359627a%22 stroke-width%3D%221.8%22 stroke-linecap%3D%22round%22%2F%3E%3Cg fill%3D%22none%22 stroke-width%3D%224.2%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2217%22 cy%3D%2234.5%22 r%3D%226.8%22 stroke%3D%22%23fff%22%2F%3E%3Cpath d%3D%22M17 27.7H28.6%22 stroke%3D%22%23fff%22%2F%3E%3Cpath d%3D%22M37 26.5Q37 41 41.5 41Q46 41 46 32.59Q46 41 50.5 41Q55 41 55 26.5%22 stroke%3D%22%23e53935%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
@@ -475,7 +475,7 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 <header>
   <h1><span class="app-logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="so-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3142"/><stop offset="1" stop-color="#171b25"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#so-bg)"/><path d="M8 47H56M32.5 11V51" stroke="#59627a" stroke-width="1.8" stroke-linecap="round"/><g fill="none" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="34.5" r="6.8" stroke="#fff"/><path d="M17 27.7H28.6" stroke="#fff"/><path d="M37 26.5Q37 41 41.5 41Q46 41 46 32.59Q46 41 50.5 41Q55 41 55 26.5" stroke="#e53935"/></g></svg></span><span class="app-name">SigmaOmega</span><span class="app-sub" data-i18n>Feedback Control Simulator</span></h1>
   <p data-i18n>Explore the time response, frequency response, and pole-zero map of feedback control systems interactively</p>
-  <select id="langSel" class="lang-sel" aria-label="Language / 言語"><option value="ja">日本語</option><option value="en">English</option><option value="zh">中文（简体）</option><option value="ko">한국어</option><option value="th">ไทย</option></select>
+  <select id="langSel" class="lang-sel" aria-label="Language / 言語"></select>
   <button class="ver" id="verBtn" title="Show change log" data-i18n-title></button>
 </header>
 <!-- ===== Menu bar: every menu of the page, above the settings panel and the plots ===== -->
@@ -573,30 +573,7 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
     <div class="card">
       <h2 data-i18n>Design specifications</h2>
       <div class="spec-sum" id="specSum"></div>
-      <div class="spec-row" id="specrow-os"><label class="chk"><input type="checkbox" id="spec-os-on"><span data-i18n>Max overshoot ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-os" step="any" min="0"> <span class="spec-u">%</span></span>
-        <span class="spec-res" id="res-os"></span></div>
-      <div class="spec-row" id="specrow-ts"><label class="chk"><input type="checkbox" id="spec-ts-on"><span data-i18n>Settling time (±2%) ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-ts" step="any" min="0"> <span class="spec-u">s</span></span>
-        <span class="spec-res" id="res-ts"></span></div>
-      <div class="spec-row" id="specrow-tr"><label class="chk"><input type="checkbox" id="spec-tr-on"><span data-i18n>Rise time (10–90%) ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-tr" step="any" min="0"> <span class="spec-u">s</span></span>
-        <span class="spec-res" id="res-tr"></span></div>
-      <div class="spec-row" id="specrow-sse"><label class="chk"><input type="checkbox" id="spec-sse-on"><span data-i18n>Steady-state error |e| ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-sse" step="any" min="0"> <span class="spec-u"></span></span>
-        <span class="spec-res" id="res-sse"></span></div>
-      <div class="spec-row" id="specrow-pm"><label class="chk"><input type="checkbox" id="spec-pm-on"><span data-i18n>Phase margin ≥</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-pm" step="any" min="0"> <span class="spec-u">°</span></span>
-        <span class="spec-res" id="res-pm"></span></div>
-      <div class="spec-row" id="specrow-gm"><label class="chk"><input type="checkbox" id="spec-gm-on"><span data-i18n>Gain margin ≥</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-gm" step="any" min="0"> <span class="spec-u">dB</span></span>
-        <span class="spec-res" id="res-gm"></span></div>
-      <div class="spec-row" id="specrow-ms"><label class="chk"><input type="checkbox" id="spec-ms-on"><span data-i18n>Peak sensitivity Ms ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-ms" step="any" min="1"> <span class="spec-u"></span></span>
-        <span class="spec-res" id="res-ms"></span></div>
-      <div class="spec-row" id="specrow-zeta"><label class="chk"><input type="checkbox" id="spec-zeta-on"><span data-i18n>Damping ratio ζ of the closed-loop poles ≥</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-zeta" step="any" min="0"> <span class="spec-u"></span></span>
-        <span class="spec-res" id="res-zeta"></span></div>
+      <div id="specRows"></div>
       <label class="chk"><input type="checkbox" id="spec-show"><span data-i18n>Show the specifications on the plots</span></label>
       <div class="note" data-i18n>Time-domain specifications are evaluated for step and trapezoid references only. The design region on the pole-zero map uses second-order approximations.</div>
     </div>
@@ -833,6 +810,18 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
    CHANGELOG.md (English) and CHANGELOG.ja.md (Japanese) are generated by npm run docs. */
 const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
+  {
+    v: '1.73.8',
+    d: '2026-11-25',
+    en: [
+      'Development: each parameter carries its own limits for typed values, its symbol and its first sweep values (they were in three separate lists), the design specifications are one table (label, unit, smallest limit, direction, default and measurement) from which the rows of the card, the defaults and the checks are made, and the languages are one table (page language, name, font of the plots, language of the manual) from which the language menu is made; adding a parameter, a specification or a language is now one entry, checked by the tests; the page and the plots are unchanged (pixel comparison identical)',
+      'Development: the test that no Japanese is written in the script outside the dictionary now checks the whole script (it had stopped at the dictionary)',
+    ],
+    ja: [
+      '開発：入力できる範囲・記号・掃引の最初の値を各パラメータの定義に持たせた（3 つの別の表にあった）。設計仕様を 1 つの表（表示名・単位・最小値・向き・既定値・測り方）にし、カードの行・既定値・判定をそこから作るようにした。言語を 1 つの表（ページの言語・名前・図のフォント・マニュアルの言語）にし、言語のメニューをそこから作るようにした。パラメータ・設計仕様・言語の追加は 1 項目の追加で済み、テストが確かめる。画面と図は変わらない（ピクセル比較で一致）',
+      '開発：辞書の外のスクリプトに日本語が書かれていないかのテストが、スクリプト全体を確かめるようにした（辞書のところで止まっていた）',
+    ],
+  },
   {
     v: '1.73.7',
     d: '2026-11-25',
@@ -4868,11 +4857,25 @@ const I18N = {
 "th": "ตัวชี้วัด"
 }
 }; // the build puts the dictionary (src/i18n.json) here
-/** Display language and the matching lang attribute of the page */
+/** The display languages, in the order of the language menu. To add a language: an entry here, its translations in
+ * src/i18n.json (the key of the entry; tests/i18n.test.ts asks for every string), its type in I18nDict
+ * (types.d.ts), and its font in the Google Fonts link of src/index.html.
+ *   tag: lang attribute of the page; name: its name in the menu, in that language; font: font of the plots;
+ *   docs: language of the user manual and the change log ('en' shows a note that they are in English) */
+const LANGUAGES = {
+  ja: { tag: 'ja', name: '日本語', font: '"Noto Sans JP",sans-serif', docs: 'ja' },
+  en: { tag: 'en', name: 'English', font: '"Noto Sans JP",sans-serif', docs: 'en' },
+  zh: { tag: 'zh-Hans', name: '中文（简体）', font: '"Noto Sans SC","Noto Sans JP",sans-serif', docs: 'en' },
+  ko: { tag: 'ko', name: '한국어', font: '"Noto Sans KR","Noto Sans JP",sans-serif', docs: 'en' },
+  th: { tag: 'th', name: 'ไทย', font: '"Noto Sans Thai","Noto Sans JP",sans-serif', docs: 'en' },
+};
+/** Display language */
 
-const LANGS = { ja: 'ja', en: 'en', zh: 'zh-Hans', ko: 'ko', th: 'th' };
 const isLang = (x) =>
-  typeof x === 'string' && Object.prototype.hasOwnProperty.call(LANGS, x);
+  typeof x === 'string' && Object.prototype.hasOwnProperty.call(LANGUAGES, x);
+/** Language of the user manual and the change log in the current language; a note is shown when it differs */
+const docsLang = () => LANGUAGES[LANG].docs;
+const docsTranslated = () => LANGUAGES[LANG].docs === LANG;
 // Default language: the saved choice if any; otherwise the browser language (English if not supported)
 function detectLang() {
   const list = (
@@ -4944,7 +4947,7 @@ function applyStaticI18n() {
     if (kind === 'html') el.innerHTML = T(key);
     else el.setAttribute('title', T(key));
   });
-  document.documentElement.lang = LANGS[LANG];
+  document.documentElement.lang = LANGUAGES[LANG].tag;
   const hp = document.querySelector('header p');
   if (hp && hp.textContent) hp.title = hp.textContent; // full description on hover
   document.documentElement.style.setProperty('--t-shown', JSON.stringify(T('Shown ▾')));
@@ -4952,14 +4955,10 @@ function applyStaticI18n() {
   // the name SigmaOmega is not translated; the subtitle is
   document.title = `SigmaOmega — ${T('Feedback Control Simulator')}`;
 }
-const UIFONT = () =>
-  LANG === 'zh'
-    ? '"Noto Sans SC","Noto Sans JP",sans-serif'
-    : LANG === 'ko'
-      ? '"Noto Sans KR","Noto Sans JP",sans-serif'
-      : LANG === 'th'
-        ? '"Noto Sans Thai","Noto Sans JP",sans-serif'
-        : '"Noto Sans JP",sans-serif';
+const UIFONT = () => LANGUAGES[LANG].font;
+// The options of the language menu
+const langOptions = () =>
+  (Object.keys(LANGUAGES)).map(l => `<option value="${l}">${LANGUAGES[l].name}</option>`).join('');
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Definitions ================= */
@@ -4968,26 +4967,63 @@ const UIFONT = () =>
 
 
 const entriesOf = (defs) => Object.entries(defs);
+// Typed values may go beyond the slider range up to the limits hard of each parameter (physically meaningful limits)
+const BIG = 1e6;
 const PARAMS = {
-  K: { label: 'Gain \\(K\\)', min: 0.1, max: 5, step: 0.1, val: 1 },
-  T: { label: 'Time constant \\(T\\) [s]', min: 0.1, max: 10, step: 0.1, val: 1 },
-  zeta: { label: 'Damping ratio \\(\\zeta\\)', min: 0, max: 2, step: 0.01, val: 0.3 },
-  wn: { label: 'Natural frequency \\(\\omega_n\\) [rad/s]', min: 0.1, max: 10, step: 0.1, val: 1 },
-  L: { label: 'Dead time \\(L\\) [s]', min: 0, max: 5, step: 0.05, val: 0.5 },
+  K: { label: 'Gain \\(K\\)', min: 0.1, max: 5, step: 0.1, val: 1, hard: [-BIG, BIG] },
+  T: { label: 'Time constant \\(T\\) [s]', min: 0.1, max: 10, step: 0.1, val: 1, hard: [1e-6, BIG] },
+  zeta: {
+    label: 'Damping ratio \\(\\zeta\\)',
+    min: 0,
+    max: 2,
+    step: 0.01,
+    val: 0.3,
+    hard: [0, 100],
+    sym: 'ζ',
+    sweep: [0.1, 0.3, 0.7, 1],
+  },
+  wn: {
+    label: 'Natural frequency \\(\\omega_n\\) [rad/s]',
+    min: 0.1,
+    max: 10,
+    step: 0.1,
+    val: 1,
+    hard: [1e-6, BIG],
+    sym: 'ωn',
+  },
+  L: { label: 'Dead time \\(L\\) [s]', min: 0, max: 5, step: 0.05, val: 0.5, hard: [0, 1e4] },
 };
 const CTRL = {
-  Kp: { label: 'Proportional gain \\(K_P\\)', min: 0, max: 20, step: 0.05, val: 2 },
-  Ki: { label: 'Integral gain \\(K_I\\)', min: 0, max: 10, step: 0.05, val: 1 },
-  Kd: { label: 'Derivative gain \\(K_D\\)', min: 0, max: 5, step: 0.01, val: 0.2 },
-  N: { label: 'Derivative filter coefficient \\(N\\)', min: 1, max: 100, step: 1, val: 20 },
-  Kc: { label: 'Gain \\(K_c\\)', min: 0.05, max: 50, step: 0.05, val: 2 },
-  T1: { label: 'Lead time constant \\(T_1\\) [s]', min: 0.01, max: 10, step: 0.01, val: 1 },
-  alpha: { label: 'Lead ratio \\(\\alpha\\) (\\(0<\\alpha<1\\))', min: 0.02, max: 0.99, step: 0.01, val: 0.1 },
-  T2: { label: 'Lag time constant \\(T_2\\) [s]', min: 0.1, max: 100, step: 0.1, val: 10 },
-  beta: { label: 'Lag ratio \\(\\beta\\) (\\(\\beta>1\\))', min: 1.01, max: 50, step: 0.01, val: 10 },
+  Kp: { label: 'Proportional gain \\(K_P\\)', min: 0, max: 20, step: 0.05, val: 2, hard: [-BIG, BIG], sym: 'KP' },
+  Ki: { label: 'Integral gain \\(K_I\\)', min: 0, max: 10, step: 0.05, val: 1, hard: [-BIG, BIG], sym: 'KI' },
+  Kd: { label: 'Derivative gain \\(K_D\\)', min: 0, max: 5, step: 0.01, val: 0.2, hard: [-BIG, BIG], sym: 'KD' },
+  N: { label: 'Derivative filter coefficient \\(N\\)', min: 1, max: 100, step: 1, val: 20, hard: [1e-3, BIG] },
+  Kc: { label: 'Gain \\(K_c\\)', min: 0.05, max: 50, step: 0.05, val: 2, hard: [-BIG, BIG] },
+  T1: { label: 'Lead time constant \\(T_1\\) [s]', min: 0.01, max: 10, step: 0.01, val: 1, hard: [1e-6, BIG] },
+  alpha: {
+    label: 'Lead ratio \\(\\alpha\\) (\\(0<\\alpha<1\\))',
+    min: 0.02,
+    max: 0.99,
+    step: 0.01,
+    val: 0.1,
+    hard: [1e-6, 0.999999],
+    sym: 'α',
+    sweep: [0.05, 0.1, 0.2, 0.4],
+  },
+  T2: { label: 'Lag time constant \\(T_2\\) [s]', min: 0.1, max: 100, step: 0.1, val: 10, hard: [1e-6, BIG] },
+  beta: {
+    label: 'Lag ratio \\(\\beta\\) (\\(\\beta>1\\))',
+    min: 1.01,
+    max: 50,
+    step: 0.01,
+    val: 10,
+    hard: [1.000001, BIG],
+    sym: 'β',
+    sweep: [2, 5, 10, 20],
+  },
 };
 /* ---- Kinds of controller ----
-   To add a kind of controller, add an entry to CONTROLLERS (and its new parameters to CTRL and HARD).
+   To add a kind of controller, add an entry to CONTROLLERS (and its new parameters to CTRL, with their limits hard).
    The menu, the parameter inputs, simulation, frequency response, pole-zero map, root locus and scenario
    files all follow from the entry; give the menu label and the short name translations in i18n.json. */
 
@@ -5131,10 +5167,10 @@ function ctrlRational(st = S) {
   return CONTROLLERS[st.mode].rational(st);
 }
 const REFP = {
-  R: { label: '', min: -2, max: 2, step: 0.1, val: 1 },
-  rT0: { label: 'Start time \\(t_0\\) [s]', min: 0, max: 100, step: 0.5, val: 0 },
-  rPer: { label: 'Period \\(T_p\\) [s]', min: 0.2, max: 50, step: 0.1, val: 5 },
-  rW: { label: '', min: 0.1, max: 50, step: 0.1, val: 2 },
+  R: { label: '', min: -2, max: 2, step: 0.1, val: 1, hard: [-BIG, BIG] },
+  rT0: { label: 'Start time \\(t_0\\) [s]', min: 0, max: 100, step: 0.5, val: 0, hard: [0, 1e5] },
+  rPer: { label: 'Period \\(T_p\\) [s]', min: 0.2, max: 50, step: 0.1, val: 5, hard: [1e-6, 1e5] },
+  rW: { label: '', min: 0.1, max: 50, step: 0.1, val: 2, hard: [1e-6, 1e5] },
 };
 /** Kind of reference: name, label of its amplitude R, label of its width W, extra parameters, formula */
 
@@ -5207,22 +5243,80 @@ function refValue(t, st = S) {
   }
 }
 const INPUTS = {
-  noise: { label: 'Measurement noise std. dev. \\(\\sigma_n\\)', min: 0, max: 0.2, step: 0.005, val: 0 },
+  noise: {
+    label: 'Measurement noise std. dev. \\(\\sigma_n\\)',
+    min: 0,
+    max: 0.2,
+    step: 0.005,
+    val: 0,
+    hard: [0, 1e3],
+  },
 };
 const DIST = {
-  d: { label: 'Disturbance magnitude \\(d\\)', min: -2, max: 2, step: 0.05, val: 0.5 },
-  td: { label: 'Disturbance time [s]', min: 0, max: 100, step: 0.5, val: 10 },
+  d: { label: 'Disturbance magnitude \\(d\\)', min: -2, max: 2, step: 0.05, val: 0.5, hard: [-BIG, BIG] },
+  td: { label: 'Disturbance time [s]', min: 0, max: 100, step: 0.5, val: 10, hard: [0, 1e5] },
 };
 const TDOF = {
-  bw: { label: 'Set-point weight on P \\(b\\)', min: 0, max: 1, step: 0.05, val: 1 },
-  cw: { label: 'Set-point weight on D \\(c\\)', min: 0, max: 1, step: 0.05, val: 0 },
+  bw: {
+    label: 'Set-point weight on P \\(b\\)',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    val: 1,
+    hard: [0, 10],
+    sym: 'b',
+    sweep: [0, 0.25, 0.5, 1],
+  },
+  cw: {
+    label: 'Set-point weight on D \\(c\\)',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    val: 0,
+    hard: [0, 10],
+    sym: 'c',
+    sweep: [0, 0.25, 0.5, 1],
+  },
 };
 const SAT = {
-  umax: { label: 'Saturation limit \\(|u|\\le u_{\\max}\\)', min: 0.2, max: 20, step: 0.1, val: 3 },
+  umax: { label: 'Saturation limit \\(|u|\\le u_{\\max}\\)', min: 0.2, max: 20, step: 0.1, val: 3, hard: [1e-6, BIG] },
 };
+// Every numeric setting with an input, by key: a new parameter goes into one of the tables above, with its label,
+// slider range (min, max, step), initial value val, typed-value limits hard, and optionally its short symbol sym and
+// the values the parameter sweep offers (sweep)
+const ALL_PARAMS = { ...PARAMS, ...CTRL, ...REFP, ...INPUTS, ...DIST, ...TDOF, ...SAT };
+const paramDef = (k) => ALL_PARAMS[k];
+const paramSym = (k) => ALL_PARAMS[k]?.sym ?? k;
+// Limits of a typed value of setting k (other numeric settings, such as the simulation time: [-fallback, fallback])
+function hardRange(k, fallback = BIG) {
+  return ALL_PARAMS[k]?.hard ?? [-fallback, fallback];
+}
+
+/* ---- Design specifications ----
+   In the order of the card "Design specifications". To add one, add an entry here and its measurement to
+   SPEC_MEASURES (14-specs.ts); the row of the card, the default, the check, the sweep table and the saved scenarios
+   follow. Its label needs translations in src/i18n.json; a line on a plot is drawn in 09-drawing.ts.
+     label: text before the limit; unit: unit of the limit and of the measured value; low: smallest limit that can
+     be typed; bound: 'max' when the measured value must be ≤ the limit, 'min' when ≥; on, v: default */
+const SPECS = {
+  os: { label: 'Max overshoot ≤', unit: '%', low: 0, bound: 'max', on: true, v: 10 },
+  ts: { label: 'Settling time (±2%) ≤', unit: 's', low: 0, bound: 'max', on: true, v: 10 },
+  tr: { label: 'Rise time (10–90%) ≤', unit: 's', low: 0, bound: 'max', on: false, v: 2 },
+  sse: { label: 'Steady-state error |e| ≤', unit: '', low: 0, bound: 'max', on: false, v: 0.01 },
+  pm: { label: 'Phase margin ≥', unit: '°', low: 0, bound: 'min', on: true, v: 45 },
+  gm: { label: 'Gain margin ≥', unit: 'dB', low: 0, bound: 'min', on: true, v: 6 },
+  ms: { label: 'Peak sensitivity Ms ≤', unit: '', low: 1, bound: 'max', on: false, v: 2 },
+  zeta: { label: 'Damping ratio ζ of the closed-loop poles ≥', unit: '', low: 0, bound: 'min', on: false, v: 0.5 },
+};
+const SPEC_KEYS = Object.keys(SPECS);
+// The default specifications (S.spec)
+const specDefaults = () => ({
+  ...(Object.fromEntries(SPEC_KEYS.map(k => [k, { on: SPECS[k].on, v: SPECS[k].v }]))),
+  show: false,
+});
 
 /* ---- Kinds of plant ----
-   To add a kind of plant, add an entry to PLANTS (and its new parameters to PARAMS and HARD). The menu, the
+   To add a kind of plant, add an entry to PLANTS (and its new parameters to PARAMS, with their limits hard). The menu, the
    sliders, the formulas, simulation, frequency response, tuning rules and scenario files all follow from the
    entry; give the menu label's translations in i18n.json. */
 
@@ -5612,17 +5706,7 @@ function defaults() {
   S.ccNum = parsePoly(S.ccNumStr);
   S.ccDen = parsePoly(S.ccDenStr);
   S.ccUnstable = false;
-  S.spec = {
-    os: { on: true, v: 10 },
-    ts: { on: true, v: 10 },
-    tr: { on: false, v: 2 },
-    sse: { on: false, v: 0.01 },
-    pm: { on: true, v: 45 },
-    gm: { on: true, v: 6 },
-    ms: { on: false, v: 2 },
-    zeta: { on: false, v: 0.5 },
-    show: false,
-  };
+  S.spec = specDefaults();
   S.tune = { method: 'zn-step', type: 'PID', lam: null };
   S.sweep = { on: false, p: 'Kp', vals: [1, 2, 4, 8] };
   S.wr = { on: false, lo: 0.01, hi: 100, sig: '' };
@@ -5634,6 +5718,7 @@ let ghosts = [];
 /* ================= UI construction ================= */
 // Element by id. Only ids of the page are accepted, and the element has its type (an <input> is an
 // HTMLInputElement, a <canvas> an HTMLCanvasElement, ...): see src/ts/element-ids.d.ts, generated from the HTML.
+
 
 
 
@@ -5693,34 +5778,6 @@ function slider(key, def) {
   return `<div class="row" id="row-${key}"><div class="top"><label for="in-${key}">${T(def.label)}</label><input type="number" class="num" id="v-${key}" step="any" value="${fmtVal(key, S[key], def)}" title="${T('Type a value and press Enter (values outside the slider range are allowed)')}"></div>
     <input type="range" id="in-${key}" min="${def.min}" max="${def.max}" step="${def.step}" value="${S[key]}"></div>`;
 }
-// Ranges accepted by numeric input (separate from the slider ranges; physically meaningful limits)
-const BIG = 1e6;
-const HARD = {
-  K: [-BIG, BIG],
-  T: [1e-6, BIG],
-  zeta: [0, 100],
-  wn: [1e-6, BIG],
-  L: [0, 1e4],
-  Kp: [-BIG, BIG],
-  Ki: [-BIG, BIG],
-  Kd: [-BIG, BIG],
-  N: [1e-3, BIG],
-  Kc: [-BIG, BIG],
-  T1: [1e-6, BIG],
-  alpha: [1e-6, 0.999999],
-  T2: [1e-6, BIG],
-  beta: [1.000001, BIG],
-  bw: [0, 10],
-  cw: [0, 10],
-  R: [-BIG, BIG],
-  noise: [0, 1e3],
-  d: [-BIG, BIG],
-  umax: [1e-6, BIG],
-  td: [0, 1e5],
-  rT0: [0, 1e5],
-  rPer: [1e-6, 1e5],
-  rW: [1e-6, 1e5],
-};
 const TIME_KEYS = ['td', 'rT0', 'rPer', 'rW'];
 function fmtVal(k, v, d) {
   return TIME_KEYS.includes(k) || v < d.min || v > d.max || Math.abs(v / d.step - Math.round(v / d.step)) > 1e-6
@@ -5751,7 +5808,7 @@ function bindSliders(defs) {
         num.value = fmtVal(k, S[k], d);
         return;
       }
-      const [lo, hi] = HARD[k] || [-BIG, BIG],
+      const [lo, hi] = hardRange(k),
         c = Math.min(hi, Math.max(lo, v));
       num.classList.toggle('clamped', c !== v);
       num.title =
@@ -7945,31 +8002,12 @@ function drawNyq(fr) {
 
 
 const SWEEP_COLORS = ['#0f9d8a', '#c99700', '#c2185b', '#558b2f', '#8d6e63', '#0097a7', '#ec7fa9', '#455a64'];
-const SWEEP_SYM = {
-  K: 'K',
-  T: 'T',
-  zeta: 'ζ',
-  wn: 'ωn',
-  L: 'L',
-  Kp: 'KP',
-  Ki: 'KI',
-  Kd: 'KD',
-  N: 'N',
-  Kc: 'Kc',
-  T1: 'T1',
-  alpha: 'α',
-  T2: 'T2',
-  beta: 'β',
-  bw: 'b',
-  cw: 'c',
-};
 const SWEEP_MAX = 8;
 let sweepKeys = ''; // parameters and language of the sweep inputs last built (rebuilt when they change)
 // The sweep inputs are rebuilt at the next update (after the settings were replaced)
 function resetSweepUI() {
   sweepKeys = '';
 }
-const paramDef = (p) => PARAMS[p] || CTRL[p] || TDOF[p];
 // Parameters that affect the current plant and controller
 function sweepParams(st = S) {
   return [
@@ -7987,19 +8025,18 @@ function plainLabel(p) {
     .replace(/\\beta/g, 'β')
     .replace(/_\{?(\w+)\}?/g, '$1');
 }
-// Values around v: ×0.5, ×1, ×2, ×4 (spread around 1 for ratios that must stay in their ranges)
+// Values around v: ×0.5, ×1, ×2, ×4, or the values sweep of the parameter's definition (for ratios that must stay
+// in their ranges)
 function sweepDefaults(p) {
   const v = S[p],
-    [lo, hi] = HARD[p] || [-BIG, BIG];
-  let vals = v === 0 ? [0.5, 1, 2, 4].map(x => x * (paramDef(p).max / 10 || 1)) : [0.5, 1, 2, 4].map(x => x * v);
-  if (p === 'alpha') vals = [0.05, 0.1, 0.2, 0.4];
-  if (p === 'beta') vals = [2, 5, 10, 20];
-  if (p === 'zeta') vals = [0.1, 0.3, 0.7, 1];
-  if (p === 'bw' || p === 'cw') vals = [0, 0.25, 0.5, 1];
+    def = paramDef(p),
+    [lo, hi] = hardRange(p);
+  const vals =
+    def.sweep ?? (v === 0 ? [0.5, 1, 2, 4].map(x => x * (def.max / 10 || 1)) : [0.5, 1, 2, 4].map(x => x * v));
   return [...new Set(vals.map(x => +Math.min(hi, Math.max(lo, x)).toPrecision(4)))];
 }
 function parseSweep(str, p) {
-  const [lo, hi] = HARD[p] || [-BIG, BIG];
+  const [lo, hi] = hardRange(p);
   const vals = String(str)
     .split(/[\s,;、，]+/)
     .map(parseFloat)
@@ -8034,7 +8071,7 @@ function sweepRuns(st = S) {
     };
   });
 }
-const sweepName = (p, v) => `${SWEEP_SYM[p] || p} = ${numStr(v)}`;
+const sweepName = (p, v) => `${paramSym(p)} = ${numStr(v)}`;
 function renderSweepUI() {
   const ps = sweepParams(),
     key = ps.join(',') + '|' + LANG;
@@ -8077,7 +8114,7 @@ function renderSweepTable() {
       <td>${r.stable ? '<span class="sp ok">✓</span>' : '<span class="sp ng">✗</span>'}</td><td>${all}</td></tr>`;
     })
     .join('');
-  box.innerHTML = `<table class="sw-tab"><thead><tr><th>${SWEEP_SYM[p] || p}</th><th>${T('Overshoot [%]')}</th><th>${T('Settling [s]')}</th><th>PM [°]</th><th>GM [dB]</th><th>${T('Stable')}</th><th>${T('Specs')}</th></tr></thead><tbody>${rows}</tbody></table>`;
+  box.innerHTML = `<table class="sw-tab"><thead><tr><th>${paramSym(p)}</th><th>${T('Overshoot [%]')}</th><th>${T('Settling [s]')}</th><th>PM [°]</th><th>GM [dB]</th><th>${T('Stable')}</th><th>${T('Specs')}</th></tr></thead><tbody>${rows}</tbody></table>`;
   box.querySelectorAll('tbody tr').forEach(
     tr =>
       (tr.onclick = () => {
@@ -8148,7 +8185,6 @@ const sweepSeries = (
 
 
 
-
 /** A cell of a CSV file */
 
 const csvNum = (v) =>
@@ -8164,7 +8200,7 @@ const csvText = (rows) => '﻿' + rows.map(csvRow).join('\r\n') + '\r\n'; // BOM
 function timeCSV(sim, sweep) {
   const sw = (sweep || []).filter(r => r.sim.T.length === sim.T.length),
     p = S.sweep.p,
-    nm = (v) => `${SWEEP_SYM[p] || p}=${numStr(v)}`;
+    nm = (v) => `${paramSym(p)}=${numStr(v)}`;
   const head = ['t', 'r', 'y', 'u', ...sw.map(r => `y (${nm(r.v)})`), ...sw.map(r => `u (${nm(r.v)})`)];
   const rows = [head];
   for (let i = 0; i < sim.T.length; i++)
@@ -8418,7 +8454,7 @@ function scMerge(dst, src) {
     } else if (typeof d === 'number') {
       const x = Number(v);
       if (v !== null && v !== '' && isFinite(x)) {
-        const [lo, hi] = HARD[k] || [-1e9, 1e9];
+        const [lo, hi] = hardRange(k, 1e9);
         dst[k] = Math.min(hi, Math.max(lo, x));
       }
     } else if (d === null) {
@@ -9268,17 +9304,7 @@ function applyTune() {
 
 
 
-const SPEC_KEYS = ['os', 'ts', 'tr', 'sse', 'pm', 'gm', 'ms', 'zeta'];
-const SPEC_UNITS = {
-  os: ' %',
-  ts: ' s',
-  tr: ' s',
-  sse: '',
-  pm: ' °',
-  gm: ' dB',
-  ms: '',
-  zeta: '',
-};
+
 const specOn = (k, st = S) => st.spec[k].on;
 // Design region for the poles (second-order approximations): ζ ≥ ζmin, −Re ≥ σmin
 function poleRegion(st = S) {
@@ -9298,41 +9324,84 @@ const inRegion = (z, reg) => {
   if (x >= 0) return false;
   return -x / w >= reg.zmin - 1e-9 && -x >= reg.smin - 1e-9;
 };
-// Evaluate every specification: {key, on, applicable, value, ok}
+/** What the measurements of one evaluation are taken from */
+
+
+
+
+
+
+
+
+/** A measured value: value null shows `none` (or —); fail: not met whatever the value; noneOk: a null value is met */
+
+
+
+
+
+
+// A time-domain specification: measured on the step response of a step or trapezoid reference
+const timeSpec =
+  (f, none) =>
+  (c) =>
+    c.diverged ? { value: null, none, fail: true } : c.mt && { value: f(c.mt), none };
+// The measurement of each specification (null: it does not apply to the current response)
+const SPEC_MEASURES = {
+  os: timeSpec(m => m.os),
+  ts: timeSpec(m => m.ts, 'Not settled'),
+  tr: timeSpec(m => m.rise),
+  sse: timeSpec(m => Math.abs(m.sse)),
+  // no crossover: an infinite margin
+  pm: c => c.fr && { value: c.fr.pm, none: '∞', noneOk: true },
+  gm: c => c.fr && { value: c.fr.gm, none: '∞', noneOk: true },
+  // the sensitivity is meaningful for a stable closed loop only
+  ms: c => (c.fr && c.fr.ms !== null ? { value: c.fr.ms, fail: !!c.pz && !c.pz.cl.every(z => z[0] < 0) } : null),
+  // the smallest damping ratio of the closed-loop poles
+  zeta: c =>
+    c.pz && c.pz.cl.length
+      ? {
+          value: Math.min(
+            ...c.pz.cl.map(([x, y]) => {
+              const w = Math.hypot(x, y);
+              return w > 1e-12 ? -x / w : 0;
+            }),
+          ),
+        }
+      : null,
+};
+// Whether a measured value meets the limit of specification k
+function specMet(k, m, st = S) {
+  if (m.fail) return false;
+  if (m.value === null) return !!m.noneOk;
+  const lim = st.spec[k].v;
+  return SPECS[k].bound === 'max' ? m.value <= lim : m.value >= lim;
+}
+// Evaluate every specification: {key, on, applicable, value, ok, none}
 function evalSpecs(
   sim = lastSim,
   fr = lastFr,
   pz = lastPZ,
   st = S,
 ) {
-  const out = {};
-  const timeOK = sim && (st.refType === 'step' || st.refType === 'trap');
-  const mt = timeOK && !sim.diverged ? stepMetrics(sim, st) : null;
-  const put = (k, applicable, value, ok) => {
-    out[k] = { key: k, on: specOn(k, st), applicable, value, ok: applicable ? ok : null };
-  };
-  const lim = (k) => st.spec[k].v;
-  if (timeOK && sim.diverged) {
-    (['os', 'ts', 'tr', 'sse']).forEach(k => put(k, true, null, false));
-  } else {
-    put('os', !!mt, mt ? mt.os : null, mt ? mt.os <= lim('os') : null);
-    put('ts', !!mt, mt ? mt.ts : null, mt ? mt.ts !== null && mt.ts <= lim('ts') : null);
-    put('tr', !!mt, mt ? mt.rise : null, mt ? mt.rise !== null && mt.rise <= lim('tr') : null);
-    put('sse', !!mt, mt ? Math.abs(mt.sse) : null, mt ? Math.abs(mt.sse) <= lim('sse') : null);
-  }
-  put('pm', !!fr, fr ? fr.pm : null, fr ? (fr.pm === null ? true : fr.pm >= lim('pm')) : null);
-  put('gm', !!fr, fr ? fr.gm : null, fr ? (fr.gm === null ? true : fr.gm >= lim('gm')) : null);
-  const stableCL = pz ? pz.cl.every(z => z[0] < 0) : true;
-  put('ms', !!fr && fr.ms !== null, fr ? fr.ms : null, fr && fr.ms !== null ? stableCL && fr.ms <= lim('ms') : null);
-  const zs = pz
-    ? pz.cl.map(([x, y]) => {
-        const w = Math.hypot(x, y);
-        return w > 1e-12 ? -x / w : 0;
-      })
-    : [];
-  const zmin = zs.length ? Math.min(...zs) : null;
-  put('zeta', !!pz && zs.length > 0, zmin, zmin !== null ? zmin >= lim('zeta') : null);
-  return out;
+  const timeOK = !!sim && (st.refType === 'step' || st.refType === 'trap'),
+    diverged = timeOK && sim.diverged,
+    c = { mt: timeOK && !diverged ? stepMetrics(sim, st) : null, diverged, fr, pz };
+  return Object.fromEntries(
+    SPEC_KEYS.map(k => {
+      const m = SPEC_MEASURES[k](c);
+      return [
+        k,
+        {
+          key: k,
+          on: specOn(k, st),
+          applicable: !!m,
+          value: m ? m.value : null,
+          ok: m ? specMet(k, m, st) : null,
+          none: m?.none,
+        },
+      ];
+    }),
+  );
 }
 const specIcon = (k, ev) => {
   const e = ev && ev[k];
@@ -9340,18 +9409,17 @@ const specIcon = (k, ev) => {
   return e.ok ? '<span class="sp ok">✓</span>' : '<span class="sp ng">✗</span>';
 };
 function renderSpecs() {
+  specRows();
   const ev = evalSpecs();
   let n = 0,
     bad = 0;
   SPEC_KEYS.forEach(k => {
     const e = ev[k],
-      row = $(`specrow-${k}`),
-      res = $(`res-${k}`);
+      row = byId(`specrow-${k}`),
+      res = byId(`res-${k}`);
     row.classList.toggle('off', !e.on);
-    let v = '—';
-    if (e.value === null || e.value === undefined)
-      v = (k === 'pm' || k === 'gm') && e.applicable ? '∞' : k === 'ts' && e.applicable ? T('Not settled') : '—';
-    else v = numStr(e.value) + SPEC_UNITS[k];
+    const unit = SPECS[k].unit,
+      v = e.value === null ? (e.applicable && e.none ? T(e.none) : '—') : numStr(e.value) + (unit ? ' ' + unit : '');
     res.innerHTML = (e.on && e.applicable ? specIcon(k, ev) : '') + v;
     if (e.on && e.applicable) {
       n++;
@@ -9367,10 +9435,28 @@ function renderSpecs() {
       : T('All enabled specifications are met');
   return ev;
 }
+// The rows of the card, made once from SPECS: the ids specrow-k, spec-k-on, spec-k and res-k
+function specRows() {
+  const box = $('specRows');
+  if (box.childElementCount) return;
+  for (const k of SPEC_KEYS) {
+    const d = SPECS[k],
+      row = document.createElement('div');
+    row.className = 'spec-row';
+    row.id = `specrow-${k}`;
+    row.innerHTML =
+      `<label class="chk"><input type="checkbox" id="spec-${k}-on"><span></span></label>` +
+      `<span class="spec-in"><input type="number" class="num" id="spec-${k}" step="any" min="${d.low}">` +
+      ` <span class="spec-u">${d.unit}</span></span><span class="spec-res" id="res-${k}"></span>`;
+    i18nText(row.querySelector('label span'), d.label);
+    box.append(row);
+  }
+}
 function buildSpecs() {
+  specRows();
   SPEC_KEYS.forEach(k => {
-    const cb = $(`spec-${k}-on`),
-      inp = $(`spec-${k}`);
+    const cb = byId(`spec-${k}-on`),
+      inp = byId(`spec-${k}`);
     cb.checked = S.spec[k].on;
     inp.value = String(S.spec[k].v);
     cb.onchange = () => {
@@ -9379,7 +9465,7 @@ function buildSpecs() {
     };
     inp.onchange = () => {
       const v = parseFloat(inp.value);
-      if (isFinite(v) && v >= (k === 'ms' ? 1 : 0)) S.spec[k].v = v;
+      if (isFinite(v) && v >= SPECS[k].low) S.spec[k].v = v;
       inp.value = String(S.spec[k].v);
       afterSpec();
     };
@@ -10482,6 +10568,16 @@ function redraw() {
 
 
 
+
+
+
+
+
+
+
+
+
+
 $('plant').onchange = () => {
   S.plant = $('plant').value;
   buildPlant();
@@ -11164,12 +11260,10 @@ if (window.ResizeObserver) {
 // Change log in the dialog (English, or Japanese when the page is in Japanese)
 function renderChangelog() {
   $('clBody').innerHTML =
-    ((['zh', 'ko', 'th']).includes(LANG)
-      ? `<p class="note">${T('(The change log is shown in English.)')}</p>`
-      : '') +
+    (docsTranslated() ? '' : `<p class="note">${T('(The change log is shown in English.)')}</p>`) +
     CHANGELOG.map(
       e =>
-        `<div class="cl-item"><span class="cl-v">v${e.v}</span><span class="cl-d">${e.d}</span><ul>${(LANG === 'ja' ? e.ja : e.en).map(x => `<li>${x}</li>`).join('')}</ul></div>`,
+        `<div class="cl-item"><span class="cl-v">v${e.v}</span><span class="cl-d">${e.d}</span><ul>${(docsLang() === 'ja' ? e.ja : e.en).map(x => `<li>${x}</li>`).join('')}</ul></div>`,
     ).join('');
 }
 
@@ -12686,15 +12780,13 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.9 s, the phase marg
 
 // The manual in the language of the page (English for Chinese, Korean and Thai, with a note)
 function renderHelp() {
-  const ja = LANG === 'ja',
+  const ja = docsLang() === 'ja',
     text = (s) => (ja ? s.ja : s.en);
   $('helpToc').innerHTML = HELP.map(
     (s, i) => `<button type="button" class="hp-link" data-sec="${s.id}">${i + 1}. ${text(s)[0]}</button>`,
   ).join('');
   $('helpBody').innerHTML =
-    (LANG === 'zh' || LANG === 'ko' || LANG === 'th'
-      ? `<p class="note">${T('(The user manual is shown in English.)')}</p>`
-      : '') +
+    (docsTranslated() ? '' : `<p class="note">${T('(The user manual is shown in English.)')}</p>`) +
     HELP.map((s, i) => `<section id="help-${s.id}"><h3>${i + 1}. ${text(s)[0]}</h3>${text(s)[1]}</section>`).join('');
   // the screenshots (<figure data-img="name">): the Japanese one in Japanese, else the English one; the pictures
   // are put into the page by the build (<script type="text/plain" data-help-img="name.lang" data-w="width">)
@@ -12799,6 +12891,7 @@ function numberHelp(ja) {
 
 
 
+$('langSel').innerHTML = langOptions();
 $('langSel').onchange = () => {
   const v = $('langSel').value;
   if (isLang(v)) setLang(v);

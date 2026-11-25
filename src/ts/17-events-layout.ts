@@ -2,7 +2,17 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Events ================= */
 import { APP_VERSION, CHANGELOG } from './01-changelog.ts';
-import { LANG, T, TXT_COLLAPSED, TXT_TIP, applyStaticI18n, i18nText, i18nTitle, setLangCode } from './02-i18n.ts';
+import {
+  T,
+  TXT_COLLAPSED,
+  TXT_TIP,
+  applyStaticI18n,
+  docsLang,
+  docsTranslated,
+  i18nText,
+  i18nTitle,
+  setLangCode,
+} from './02-i18n.ts';
 import type { Lang } from './02-i18n.ts';
 import { CARD_GROUP, CARD_KEYS, PLOTS, sideCardOf, switchDefaults } from './03-definitions.ts';
 import { S, defaults, ghosts } from './05-state.ts';
@@ -718,12 +728,10 @@ if (window.ResizeObserver) {
 // Change log in the dialog (English, or Japanese when the page is in Japanese)
 export function renderChangelog() {
   $('clBody').innerHTML =
-    ((['zh', 'ko', 'th'] as Lang[]).includes(LANG)
-      ? `<p class="note">${T('(The change log is shown in English.)')}</p>`
-      : '') +
+    (docsTranslated() ? '' : `<p class="note">${T('(The change log is shown in English.)')}</p>`) +
     CHANGELOG.map(
       e =>
-        `<div class="cl-item"><span class="cl-v">v${e.v}</span><span class="cl-d">${e.d}</span><ul>${(LANG === 'ja' ? e.ja : e.en).map(x => `<li>${x}</li>`).join('')}</ul></div>`,
+        `<div class="cl-item"><span class="cl-v">v${e.v}</span><span class="cl-d">${e.d}</span><ul>${(docsLang() === 'ja' ? e.ja : e.en).map(x => `<li>${x}</li>`).join('')}</ul></div>`,
     ).join('');
 }
 

@@ -4,7 +4,7 @@
    Builds the user interface and runs the first simulation.
    This file is the last one of the script; the unit tests load all the other files without it,
    so that the computation can be tested without a real page. */
-import { LANG, applyStaticI18n, isLang } from './02-i18n.ts';
+import { LANG, applyStaticI18n, isLang, langOptions } from './02-i18n.ts';
 import { $, buildCtrlCustom, buildMenus, buildPlant, buildStatic, renderTeX } from './06-ui-build.ts';
 import { bodeDescDefault } from './09-drawing.ts';
 import { buildSweep } from './10-sweep.ts';
@@ -13,6 +13,7 @@ import { buildSpecs } from './14-specs.ts';
 import { update } from './16-pole-zero.ts';
 import { ghostText, renderChangelog, setLang } from './17-events-layout.ts';
 
+$('langSel').innerHTML = langOptions();
 $('langSel').onchange = () => {
   const v = $('langSel').value;
   if (isLang(v)) setLang(v);

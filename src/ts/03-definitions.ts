@@ -6,26 +6,63 @@ import { cT, nT, pMul, pScale, ratTeX } from './04-parser.ts';
 import { S } from './05-state.ts';
 
 export const entriesOf = (defs: ParamDefs) => Object.entries(defs) as [NumKey, ParamDef][];
+// Typed values may go beyond the slider range up to the limits hard of each parameter (physically meaningful limits)
+export const BIG = 1e6;
 export const PARAMS: ParamDefs = {
-  K: { label: 'Gain \\(K\\)', min: 0.1, max: 5, step: 0.1, val: 1 },
-  T: { label: 'Time constant \\(T\\) [s]', min: 0.1, max: 10, step: 0.1, val: 1 },
-  zeta: { label: 'Damping ratio \\(\\zeta\\)', min: 0, max: 2, step: 0.01, val: 0.3 },
-  wn: { label: 'Natural frequency \\(\\omega_n\\) [rad/s]', min: 0.1, max: 10, step: 0.1, val: 1 },
-  L: { label: 'Dead time \\(L\\) [s]', min: 0, max: 5, step: 0.05, val: 0.5 },
+  K: { label: 'Gain \\(K\\)', min: 0.1, max: 5, step: 0.1, val: 1, hard: [-BIG, BIG] },
+  T: { label: 'Time constant \\(T\\) [s]', min: 0.1, max: 10, step: 0.1, val: 1, hard: [1e-6, BIG] },
+  zeta: {
+    label: 'Damping ratio \\(\\zeta\\)',
+    min: 0,
+    max: 2,
+    step: 0.01,
+    val: 0.3,
+    hard: [0, 100],
+    sym: 'ζ',
+    sweep: [0.1, 0.3, 0.7, 1],
+  },
+  wn: {
+    label: 'Natural frequency \\(\\omega_n\\) [rad/s]',
+    min: 0.1,
+    max: 10,
+    step: 0.1,
+    val: 1,
+    hard: [1e-6, BIG],
+    sym: 'ωn',
+  },
+  L: { label: 'Dead time \\(L\\) [s]', min: 0, max: 5, step: 0.05, val: 0.5, hard: [0, 1e4] },
 };
 export const CTRL: ParamDefs = {
-  Kp: { label: 'Proportional gain \\(K_P\\)', min: 0, max: 20, step: 0.05, val: 2 },
-  Ki: { label: 'Integral gain \\(K_I\\)', min: 0, max: 10, step: 0.05, val: 1 },
-  Kd: { label: 'Derivative gain \\(K_D\\)', min: 0, max: 5, step: 0.01, val: 0.2 },
-  N: { label: 'Derivative filter coefficient \\(N\\)', min: 1, max: 100, step: 1, val: 20 },
-  Kc: { label: 'Gain \\(K_c\\)', min: 0.05, max: 50, step: 0.05, val: 2 },
-  T1: { label: 'Lead time constant \\(T_1\\) [s]', min: 0.01, max: 10, step: 0.01, val: 1 },
-  alpha: { label: 'Lead ratio \\(\\alpha\\) (\\(0<\\alpha<1\\))', min: 0.02, max: 0.99, step: 0.01, val: 0.1 },
-  T2: { label: 'Lag time constant \\(T_2\\) [s]', min: 0.1, max: 100, step: 0.1, val: 10 },
-  beta: { label: 'Lag ratio \\(\\beta\\) (\\(\\beta>1\\))', min: 1.01, max: 50, step: 0.01, val: 10 },
+  Kp: { label: 'Proportional gain \\(K_P\\)', min: 0, max: 20, step: 0.05, val: 2, hard: [-BIG, BIG], sym: 'KP' },
+  Ki: { label: 'Integral gain \\(K_I\\)', min: 0, max: 10, step: 0.05, val: 1, hard: [-BIG, BIG], sym: 'KI' },
+  Kd: { label: 'Derivative gain \\(K_D\\)', min: 0, max: 5, step: 0.01, val: 0.2, hard: [-BIG, BIG], sym: 'KD' },
+  N: { label: 'Derivative filter coefficient \\(N\\)', min: 1, max: 100, step: 1, val: 20, hard: [1e-3, BIG] },
+  Kc: { label: 'Gain \\(K_c\\)', min: 0.05, max: 50, step: 0.05, val: 2, hard: [-BIG, BIG] },
+  T1: { label: 'Lead time constant \\(T_1\\) [s]', min: 0.01, max: 10, step: 0.01, val: 1, hard: [1e-6, BIG] },
+  alpha: {
+    label: 'Lead ratio \\(\\alpha\\) (\\(0<\\alpha<1\\))',
+    min: 0.02,
+    max: 0.99,
+    step: 0.01,
+    val: 0.1,
+    hard: [1e-6, 0.999999],
+    sym: 'α',
+    sweep: [0.05, 0.1, 0.2, 0.4],
+  },
+  T2: { label: 'Lag time constant \\(T_2\\) [s]', min: 0.1, max: 100, step: 0.1, val: 10, hard: [1e-6, BIG] },
+  beta: {
+    label: 'Lag ratio \\(\\beta\\) (\\(\\beta>1\\))',
+    min: 1.01,
+    max: 50,
+    step: 0.01,
+    val: 10,
+    hard: [1.000001, BIG],
+    sym: 'β',
+    sweep: [2, 5, 10, 20],
+  },
 };
 /* ---- Kinds of controller ----
-   To add a kind of controller, add an entry to CONTROLLERS (and its new parameters to CTRL and HARD).
+   To add a kind of controller, add an entry to CONTROLLERS (and its new parameters to CTRL, with their limits hard).
    The menu, the parameter inputs, simulation, frequency response, pole-zero map, root locus and scenario
    files all follow from the entry; give the menu label and the short name translations in i18n.json. */
 interface CtrlType {
@@ -169,10 +206,10 @@ export function ctrlRational(st: State = S): Rational {
   return CONTROLLERS[st.mode].rational(st);
 }
 export const REFP: ParamDefs = {
-  R: { label: '', min: -2, max: 2, step: 0.1, val: 1 },
-  rT0: { label: 'Start time \\(t_0\\) [s]', min: 0, max: 100, step: 0.5, val: 0 },
-  rPer: { label: 'Period \\(T_p\\) [s]', min: 0.2, max: 50, step: 0.1, val: 5 },
-  rW: { label: '', min: 0.1, max: 50, step: 0.1, val: 2 },
+  R: { label: '', min: -2, max: 2, step: 0.1, val: 1, hard: [-BIG, BIG] },
+  rT0: { label: 'Start time \\(t_0\\) [s]', min: 0, max: 100, step: 0.5, val: 0, hard: [0, 1e5] },
+  rPer: { label: 'Period \\(T_p\\) [s]', min: 0.2, max: 50, step: 0.1, val: 5, hard: [1e-6, 1e5] },
+  rW: { label: '', min: 0.1, max: 50, step: 0.1, val: 2, hard: [1e-6, 1e5] },
 };
 /** Kind of reference: name, label of its amplitude R, label of its width W, extra parameters, formula */
 interface RefType {
@@ -245,22 +282,80 @@ export function refValue(t: number, st: State = S): number {
   }
 }
 export const INPUTS: ParamDefs = {
-  noise: { label: 'Measurement noise std. dev. \\(\\sigma_n\\)', min: 0, max: 0.2, step: 0.005, val: 0 },
+  noise: {
+    label: 'Measurement noise std. dev. \\(\\sigma_n\\)',
+    min: 0,
+    max: 0.2,
+    step: 0.005,
+    val: 0,
+    hard: [0, 1e3],
+  },
 };
 export const DIST: ParamDefs = {
-  d: { label: 'Disturbance magnitude \\(d\\)', min: -2, max: 2, step: 0.05, val: 0.5 },
-  td: { label: 'Disturbance time [s]', min: 0, max: 100, step: 0.5, val: 10 },
+  d: { label: 'Disturbance magnitude \\(d\\)', min: -2, max: 2, step: 0.05, val: 0.5, hard: [-BIG, BIG] },
+  td: { label: 'Disturbance time [s]', min: 0, max: 100, step: 0.5, val: 10, hard: [0, 1e5] },
 };
 export const TDOF: ParamDefs = {
-  bw: { label: 'Set-point weight on P \\(b\\)', min: 0, max: 1, step: 0.05, val: 1 },
-  cw: { label: 'Set-point weight on D \\(c\\)', min: 0, max: 1, step: 0.05, val: 0 },
+  bw: {
+    label: 'Set-point weight on P \\(b\\)',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    val: 1,
+    hard: [0, 10],
+    sym: 'b',
+    sweep: [0, 0.25, 0.5, 1],
+  },
+  cw: {
+    label: 'Set-point weight on D \\(c\\)',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    val: 0,
+    hard: [0, 10],
+    sym: 'c',
+    sweep: [0, 0.25, 0.5, 1],
+  },
 };
 export const SAT: ParamDefs = {
-  umax: { label: 'Saturation limit \\(|u|\\le u_{\\max}\\)', min: 0.2, max: 20, step: 0.1, val: 3 },
+  umax: { label: 'Saturation limit \\(|u|\\le u_{\\max}\\)', min: 0.2, max: 20, step: 0.1, val: 3, hard: [1e-6, BIG] },
 };
+// Every numeric setting with an input, by key: a new parameter goes into one of the tables above, with its label,
+// slider range (min, max, step), initial value val, typed-value limits hard, and optionally its short symbol sym and
+// the values the parameter sweep offers (sweep)
+export const ALL_PARAMS: ParamDefs = { ...PARAMS, ...CTRL, ...REFP, ...INPUTS, ...DIST, ...TDOF, ...SAT };
+export const paramDef = (k: string): ParamDef => ALL_PARAMS[k];
+export const paramSym = (k: string): string => ALL_PARAMS[k]?.sym ?? k;
+// Limits of a typed value of setting k (other numeric settings, such as the simulation time: [-fallback, fallback])
+export function hardRange(k: string, fallback = BIG): readonly [number, number] {
+  return ALL_PARAMS[k]?.hard ?? [-fallback, fallback];
+}
+
+/* ---- Design specifications ----
+   In the order of the card "Design specifications". To add one, add an entry here and its measurement to
+   SPEC_MEASURES (14-specs.ts); the row of the card, the default, the check, the sweep table and the saved scenarios
+   follow. Its label needs translations in src/i18n.json; a line on a plot is drawn in 09-drawing.ts.
+     label: text before the limit; unit: unit of the limit and of the measured value; low: smallest limit that can
+     be typed; bound: 'max' when the measured value must be ≤ the limit, 'min' when ≥; on, v: default */
+export const SPECS = {
+  os: { label: 'Max overshoot ≤', unit: '%', low: 0, bound: 'max', on: true, v: 10 },
+  ts: { label: 'Settling time (±2%) ≤', unit: 's', low: 0, bound: 'max', on: true, v: 10 },
+  tr: { label: 'Rise time (10–90%) ≤', unit: 's', low: 0, bound: 'max', on: false, v: 2 },
+  sse: { label: 'Steady-state error |e| ≤', unit: '', low: 0, bound: 'max', on: false, v: 0.01 },
+  pm: { label: 'Phase margin ≥', unit: '°', low: 0, bound: 'min', on: true, v: 45 },
+  gm: { label: 'Gain margin ≥', unit: 'dB', low: 0, bound: 'min', on: true, v: 6 },
+  ms: { label: 'Peak sensitivity Ms ≤', unit: '', low: 1, bound: 'max', on: false, v: 2 },
+  zeta: { label: 'Damping ratio ζ of the closed-loop poles ≥', unit: '', low: 0, bound: 'min', on: false, v: 0.5 },
+} as const satisfies Record<string, SpecDef>;
+export const SPEC_KEYS = Object.keys(SPECS) as (keyof typeof SPECS)[];
+// The default specifications (S.spec)
+export const specDefaults = (): Specs => ({
+  ...(Object.fromEntries(SPEC_KEYS.map(k => [k, { on: SPECS[k].on, v: SPECS[k].v }])) as Record<SpecKey, SpecItem>),
+  show: false,
+});
 
 /* ---- Kinds of plant ----
-   To add a kind of plant, add an entry to PLANTS (and its new parameters to PARAMS and HARD). The menu, the
+   To add a kind of plant, add an entry to PLANTS (and its new parameters to PARAMS, with their limits hard). The menu, the
    sliders, the formulas, simulation, frequency response, tuning rules and scenario files all follow from the
    entry; give the menu label's translations in i18n.json. */
 interface PlantType {

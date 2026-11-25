@@ -2,12 +2,11 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Export of results (CSV, PNG) ================= */
 import { T } from './02-i18n.ts';
-import { PLOTS } from './03-definitions.ts';
+import { PLOTS, paramSym } from './03-definitions.ts';
 import { numStr } from './04-parser.ts';
 import { S } from './05-state.ts';
 import { $, ctx2d } from './06-ui-build.ts';
 import { COLORS } from './09-drawing.ts';
-import { SWEEP_SYM } from './10-sweep.ts';
 import { copyText, saveFile } from './12-scenarios.ts';
 import { lastFr, lastFrB, lastPZ, lastSim, lastSweep } from './16-pole-zero.ts';
 
@@ -26,7 +25,7 @@ export const csvText = (rows: CsvCell[][]) => '﻿' + rows.map(csvRow).join('\r\
 export function timeCSV(sim: SimResult, sweep: SweepRun[] | null): string {
   const sw = (sweep || []).filter(r => r.sim.T.length === sim.T.length),
     p = S.sweep.p,
-    nm = (v: number) => `${SWEEP_SYM[p] || p}=${numStr(v)}`;
+    nm = (v: number) => `${paramSym(p)}=${numStr(v)}`;
   const head = ['t', 'r', 'y', 'u', ...sw.map(r => `y (${nm(r.v)})`), ...sw.map(r => `u (${nm(r.v)})`)];
   const rows: CsvCell[][] = [head];
   for (let i = 0; i < sim.T.length; i++)

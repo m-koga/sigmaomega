@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 // Kinds of plant and controller: every entry of PLANTS and CONTROLLERS is complete and works with every other,
-// so that a new kind added to the tables is checked without writing new tests
+// so that a new kind added to the tables is checked without writing new tests; likewise the tables of parameters,
+// design specifications and languages
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, near } from './harness.ts';
@@ -16,7 +17,7 @@ test('kinds of plant: parameters are defined, with ranges for typed values; form
     assert.ok(pl.name, `${k}: name`);
     for (const p of pl.p) {
       assert.ok(a.PARAMS[p], `${k}: parameter ${p} is in PARAMS`);
-      assert.ok(a.HARD[p], `${k}: parameter ${p} has a range in HARD`);
+      assert.ok(a.paramDef(p)?.hard, `${k}: parameter ${p} has a definition with its limits hard`);
     }
     const b = fresh();
     b.S.plant = k;
@@ -34,7 +35,7 @@ test('kinds of controller: parameters, gains and formulas are complete', () => {
     assert.ok(c.kind === 'pid' || c.texNum, `${k}: a transfer-function kind has a formula`);
     for (const p of c.p) {
       assert.ok(a.CTRL[p], `${k}: parameter ${p} is in CTRL`);
-      assert.ok(a.HARD[p], `${k}: parameter ${p} has a range in HARD`);
+      assert.ok(a.paramDef(p)?.hard, `${k}: parameter ${p} has a definition with its limits hard`);
     }
     for (const p of c.gain) assert.ok(c.p.includes(p), `${k}: gain ${p} is one of its parameters`);
     const b = fresh();
@@ -144,4 +145,53 @@ test('switching the kind of controller: a value at its initial value follows, a 
   assert.equal(b.S.Kp, 3.5);
   b.switchDefaults('P', 'lead'); // other parameters are not touched
   assert.equal(b.S.Kp, 3.5);
+});
+
+test('parameters: every one has limits for typed values around its slider, and its sweep values within them', () => {
+  for (const [k, d] of Object.entries(a.ALL_PARAMS)) {
+    const [lo, hi] = d.hard;
+    assert.ok(lo < hi, `${k}: limits in order`);
+    assert.ok(
+      lo <= d.min && d.max <= hi && lo <= d.val && d.val <= hi,
+      `${k}: slider and initial value within the limits`,
+    );
+    for (const v of d.sweep ?? []) assert.ok(v >= lo && v <= hi, `${k}: sweep value ${v} within the limits`);
+    assert.equal(a.paramSym(k), d.sym ?? k);
+  }
+});
+
+test('design specifications: each has a measurement and a default limit that can be typed', () => {
+  const b = fresh();
+  assert.deepEqual(Object.keys(b.SPEC_MEASURES), [...b.SPEC_KEYS]);
+  assert.equal(JSON.stringify(Object.keys(b.S.spec)), JSON.stringify([...b.SPEC_KEYS, 'show']));
+  const ev = b.evalSpecs();
+  for (const k of b.SPEC_KEYS) {
+    const d = b.SPECS[k];
+    assert.ok(d.v >= d.low, `${k}: default limit ≥ the smallest limit`);
+    assert.deepEqual({ ...b.S.spec[k] }, { on: d.on, v: d.v });
+    assert.equal(ev[k].key, k);
+  }
+  // the bound decides the direction of the check
+  b.S.spec.os.v = 10;
+  assert.equal(b.specMet('os', { value: 9 }), true);
+  assert.equal(b.specMet('os', { value: 11 }), false);
+  b.S.spec.pm.v = 45;
+  assert.equal(b.specMet('pm', { value: 50 }), true);
+  assert.equal(b.specMet('pm', { value: null, noneOk: true }), true);
+  assert.equal(b.specMet('ts', { value: null }), false);
+  assert.equal(b.specMet('ms', { value: 1.2, fail: true }), false);
+});
+
+test('languages: the menu lists every language of the table; each has its font and the language of its manual', () => {
+  const b = fresh();
+  assert.deepEqual(
+    [...b.langOptions().matchAll(/value="(\w+)"/g)].map(m => m[1]),
+    Object.keys(b.LANGUAGES),
+  );
+  for (const [l, d] of Object.entries(b.LANGUAGES)) {
+    b.setLang(l as 'ja');
+    assert.equal(b.UIFONT(), d.font);
+    assert.equal(b.docsLang(), d.docs);
+    assert.equal(b.docsTranslated(), d.docs === l);
+  }
 });

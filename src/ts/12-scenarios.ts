@@ -3,10 +3,10 @@
 /* ================= Scenarios (save and load) ================= */
 import { APP_VERSION } from './01-changelog.ts';
 import { T } from './02-i18n.ts';
-import { MODE_PARAMS, PLANTS, REF_TYPES, CARD_GROUP, sideCardOf } from './03-definitions.ts';
+import { CARD_GROUP, MODE_PARAMS, PLANTS, REF_TYPES, hardRange, sideCardOf } from './03-definitions.ts';
 import { parsePoly } from './04-parser.ts';
 import { S, defaults, ghosts } from './05-state.ts';
-import { $, HARD, buildCtrlCustom, buildPlant, buildStatic, errCode, renderTeX, setPrevPlant } from './06-ui-build.ts';
+import { $, buildCtrlCustom, buildPlant, buildStatic, errCode, renderTeX, setPrevPlant } from './06-ui-build.ts';
 import { bodeDescDefault, storedPanels, withoutTex } from './09-drawing.ts';
 import { SWEEP_MAX, resetSweepUI } from './10-sweep.ts';
 import { buildSpecs } from './14-specs.ts';
@@ -137,7 +137,7 @@ export function scMerge(dst: Record<string, any>, src: any) {
     } else if (typeof d === 'number') {
       const x = Number(v);
       if (v !== null && v !== '' && isFinite(x)) {
-        const [lo, hi] = HARD[k as NumKey] || [-1e9, 1e9];
+        const [lo, hi] = hardRange(k, 1e9);
         dst[k] = Math.min(hi, Math.max(lo, x));
       }
     } else if (d === null) {

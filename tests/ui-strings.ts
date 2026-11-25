@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 // The (English) UI strings of the page: T('…') in the script, the names in the tables of plants, controllers, inputs,
-// tuning rules, examples and areas, and the HTML text marked with data-i18n / data-i18n-title. Shared by the
+// tuning rules, specifications, examples and areas, and the HTML text marked with data-i18n / data-i18n-title. Shared by the
 // translation tests and the test for leftover dictionary entries
 import vm from 'node:vm';
 import type { load } from './harness.ts';
@@ -32,6 +32,8 @@ export function uiStrings(api: ReturnType<typeof load>['api'], html: string): st
     keys.add(v.name);
   });
   Object.values(api.AREA_LABELS).forEach(v => keys.add(v));
+  Object.values(api.SPECS).forEach(v => keys.add(v.label));
+  keys.add('Not settled');
   api.SC_EXAMPLES.forEach(e => {
     keys.add(e.name);
     keys.add(e.note);

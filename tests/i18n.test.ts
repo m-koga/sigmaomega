@@ -7,7 +7,8 @@ import { load } from './harness.ts';
 import { uiStrings } from './ui-strings.ts';
 
 const { api, html } = load();
-const LANGS = ['ja', 'zh', 'ko', 'th'] as const;
+// the translated languages: every language of the page but English (src/ts/02-i18n.ts, LANGUAGES)
+const LANGS = Object.keys(api.LANGUAGES).filter(l => l !== 'en') as ('ja' | 'zh' | 'ko' | 'th')[];
 const JP = /[぀-ヿ一-鿿]/;
 const placeholders = (s: string) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort().join(',');
 const count = (s: string, sub: string) => s.split(sub).length - 1;
@@ -49,9 +50,10 @@ test('no Japanese is written directly in the UI strings of index.html', () => {
   const cut = (from: string, to: string) => {
     const a = src.indexOf(from),
       b = src.indexOf(to, a);
+    assert.ok(a >= 0 && b > a, `section not found: ${from}`);
     src = src.slice(0, a) + src.slice(b);
   };
-  cut('const I18N', '\nconst LANGS='); // dictionary
+  cut('const I18N', 'const isLang'); // dictionary, and the language table (names of the languages in their scripts)
   cut('const CHANGELOG = [', '\n];'); // change log (ja items)
   cut('const HELP = [', '\n];'); // user manual (ja text)
   src = src
@@ -59,10 +61,10 @@ test('no Japanese is written directly in the UI strings of index.html', () => {
     .replace(/(^|[^:])\/\/.*$/gm, '$1')
     .replace(/<!--[\s\S]*?-->/g, '');
   const allowed = [
-    /<option value="ja">日本語<\/option>/,
-    /中文（简体）/,
     /aria-label="Language \/ 言語"/,
-    /\.replace\(\/\[−–ー\]\/g/,
+    /\.replace\(\/\[−–ー\]\/g/, // full-width signs typed in a number
+    /\.replace\(\/\[×・\]\/g/, // multiplication signs typed in an expression
+    /`図 \$\{n\}`.*`表 \$\{n\}`/, // figure and table labels of the Japanese user manual
   ];
   const left = src
     .split('\n')

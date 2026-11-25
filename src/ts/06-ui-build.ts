@@ -22,6 +22,7 @@ import {
   TDOF,
   ctrlRational,
   entriesOf,
+  hardRange,
   hasTerm,
 } from './03-definitions.ts';
 import { cT, lastOf, nT, numStr, parsePoly, polyRoots, rootList } from './04-parser.ts';
@@ -62,34 +63,6 @@ export function slider(key: NumKey, def: ParamDef): string {
   return `<div class="row" id="row-${key}"><div class="top"><label for="in-${key}">${T(def.label)}</label><input type="number" class="num" id="v-${key}" step="any" value="${fmtVal(key, S[key], def)}" title="${T('Type a value and press Enter (values outside the slider range are allowed)')}"></div>
     <input type="range" id="in-${key}" min="${def.min}" max="${def.max}" step="${def.step}" value="${S[key]}"></div>`;
 }
-// Ranges accepted by numeric input (separate from the slider ranges; physically meaningful limits)
-export const BIG = 1e6;
-export const HARD: Partial<Record<NumKey, [number, number]>> = {
-  K: [-BIG, BIG],
-  T: [1e-6, BIG],
-  zeta: [0, 100],
-  wn: [1e-6, BIG],
-  L: [0, 1e4],
-  Kp: [-BIG, BIG],
-  Ki: [-BIG, BIG],
-  Kd: [-BIG, BIG],
-  N: [1e-3, BIG],
-  Kc: [-BIG, BIG],
-  T1: [1e-6, BIG],
-  alpha: [1e-6, 0.999999],
-  T2: [1e-6, BIG],
-  beta: [1.000001, BIG],
-  bw: [0, 10],
-  cw: [0, 10],
-  R: [-BIG, BIG],
-  noise: [0, 1e3],
-  d: [-BIG, BIG],
-  umax: [1e-6, BIG],
-  td: [0, 1e5],
-  rT0: [0, 1e5],
-  rPer: [1e-6, 1e5],
-  rW: [1e-6, 1e5],
-};
 export const TIME_KEYS: string[] = ['td', 'rT0', 'rPer', 'rW'];
 export function fmtVal(k: string, v: number, d: ParamDef): string {
   return TIME_KEYS.includes(k) || v < d.min || v > d.max || Math.abs(v / d.step - Math.round(v / d.step)) > 1e-6
@@ -120,7 +93,7 @@ export function bindSliders(defs: ParamDefs) {
         num.value = fmtVal(k, S[k], d);
         return;
       }
-      const [lo, hi] = HARD[k] || [-BIG, BIG],
+      const [lo, hi] = hardRange(k),
         c = Math.min(hi, Math.max(lo, v));
       num.classList.toggle('clamped', c !== v);
       num.title =

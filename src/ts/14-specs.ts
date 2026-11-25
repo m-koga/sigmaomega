@@ -1,24 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Design specifications ================= */
-import { T } from './02-i18n.ts';
+import { T, i18nText } from './02-i18n.ts';
+import { SPECS, SPEC_KEYS } from './03-definitions.ts';
 import { numStr } from './04-parser.ts';
 import { S } from './05-state.ts';
-import { $ } from './06-ui-build.ts';
+import { $, byId } from './06-ui-build.ts';
 import { stepMetrics } from './07-simulation.ts';
 import { lastFr, lastPZ, lastSim, redraw, resetLocus } from './16-pole-zero.ts';
 
-export const SPEC_KEYS = ['os', 'ts', 'tr', 'sse', 'pm', 'gm', 'ms', 'zeta'] as const;
-export const SPEC_UNITS: Record<SpecKey, string> = {
-  os: ' %',
-  ts: ' s',
-  tr: ' s',
-  sse: '',
-  pm: ' °',
-  gm: ' dB',
-  ms: '',
-  zeta: '',
-};
 export const specOn = (k: SpecKey, st: State = S): boolean => st.spec[k].on;
 // Design region for the poles (second-order approximations): ζ ≥ ζmin, −Re ≥ σmin
 export function poleRegion(st: State = S): { zmin: number; smin: number } | null {
@@ -38,41 +28,84 @@ export const inRegion = (z: Complex, reg: { zmin: number; smin: number }) => {
   if (x >= 0) return false;
   return -x / w >= reg.zmin - 1e-9 && -x >= reg.smin - 1e-9;
 };
-// Evaluate every specification: {key, on, applicable, value, ok}
+/** What the measurements of one evaluation are taken from */
+interface SpecContext {
+  /** step-response metrics (null: no step or trapezoid reference, or diverged) */
+  mt: StepMetrics | null;
+  /** the time response diverged (time-domain specifications fail) */
+  diverged: boolean;
+  fr: FreqResult | null;
+  pz: PZResult | null;
+}
+/** A measured value: value null shows `none` (or —); fail: not met whatever the value; noneOk: a null value is met */
+interface SpecMeasure {
+  value: number | null;
+  none?: string;
+  noneOk?: boolean;
+  fail?: boolean;
+}
+// A time-domain specification: measured on the step response of a step or trapezoid reference
+const timeSpec =
+  (f: (m: NonNullable<StepMetrics>) => number | null, none?: string) =>
+  (c: SpecContext): SpecMeasure | null =>
+    c.diverged ? { value: null, none, fail: true } : c.mt && { value: f(c.mt), none };
+// The measurement of each specification (null: it does not apply to the current response)
+export const SPEC_MEASURES: Record<SpecKey, (c: SpecContext) => SpecMeasure | null> = {
+  os: timeSpec(m => m.os),
+  ts: timeSpec(m => m.ts, 'Not settled'),
+  tr: timeSpec(m => m.rise),
+  sse: timeSpec(m => Math.abs(m.sse)),
+  // no crossover: an infinite margin
+  pm: c => c.fr && { value: c.fr.pm, none: '∞', noneOk: true },
+  gm: c => c.fr && { value: c.fr.gm, none: '∞', noneOk: true },
+  // the sensitivity is meaningful for a stable closed loop only
+  ms: c => (c.fr && c.fr.ms !== null ? { value: c.fr.ms, fail: !!c.pz && !c.pz.cl.every(z => z[0] < 0) } : null),
+  // the smallest damping ratio of the closed-loop poles
+  zeta: c =>
+    c.pz && c.pz.cl.length
+      ? {
+          value: Math.min(
+            ...c.pz.cl.map(([x, y]) => {
+              const w = Math.hypot(x, y);
+              return w > 1e-12 ? -x / w : 0;
+            }),
+          ),
+        }
+      : null,
+};
+// Whether a measured value meets the limit of specification k
+export function specMet(k: SpecKey, m: SpecMeasure, st: State = S): boolean {
+  if (m.fail) return false;
+  if (m.value === null) return !!m.noneOk;
+  const lim = st.spec[k].v;
+  return SPECS[k].bound === 'max' ? m.value <= lim : m.value >= lim;
+}
+// Evaluate every specification: {key, on, applicable, value, ok, none}
 export function evalSpecs(
   sim: SimResult | null = lastSim,
   fr: FreqResult | null = lastFr,
   pz: PZResult | null = lastPZ,
   st: State = S,
 ): SpecEval {
-  const out = {} as SpecEval;
-  const timeOK = sim && (st.refType === 'step' || st.refType === 'trap');
-  const mt = timeOK && !sim.diverged ? stepMetrics(sim, st) : null;
-  const put = (k: SpecKey, applicable: boolean, value: number | null, ok: boolean | null) => {
-    out[k] = { key: k, on: specOn(k, st), applicable, value, ok: applicable ? ok : null };
-  };
-  const lim = (k: SpecKey) => st.spec[k].v;
-  if (timeOK && sim.diverged) {
-    (['os', 'ts', 'tr', 'sse'] as SpecKey[]).forEach(k => put(k, true, null, false));
-  } else {
-    put('os', !!mt, mt ? mt.os : null, mt ? mt.os <= lim('os') : null);
-    put('ts', !!mt, mt ? mt.ts : null, mt ? mt.ts !== null && mt.ts <= lim('ts') : null);
-    put('tr', !!mt, mt ? mt.rise : null, mt ? mt.rise !== null && mt.rise <= lim('tr') : null);
-    put('sse', !!mt, mt ? Math.abs(mt.sse) : null, mt ? Math.abs(mt.sse) <= lim('sse') : null);
-  }
-  put('pm', !!fr, fr ? fr.pm : null, fr ? (fr.pm === null ? true : fr.pm >= lim('pm')) : null);
-  put('gm', !!fr, fr ? fr.gm : null, fr ? (fr.gm === null ? true : fr.gm >= lim('gm')) : null);
-  const stableCL = pz ? pz.cl.every(z => z[0] < 0) : true;
-  put('ms', !!fr && fr.ms !== null, fr ? fr.ms : null, fr && fr.ms !== null ? stableCL && fr.ms <= lim('ms') : null);
-  const zs = pz
-    ? pz.cl.map(([x, y]) => {
-        const w = Math.hypot(x, y);
-        return w > 1e-12 ? -x / w : 0;
-      })
-    : [];
-  const zmin = zs.length ? Math.min(...zs) : null;
-  put('zeta', !!pz && zs.length > 0, zmin, zmin !== null ? zmin >= lim('zeta') : null);
-  return out;
+  const timeOK = !!sim && (st.refType === 'step' || st.refType === 'trap'),
+    diverged = timeOK && sim.diverged,
+    c: SpecContext = { mt: timeOK && !diverged ? stepMetrics(sim, st) : null, diverged, fr, pz };
+  return Object.fromEntries(
+    SPEC_KEYS.map(k => {
+      const m = SPEC_MEASURES[k](c);
+      return [
+        k,
+        {
+          key: k,
+          on: specOn(k, st),
+          applicable: !!m,
+          value: m ? m.value : null,
+          ok: m ? specMet(k, m, st) : null,
+          none: m?.none,
+        },
+      ];
+    }),
+  ) as SpecEval;
 }
 export const specIcon = (k: SpecKey, ev: SpecEval | null | undefined): string => {
   const e = ev && ev[k];
@@ -80,18 +113,17 @@ export const specIcon = (k: SpecKey, ev: SpecEval | null | undefined): string =>
   return e.ok ? '<span class="sp ok">✓</span>' : '<span class="sp ng">✗</span>';
 };
 export function renderSpecs(): SpecEval {
+  specRows();
   const ev = evalSpecs();
   let n = 0,
     bad = 0;
   SPEC_KEYS.forEach(k => {
     const e = ev[k],
-      row = $(`specrow-${k}`),
-      res = $(`res-${k}`);
+      row = byId(`specrow-${k}`),
+      res = byId(`res-${k}`);
     row.classList.toggle('off', !e.on);
-    let v = '—';
-    if (e.value === null || e.value === undefined)
-      v = (k === 'pm' || k === 'gm') && e.applicable ? '∞' : k === 'ts' && e.applicable ? T('Not settled') : '—';
-    else v = numStr(e.value) + SPEC_UNITS[k];
+    const unit = SPECS[k].unit,
+      v = e.value === null ? (e.applicable && e.none ? T(e.none) : '—') : numStr(e.value) + (unit ? ' ' + unit : '');
     res.innerHTML = (e.on && e.applicable ? specIcon(k, ev) : '') + v;
     if (e.on && e.applicable) {
       n++;
@@ -107,10 +139,28 @@ export function renderSpecs(): SpecEval {
       : T('All enabled specifications are met');
   return ev;
 }
+// The rows of the card, made once from SPECS: the ids specrow-k, spec-k-on, spec-k and res-k
+export function specRows() {
+  const box = $('specRows');
+  if (box.childElementCount) return;
+  for (const k of SPEC_KEYS) {
+    const d = SPECS[k],
+      row = document.createElement('div');
+    row.className = 'spec-row';
+    row.id = `specrow-${k}`;
+    row.innerHTML =
+      `<label class="chk"><input type="checkbox" id="spec-${k}-on"><span></span></label>` +
+      `<span class="spec-in"><input type="number" class="num" id="spec-${k}" step="any" min="${d.low}">` +
+      ` <span class="spec-u">${d.unit}</span></span><span class="spec-res" id="res-${k}"></span>`;
+    i18nText(row.querySelector('label span') as HTMLElement, d.label);
+    box.append(row);
+  }
+}
 export function buildSpecs() {
+  specRows();
   SPEC_KEYS.forEach(k => {
-    const cb = $(`spec-${k}-on`),
-      inp = $(`spec-${k}`);
+    const cb = byId<HTMLInputElement>(`spec-${k}-on`),
+      inp = byId<HTMLInputElement>(`spec-${k}`);
     cb.checked = S.spec[k].on;
     inp.value = String(S.spec[k].v);
     cb.onchange = () => {
@@ -119,7 +169,7 @@ export function buildSpecs() {
     };
     inp.onchange = () => {
       const v = parseFloat(inp.value);
-      if (isFinite(v) && v >= (k === 'ms' ? 1 : 0)) S.spec[k].v = v;
+      if (isFinite(v) && v >= SPECS[k].low) S.spec[k].v = v;
       inp.value = String(S.spec[k].v);
       afterSpec();
     };

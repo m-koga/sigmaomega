@@ -112,14 +112,6 @@ interface ElementById {
   "pzTools": HTMLDivElement;
   "ref-params": HTMLDivElement;
   "refType": HTMLSelectElement;
-  "res-gm": HTMLSpanElement;
-  "res-ms": HTMLSpanElement;
-  "res-os": HTMLSpanElement;
-  "res-pm": HTMLSpanElement;
-  "res-sse": HTMLSpanElement;
-  "res-tr": HTMLSpanElement;
-  "res-ts": HTMLSpanElement;
-  "res-zeta": HTMLSpanElement;
   "reset": HTMLButtonElement;
   "sat": HTMLInputElement;
   "sat-params": HTMLDivElement;
@@ -148,31 +140,8 @@ interface ElementById {
   "smenuList-ana": HTMLDivElement;
   "smenuList-file": HTMLDivElement;
   "smenuList-sys": HTMLDivElement;
-  "spec-gm": HTMLInputElement;
-  "spec-gm-on": HTMLInputElement;
-  "spec-ms": HTMLInputElement;
-  "spec-ms-on": HTMLInputElement;
-  "spec-os": HTMLInputElement;
-  "spec-os-on": HTMLInputElement;
-  "spec-pm": HTMLInputElement;
-  "spec-pm-on": HTMLInputElement;
   "spec-show": HTMLInputElement;
-  "spec-sse": HTMLInputElement;
-  "spec-sse-on": HTMLInputElement;
-  "spec-tr": HTMLInputElement;
-  "spec-tr-on": HTMLInputElement;
-  "spec-ts": HTMLInputElement;
-  "spec-ts-on": HTMLInputElement;
-  "spec-zeta": HTMLInputElement;
-  "spec-zeta-on": HTMLInputElement;
-  "specrow-gm": HTMLDivElement;
-  "specrow-ms": HTMLDivElement;
-  "specrow-os": HTMLDivElement;
-  "specrow-pm": HTMLDivElement;
-  "specrow-sse": HTMLDivElement;
-  "specrow-tr": HTMLDivElement;
-  "specrow-ts": HTMLDivElement;
-  "specrow-zeta": HTMLDivElement;
+  "specRows": HTMLDivElement;
   "specSum": HTMLDivElement;
   "sw-def": HTMLButtonElement;
   "sw-form": HTMLDivElement;
@@ -211,6 +180,9 @@ interface ElementById {
   // ids built in the script
   [id: `help-${string}`]: HTMLElement;
   [id: `in-${string}`]: HTMLInputElement;
+  [id: `res-${string}`]: HTMLSpanElement;
   [id: `row-${string}`]: HTMLDivElement;
+  [id: `spec-${string}`]: HTMLInputElement;
+  [id: `spec-${string}-on`]: HTMLInputElement;
   [id: `v-${string}`]: HTMLInputElement;
 }

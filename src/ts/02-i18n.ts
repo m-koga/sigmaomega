@@ -6,11 +6,25 @@
    T(english, {vars}) returns the string in the current language; strings missing from the dictionary stay in English. */
 // prettier-ignore
 export const I18N: I18nDict = /*@@I18N@@*/{}; // the build puts the dictionary (src/i18n.json) here
-/** Display language and the matching lang attribute of the page */
-export type Lang = 'ja' | 'en' | 'zh' | 'ko' | 'th';
-export const LANGS: Record<Lang, string> = { ja: 'ja', en: 'en', zh: 'zh-Hans', ko: 'ko', th: 'th' };
+/** The display languages, in the order of the language menu. To add a language: an entry here, its translations in
+ * src/i18n.json (the key of the entry; tests/i18n.test.ts asks for every string), its type in I18nDict
+ * (types.d.ts), and its font in the Google Fonts link of src/index.html.
+ *   tag: lang attribute of the page; name: its name in the menu, in that language; font: font of the plots;
+ *   docs: language of the user manual and the change log ('en' shows a note that they are in English) */
+export const LANGUAGES = {
+  ja: { tag: 'ja', name: '日本語', font: '"Noto Sans JP",sans-serif', docs: 'ja' },
+  en: { tag: 'en', name: 'English', font: '"Noto Sans JP",sans-serif', docs: 'en' },
+  zh: { tag: 'zh-Hans', name: '中文（简体）', font: '"Noto Sans SC","Noto Sans JP",sans-serif', docs: 'en' },
+  ko: { tag: 'ko', name: '한국어', font: '"Noto Sans KR","Noto Sans JP",sans-serif', docs: 'en' },
+  th: { tag: 'th', name: 'ไทย', font: '"Noto Sans Thai","Noto Sans JP",sans-serif', docs: 'en' },
+} as const satisfies Record<string, { tag: string; name: string; font: string; docs: 'ja' | 'en' }>;
+/** Display language */
+export type Lang = keyof typeof LANGUAGES;
 export const isLang = (x: unknown): x is Lang =>
-  typeof x === 'string' && Object.prototype.hasOwnProperty.call(LANGS, x);
+  typeof x === 'string' && Object.prototype.hasOwnProperty.call(LANGUAGES, x);
+/** Language of the user manual and the change log in the current language; a note is shown when it differs */
+export const docsLang = (): 'ja' | 'en' => LANGUAGES[LANG].docs;
+export const docsTranslated = (): boolean => LANGUAGES[LANG].docs === LANG;
 // Default language: the saved choice if any; otherwise the browser language (English if not supported)
 export function detectLang(): Lang {
   const list = (
@@ -82,7 +96,7 @@ export function applyStaticI18n() {
     if (kind === 'html') el.innerHTML = T(key);
     else el.setAttribute('title', T(key));
   });
-  document.documentElement.lang = LANGS[LANG];
+  document.documentElement.lang = LANGUAGES[LANG].tag;
   const hp = document.querySelector<HTMLElement>('header p');
   if (hp && hp.textContent) hp.title = hp.textContent; // full description on hover
   document.documentElement.style.setProperty('--t-shown', JSON.stringify(T('Shown ▾')));
@@ -90,11 +104,7 @@ export function applyStaticI18n() {
   // the name SigmaOmega is not translated; the subtitle is
   document.title = `SigmaOmega — ${T('Feedback Control Simulator')}`;
 }
-export const UIFONT = () =>
-  LANG === 'zh'
-    ? '"Noto Sans SC","Noto Sans JP",sans-serif'
-    : LANG === 'ko'
-      ? '"Noto Sans KR","Noto Sans JP",sans-serif'
-      : LANG === 'th'
-        ? '"Noto Sans Thai","Noto Sans JP",sans-serif'
-        : '"Noto Sans JP",sans-serif';
+export const UIFONT = (): string => LANGUAGES[LANG].font;
+// The options of the language menu
+export const langOptions = (): string =>
+  (Object.keys(LANGUAGES) as Lang[]).map(l => `<option value="${l}">${LANGUAGES[l].name}</option>`).join('');

@@ -170,7 +170,7 @@ test.describe('input checks', () => {
     await page.fill('#v-zeta', ''); // not a number (a number box gives '' for anything else)
     await page.press('#v-zeta', 'Enter');
     expect(parseFloat(await page.inputValue('#v-zeta'))).toBe(await page.evaluate(() => S.zeta));
-    const [lo, hi] = await page.evaluate(() => HARD.zeta!);
+    const [lo, hi] = await page.evaluate(() => hardRange('zeta'));
     await page.fill('#v-zeta', String(hi * 10));
     await page.press('#v-zeta', 'Enter');
     expect(await page.evaluate(() => S.zeta)).toBe(hi);

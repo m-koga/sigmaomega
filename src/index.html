@@ -27,7 +27,7 @@ window.MathJax = {
 <header>
   <h1><span class="app-logo" aria-hidden="true">@@ICON@@</span><span class="app-name">SigmaOmega</span><span class="app-sub" data-i18n>Feedback Control Simulator</span></h1>
   <p data-i18n>Explore the time response, frequency response, and pole-zero map of feedback control systems interactively</p>
-  <select id="langSel" class="lang-sel" aria-label="Language / 言語"><option value="ja">日本語</option><option value="en">English</option><option value="zh">中文（简体）</option><option value="ko">한국어</option><option value="th">ไทย</option></select>
+  <select id="langSel" class="lang-sel" aria-label="Language / 言語"></select>
   <button class="ver" id="verBtn" title="Show change log" data-i18n-title></button>
 </header>
 <!-- ===== Menu bar: every menu of the page, above the settings panel and the plots ===== -->
@@ -125,30 +125,7 @@ window.MathJax = {
     <div class="card">
       <h2 data-i18n>Design specifications</h2>
       <div class="spec-sum" id="specSum"></div>
-      <div class="spec-row" id="specrow-os"><label class="chk"><input type="checkbox" id="spec-os-on"><span data-i18n>Max overshoot ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-os" step="any" min="0"> <span class="spec-u">%</span></span>
-        <span class="spec-res" id="res-os"></span></div>
-      <div class="spec-row" id="specrow-ts"><label class="chk"><input type="checkbox" id="spec-ts-on"><span data-i18n>Settling time (±2%) ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-ts" step="any" min="0"> <span class="spec-u">s</span></span>
-        <span class="spec-res" id="res-ts"></span></div>
-      <div class="spec-row" id="specrow-tr"><label class="chk"><input type="checkbox" id="spec-tr-on"><span data-i18n>Rise time (10–90%) ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-tr" step="any" min="0"> <span class="spec-u">s</span></span>
-        <span class="spec-res" id="res-tr"></span></div>
-      <div class="spec-row" id="specrow-sse"><label class="chk"><input type="checkbox" id="spec-sse-on"><span data-i18n>Steady-state error |e| ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-sse" step="any" min="0"> <span class="spec-u"></span></span>
-        <span class="spec-res" id="res-sse"></span></div>
-      <div class="spec-row" id="specrow-pm"><label class="chk"><input type="checkbox" id="spec-pm-on"><span data-i18n>Phase margin ≥</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-pm" step="any" min="0"> <span class="spec-u">°</span></span>
-        <span class="spec-res" id="res-pm"></span></div>
-      <div class="spec-row" id="specrow-gm"><label class="chk"><input type="checkbox" id="spec-gm-on"><span data-i18n>Gain margin ≥</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-gm" step="any" min="0"> <span class="spec-u">dB</span></span>
-        <span class="spec-res" id="res-gm"></span></div>
-      <div class="spec-row" id="specrow-ms"><label class="chk"><input type="checkbox" id="spec-ms-on"><span data-i18n>Peak sensitivity Ms ≤</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-ms" step="any" min="1"> <span class="spec-u"></span></span>
-        <span class="spec-res" id="res-ms"></span></div>
-      <div class="spec-row" id="specrow-zeta"><label class="chk"><input type="checkbox" id="spec-zeta-on"><span data-i18n>Damping ratio ζ of the closed-loop poles ≥</span></label>
-        <span class="spec-in"><input type="number" class="num" id="spec-zeta" step="any" min="0"> <span class="spec-u"></span></span>
-        <span class="spec-res" id="res-zeta"></span></div>
+      <div id="specRows"></div>
       <label class="chk"><input type="checkbox" id="spec-show"><span data-i18n>Show the specifications on the plots</span></label>
       <div class="note" data-i18n>Time-domain specifications are evaluated for step and trapezoid references only. The design region on the pole-zero map uses second-order approximations.</div>
     </div>

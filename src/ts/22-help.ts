@@ -5,7 +5,7 @@
    the left (above the text on narrow screens) and the text on the right. The manual is written in English and
    Japanese here (like the change log, not through the dictionary); in Chinese, Korean and Thai the English text is
    shown with a note. It is drawn in the language of the page each time it is opened. */
-import { LANG, T } from './02-i18n.ts';
+import { T, docsLang, docsTranslated } from './02-i18n.ts';
 import { $ } from './06-ui-build.ts';
 
 /** A section of the manual: its id, and its title and HTML in English and Japanese */
@@ -377,15 +377,13 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.9 s, the phase marg
 
 // The manual in the language of the page (English for Chinese, Korean and Thai, with a note)
 export function renderHelp() {
-  const ja = LANG === 'ja',
+  const ja = docsLang() === 'ja',
     text = (s: HelpSection) => (ja ? s.ja : s.en);
   $('helpToc').innerHTML = HELP.map(
     (s, i) => `<button type="button" class="hp-link" data-sec="${s.id}">${i + 1}. ${text(s)[0]}</button>`,
   ).join('');
   $('helpBody').innerHTML =
-    (LANG === 'zh' || LANG === 'ko' || LANG === 'th'
-      ? `<p class="note">${T('(The user manual is shown in English.)')}</p>`
-      : '') +
+    (docsTranslated() ? '' : `<p class="note">${T('(The user manual is shown in English.)')}</p>`) +
     HELP.map((s, i) => `<section id="help-${s.id}"><h3>${i + 1}. ${text(s)[0]}</h3>${text(s)[1]}</section>`).join('');
   // the screenshots (<figure data-img="name">): the Japanese one in Japanese, else the English one; the pictures
   // are put into the page by the build (<script type="text/plain" data-help-img="name.lang" data-w="width">)

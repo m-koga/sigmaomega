@@ -124,6 +124,29 @@ test('the menus of plants and controllers are made from their tables and follow 
   );
 });
 
+test('the language menu, the page language and the rows of the specifications are made from their tables', async ({
+  page,
+}) => {
+  const values = (id: string) => page.$$eval(`#${id} option`, os => os.map(o => (o as HTMLOptionElement).value));
+  expect(await values('langSel')).toEqual(await page.evaluate(() => Object.keys(LANGUAGES)));
+  for (const l of await page.evaluate(() => Object.keys(LANGUAGES))) {
+    await page.selectOption('#langSel', l);
+    expect(await page.evaluate(() => document.documentElement.lang)).toBe(
+      await page.evaluate(k => LANGUAGES[k as 'ja'].tag, l),
+    );
+  }
+  const keys = await page.evaluate(() => SPEC_KEYS as string[]);
+  expect(await page.$$eval('#specRows .spec-row', rs => rs.map(r => r.id))).toEqual(keys.map(k => `specrow-${k}`));
+  for (const k of keys) {
+    const d = await page.evaluate(key => SPECS[key as 'os'], k);
+    expect(await page.getAttribute(`#spec-${k}`, 'min')).toBe(String(d.low));
+    expect(await page.inputValue(`#spec-${k}`)).toBe(String(d.v));
+    expect(await page.isChecked(`#spec-${k}-on`)).toBe(d.on);
+    await expect(page.locator(`#specrow-${k} label span`)).toHaveText(await page.evaluate(t => T(t), d.label));
+    await expect(page.locator(`#specrow-${k} .spec-u`)).toHaveText(d.unit);
+  }
+});
+
 test('the title: the name SigmaOmega in every language, the subtitle translated, both in one colour', async ({
   page,
 }) => {

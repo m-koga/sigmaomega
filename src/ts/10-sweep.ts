@@ -2,41 +2,22 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Parameter sweep ================= */
 import { LANG, T } from './02-i18n.ts';
-import { CTRL, MODE_PARAMS, PARAMS, PID_MODES, PLANTS, TDOF } from './03-definitions.ts';
+import { MODE_PARAMS, PID_MODES, PLANTS, SPEC_KEYS, hardRange, paramDef, paramSym } from './03-definitions.ts';
 import { numStr } from './04-parser.ts';
 import { S } from './05-state.ts';
-import { $, BIG, HARD, fmtVal, renderTeX } from './06-ui-build.ts';
+import { $, fmtVal, renderTeX } from './06-ui-build.ts';
 import { simulate, stepMetrics } from './07-simulation.ts';
 import { bodeRange, freqResp } from './08-frequency.ts';
-import { SPEC_KEYS, evalSpecs, specIcon } from './14-specs.ts';
+import { evalSpecs, specIcon } from './14-specs.ts';
 import { computePZ, lastSweep, update } from './16-pole-zero.ts';
 
 export const SWEEP_COLORS = ['#0f9d8a', '#c99700', '#c2185b', '#558b2f', '#8d6e63', '#0097a7', '#ec7fa9', '#455a64'];
-export const SWEEP_SYM: Record<string, string> = {
-  K: 'K',
-  T: 'T',
-  zeta: 'ζ',
-  wn: 'ωn',
-  L: 'L',
-  Kp: 'KP',
-  Ki: 'KI',
-  Kd: 'KD',
-  N: 'N',
-  Kc: 'Kc',
-  T1: 'T1',
-  alpha: 'α',
-  T2: 'T2',
-  beta: 'β',
-  bw: 'b',
-  cw: 'c',
-};
 export const SWEEP_MAX = 8;
 export let sweepKeys = ''; // parameters and language of the sweep inputs last built (rebuilt when they change)
 // The sweep inputs are rebuilt at the next update (after the settings were replaced)
 export function resetSweepUI() {
   sweepKeys = '';
 }
-export const paramDef = (p: string): ParamDef => PARAMS[p] || CTRL[p] || TDOF[p];
 // Parameters that affect the current plant and controller
 export function sweepParams(st: State = S): NumKey[] {
   return [
@@ -54,19 +35,18 @@ export function plainLabel(p: string): string {
     .replace(/\\beta/g, 'β')
     .replace(/_\{?(\w+)\}?/g, '$1');
 }
-// Values around v: ×0.5, ×1, ×2, ×4 (spread around 1 for ratios that must stay in their ranges)
+// Values around v: ×0.5, ×1, ×2, ×4, or the values sweep of the parameter's definition (for ratios that must stay
+// in their ranges)
 export function sweepDefaults(p: NumKey): number[] {
   const v = S[p],
-    [lo, hi] = HARD[p] || [-BIG, BIG];
-  let vals = v === 0 ? [0.5, 1, 2, 4].map(x => x * (paramDef(p).max / 10 || 1)) : [0.5, 1, 2, 4].map(x => x * v);
-  if (p === 'alpha') vals = [0.05, 0.1, 0.2, 0.4];
-  if (p === 'beta') vals = [2, 5, 10, 20];
-  if (p === 'zeta') vals = [0.1, 0.3, 0.7, 1];
-  if (p === 'bw' || p === 'cw') vals = [0, 0.25, 0.5, 1];
+    def = paramDef(p),
+    [lo, hi] = hardRange(p);
+  const vals =
+    def.sweep ?? (v === 0 ? [0.5, 1, 2, 4].map(x => x * (def.max / 10 || 1)) : [0.5, 1, 2, 4].map(x => x * v));
   return [...new Set(vals.map(x => +Math.min(hi, Math.max(lo, x)).toPrecision(4)))];
 }
 export function parseSweep(str: string, p: NumKey): number[] {
-  const [lo, hi] = HARD[p] || [-BIG, BIG];
+  const [lo, hi] = hardRange(p);
   const vals = String(str)
     .split(/[\s,;、，]+/)
     .map(parseFloat)
@@ -101,7 +81,7 @@ export function sweepRuns(st: State = S): SweepRun[] | null {
     };
   });
 }
-export const sweepName = (p: string, v: number) => `${SWEEP_SYM[p] || p} = ${numStr(v)}`;
+export const sweepName = (p: string, v: number) => `${paramSym(p)} = ${numStr(v)}`;
 export function renderSweepUI() {
   const ps = sweepParams(),
     key = ps.join(',') + '|' + LANG;
@@ -144,7 +124,7 @@ export function renderSweepTable() {
       <td>${r.stable ? '<span class="sp ok">✓</span>' : '<span class="sp ng">✗</span>'}</td><td>${all}</td></tr>`;
     })
     .join('');
-  box.innerHTML = `<table class="sw-tab"><thead><tr><th>${SWEEP_SYM[p] || p}</th><th>${T('Overshoot [%]')}</th><th>${T('Settling [s]')}</th><th>PM [°]</th><th>GM [dB]</th><th>${T('Stable')}</th><th>${T('Specs')}</th></tr></thead><tbody>${rows}</tbody></table>`;
+  box.innerHTML = `<table class="sw-tab"><thead><tr><th>${paramSym(p)}</th><th>${T('Overshoot [%]')}</th><th>${T('Settling [s]')}</th><th>PM [°]</th><th>GM [dB]</th><th>${T('Stable')}</th><th>${T('Specs')}</th></tr></thead><tbody>${rows}</tbody></table>`;
   box.querySelectorAll<HTMLElement>('tbody tr').forEach(
     tr =>
       (tr.onclick = () => {

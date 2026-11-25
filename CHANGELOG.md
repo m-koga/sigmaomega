@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.73.8 (2026-11-25)
+- Development: each parameter carries its own limits for typed values, its symbol and its first sweep values (they were in three separate lists), the design specifications are one table (label, unit, smallest limit, direction, default and measurement) from which the rows of the card, the defaults and the checks are made, and the languages are one table (page language, name, font of the plots, language of the manual) from which the language menu is made; adding a parameter, a specification or a language is now one entry, checked by the tests; the page and the plots are unchanged (pixel comparison identical)
+- Development: the test that no Japanese is written in the script outside the dictionary now checks the whole script (it had stopped at the dictionary)
+
 ## v1.73.7 (2026-11-25)
 - Development: the parser of transfer functions is split into its steps (normalizing the input, the coefficient vector, the tokens, and the grammar, which is written out in a comment), and the simulation into the choice of the time step, the controller (PID or transfer function, with its state), the dead time and the noise, so that the main loop shows only the signal flow; results are unchanged (pixel comparison identical)
 

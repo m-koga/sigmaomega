@@ -11,11 +11,20 @@ type Complex = [number, number];
 
 /** Definition of a numeric setting (slider and number box) */
 interface ParamDef {
+  /** label (English, translated; TeX between \\( \\)) */
   label: string;
+  /** slider range and step */
   min: number;
   max: number;
   step: number;
+  /** initial value */
   val: number;
+  /** limits of a typed value (typed values may leave the slider range) */
+  hard: readonly [number, number];
+  /** short plain symbol for tables, legends and file names (KP, β); default: the key */
+  sym?: string;
+  /** values offered by "Values around the current setting" in the parameter sweep (default: ×0.5, ×1, ×2, ×4) */
+  sweep?: number[];
   [extra: string]: unknown;
 }
 type ParamDefs = Record<string, ParamDef>;
@@ -25,17 +34,22 @@ interface SpecItem {
   on: boolean;
   v: number;
 }
-interface Specs {
-  os: SpecItem;
-  ts: SpecItem;
-  tr: SpecItem;
-  sse: SpecItem;
-  pm: SpecItem;
-  gm: SpecItem;
-  ms: SpecItem;
-  zeta: SpecItem;
-  show: boolean;
+/** Definition of a design specification (SPECS in 03-definitions.ts) */
+interface SpecDef {
+  /** text before the limit, in English (translated through the dictionary) */
+  label: string;
+  /** unit of the limit and of the measured value ('' when none) */
+  unit: string;
+  /** smallest limit that can be typed */
+  low: number;
+  /** 'max': the measured value must be ≤ the limit; 'min': ≥ */
+  bound: 'max' | 'min';
+  /** default: checked or not, and the limit */
+  on: boolean;
+  v: number;
 }
+/** The design specifications (the keys of SPECS), and whether they are drawn on the plots */
+type Specs = Record<SpecKey, SpecItem> & { show: boolean };
 
 /** State of the simulator (the settings panel); saved in scenarios */
 interface State {
@@ -232,7 +246,7 @@ type StepMetrics = ReturnType<typeof import('./07-simulation.ts').stepMetrics>;
 type Timer = ReturnType<typeof setTimeout>;
 
 type PZResult = ReturnType<typeof import('./16-pole-zero.ts').computePZ>;
-type SpecKey = (typeof import('./14-specs.ts').SPEC_KEYS)[number];
+type SpecKey = keyof typeof import('./03-definitions.ts').SPECS;
 /** Result of one specification: checked or not, whether it applies, measured value, met or not */
 interface SpecResult {
   key: SpecKey;
@@ -240,6 +254,8 @@ interface SpecResult {
   applicable: boolean;
   value: number | null;
   ok: boolean | null;
+  /** text shown when value is null and the specification applies (English; '∞', 'Not settled') */
+  none?: string;
 }
 type SpecEval = Record<SpecKey, SpecResult>;
 /** One run of the parameter sweep */

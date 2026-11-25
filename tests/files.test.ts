@@ -3,7 +3,7 @@
 // Saving and loading: scenarios, scenario files and layouts, CSV export
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fresh, near, defined, plain } from './harness.ts';
+import { fresh, near, plain } from './harness.ts';
 
 test('scenarios: export and import restore every setting', () => {
   const a = fresh();
@@ -55,8 +55,8 @@ test('scenarios: unknown keys, wrong types and out-of-range values are ignored o
   assert.equal(a.S.plant, 'first');
   assert.equal(a.S.mode, 'PID');
   assert.equal(a.S.Kp, a.CTRL.Kp.val);
-  assert.equal(a.S.T, defined(a.HARD.T)[0]);
-  assert.equal(a.S.zeta, defined(a.HARD.zeta)[1]);
+  assert.equal(a.S.T, a.hardRange('T')[0]);
+  assert.equal(a.S.zeta, a.hardRange('zeta')[1]);
   assert.equal((a.S as unknown as Record<string, unknown>).hack, undefined);
   assert.equal(a.S.spec.os.on, true);
   assert.equal(a.S.spec.os.v, 5);
