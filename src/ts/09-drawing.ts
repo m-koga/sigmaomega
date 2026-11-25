@@ -1,0 +1,828 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 Masanobu Koga
+/* ================= Drawing ================= */
+import { T, TXT_BODE_RANGE, TXT_BODE_UNSTABLE, UIFONT } from './02-i18n.ts';
+import { numStr } from './04-parser.ts';
+import { S, ghosts } from './05-state.ts';
+import { $, ctx2d } from './06-ui-build.ts';
+import { metricWindow, sineMetrics, stepMetrics } from './07-simulation.ts';
+import { distMetrics, twoDof } from './08-frequency.ts';
+import { sweepSeries } from './10-sweep.ts';
+import { evalSpecs, specIcon, specOn } from './14-specs.ts';
+import { PLOT_VIEWS } from './15-zoom.ts';
+import { lastPZ, lastSweep } from './16-pole-zero.ts';
+import { layout } from './17-events-layout.ts';
+
+/* Colours of the plots, by role (the colours of the page itself are in style.css) */
+export const COLORS = {
+  // axes and text
+  text: '#1b1d22', // axis names and legend text
+  tick: '#666b75', // tick labels
+  grid: '#ecebe6', // grid lines
+  gridDecade: '#e4e2dc', // decade lines of a logarithmic axis
+  gridMinor: '#f3f2ee', // 2 … 9 × 10^n lines of a logarithmic axis
+  zeroLine: '#c9c6be', // zero line, imaginary axis of the Nyquist plot
+  frame: '#bdb9b0', // frame of the plot area
+  axisPZ: '#9a968c', // real and imaginary axes of the pole-zero map
+  legendBack: 'rgba(255,255,255,.88)',
+  legendBackPZ: 'rgba(255,255,255,.9)',
+  white: '#fff', // outline of dots, background of saved PNG files
+  // signals and curves
+  reference: '#666b75', // reference r
+  output: '#1f5fbf', // output y, L(jω), ωgc, ω > 0 of the Nyquist plot, plant poles and zeros
+  input: '#d9822b', // control input u, C(jω), controller poles and zeros
+  plant: '#2e7d32', // P(jω)
+  sensitivity: '#8e24aa', // S(jω), Ms circle and limit line
+  complementary: '#00897b', // T(jω)
+  disturbanceTF: '#8d6e63', // Gyd(jω)
+  referenceTF: '#33363d', // Gyr(jω)
+  negativeFreq: '#9aa0aa', // ω < 0 of the Nyquist plot
+  zeroDb: '#888', // 0 dB line
+  locus: '#7b4fa3', // root locus
+  dampingGrid: 'rgba(123,79,163,.35)', // ζ–ωn grid lines
+  dampingLabel: 'rgba(123,79,163,.8)', // ζ–ωn grid labels
+  // limits and specifications
+  alert: '#c62828', // saturation limits, disturbance time, −180°, ωpc, −1 point, overshoot limit, closed-loop poles
+  spec: '#2e7d32', // specification lines: settling band, error limits, GM, PM, Ms circle, design region
+  specBand: 'rgba(46,125,50,.16)', // settling band
+  rightHalfPlane: 'rgba(198,40,40,0.06)', // unstable half of the pole-zero map
+  outsideRegion: 'rgba(60,60,60,.07)', // outside the design region of the pole specifications
+};
+
+export function niceTicks(min: number, max: number, n = 6): number[] {
+  const span = max - min || 1;
+  let step = Math.pow(10, Math.floor(Math.log10(span / n)));
+  const e = span / n / step;
+  if (e >= 7.5) step *= 10;
+  else if (e >= 3.5) step *= 5;
+  else if (e >= 1.5) step *= 2;
+  const t: number[] = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-6; v += step)
+    t.push(Math.abs(v) < step * 1e-9 ? 0 : +v.toPrecision(12));
+  return t;
+}
+/** A plot being drawn: canvas context, size, margins, plot area, axis ranges and the mapping from data to pixels */
+interface PlotFrame {
+  g: CanvasRenderingContext2D;
+  W: number;
+  H: number;
+  m: { l: number; r: number; t: number; b: number };
+  pw: number;
+  ph: number;
+  xmin: number;
+  xmax: number;
+  ymin: number;
+  ymax: number;
+  lx: boolean;
+  X: (v: number) => number;
+  Y: (v: number) => number;
+}
+
+// Straight line from (x0, y0) to (x1, y1) with the current stroke style
+export function strokeLine(g: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number) {
+  g.beginPath();
+  g.moveTo(x0, y0);
+  g.lineTo(x1, y1);
+  g.stroke();
+}
+
+// Draw a line plot: grid and axes, extra marks (circles, bands, segments, horizontal and vertical lines),
+// the curves, markers and the legend. The view set by zooming or panning (PLOT_VIEWS) overrides the ranges.
+export function plot(cv: HTMLCanvasElement, o: PlotOptions) {
+  const f = plotFrame(cv, o);
+  if (!f) return;
+  drawGrid(f, o);
+  drawAxisLabels(f, o);
+  const { g, m, pw, ph } = f;
+  g.save();
+  g.beginPath();
+  g.rect(m.l, m.t, pw, ph);
+  g.clip(); // marks and curves stay inside the plot area
+  drawMarks(f, o);
+  o.series.forEach(s => drawSeries(f, s));
+  drawPoints(f, o.points || []);
+  g.restore();
+  drawLegend(f, o.series);
+}
+
+// Vertical range from the curves and horizontal lines, with 8 % margin (when not given)
+export function autoYRange(o: PlotOptions): [number, number] {
+  if (o.ymin !== undefined && o.ymax !== undefined) return [o.ymin, o.ymax];
+  let lo = Infinity,
+    hi = -Infinity;
+  const take = (v: number) => {
+    if (isFinite(v)) {
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    }
+  };
+  o.series.forEach(s => s.y.forEach(take));
+  (o.hlines || []).forEach(h => take(h.v));
+  if (!isFinite(lo)) {
+    lo = -1;
+    hi = 1;
+  }
+  if (hi - lo < 1e-6) {
+    hi += 0.5;
+    lo -= 0.5;
+  }
+  const pad = (hi - lo) * 0.08;
+  return [o.ymin ?? lo - pad, o.ymax ?? hi + pad];
+}
+
+// Size the canvas for the device pixel ratio, clear it and set up the frame (null when the canvas is hidden)
+export function plotFrame(cv: HTMLCanvasElement, o: PlotOptions): PlotFrame | null {
+  const dpr = window.devicePixelRatio || 1,
+    W = cv.clientWidth,
+    H = cv.clientHeight;
+  if (!W) return null;
+  cv.width = W * dpr;
+  cv.height = H * dpr;
+  const g = ctx2d(cv);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+  const m = { l: 58, r: 16, t: 12, b: 36 },
+    pw = W - m.l - m.r,
+    ph = H - m.t - m.b,
+    lx = !!o.xlog;
+  let { xmin, xmax } = o,
+    [ymin, ymax] = autoYRange(o);
+  const vw = PLOT_VIEWS[cv.id]; // user zoom/pan
+  if (vw?.x) [xmin, xmax] = vw.x;
+  if (vw?.y) [ymin, ymax] = vw.y;
+  cv._tf = { m, pw, ph, xmin, xmax, ymin, ymax, lx };
+  const tools = document.querySelector<HTMLElement>(`.plot-tools[data-for="${cv.id}"]`);
+  if (tools) tools.classList.toggle('zoomed', !!vw);
+  const lmin = Math.log10(xmin),
+    lmax = Math.log10(xmax);
+  const X = (v: number) => m.l + (lx ? (Math.log10(v) - lmin) / (lmax - lmin) : (v - xmin) / (xmax - xmin)) * pw;
+  const Y = (v: number) => m.t + (1 - (v - ymin) / (ymax - ymin)) * ph;
+  return { g, W, H, m, pw, ph, xmin, xmax, ymin, ymax, lx, X, Y };
+}
+
+// Values k·10^e (k from ks) inside [xmin, xmax], for the ticks of a logarithmic axis
+export function logTicks(xmin: number, xmax: number, ks: number[], open = false): number[] {
+  const out: number[] = [];
+  for (let e = Math.floor(Math.log10(xmin)); e <= Math.ceil(Math.log10(xmax)); e++)
+    for (const k of ks) {
+      const v = k * Math.pow(10, e);
+      if (open ? v > xmin && v < xmax : v >= xmin && v <= xmax) out.push(v);
+    }
+  return out;
+}
+
+// Ticks of the horizontal axis: decades on a logarithmic axis (1, 2, 5 × 10^n or finer when zoomed in)
+export function xTicks(f: PlotFrame): number[] {
+  if (!f.lx) return niceTicks(f.xmin, f.xmax, 8);
+  for (const ks of [[1], [1, 2, 5], [1, 2, 3, 4, 5, 6, 7, 8, 9]]) {
+    const t = logTicks(f.xmin, f.xmax, ks);
+    if (t.length >= 2) return t;
+  }
+  return logTicks(f.xmin, f.xmax, [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+}
+
+// Grid lines with tick labels, the zero line and the frame
+export function drawGrid(f: PlotFrame, o: PlotOptions) {
+  const { g, m, pw, ph, X, Y, ymin, ymax } = f;
+  g.font = '11px "JetBrains Mono", monospace';
+  g.fillStyle = COLORS.tick;
+  g.strokeStyle = COLORS.grid;
+  g.lineWidth = 1;
+  if (f.lx) {
+    // light lines at 2 … 9 × 10^n
+    g.strokeStyle = COLORS.gridMinor;
+    logTicks(f.xmin, f.xmax, [2, 3, 4, 5, 6, 7, 8, 9], true).forEach(v => strokeLine(g, X(v), m.t, X(v), m.t + ph));
+    g.strokeStyle = COLORS.gridDecade;
+  }
+  const num = (v: number) => (+v.toPrecision(6)).toString();
+  g.textAlign = 'center';
+  xTicks(f).forEach(v => {
+    const x = X(v);
+    strokeLine(g, x, m.t, x, m.t + ph);
+    g.fillText(f.lx && !(v >= 1 && v < 1e5) ? v.toExponential(0) : num(v), x, m.t + ph + 15);
+  });
+  g.textAlign = 'right';
+  (o.yticks ? o.yticks(ymin, ymax) : niceTicks(ymin, ymax, 6)).forEach(v => {
+    const y = Y(v);
+    strokeLine(g, m.l, y, m.l + pw, y);
+    g.fillText(num(v), m.l - 6, y + 4);
+  });
+  if (ymin < 0 && ymax > 0) {
+    g.strokeStyle = COLORS.zeroLine;
+    strokeLine(g, m.l, Y(0), m.l + pw, Y(0));
+  }
+  g.strokeStyle = COLORS.frame;
+  g.strokeRect(m.l, m.t, pw, ph);
+}
+
+// Axis labels: below the plot and rotated on the left
+export function drawAxisLabels(f: PlotFrame, o: PlotOptions) {
+  const { g, m, pw, ph } = f;
+  g.fillStyle = COLORS.text;
+  g.font = '12px ' + UIFONT();
+  g.textAlign = 'center';
+  g.fillText(o.xlabel || '', m.l + pw / 2, f.H - 4);
+  g.save();
+  g.translate(13, m.t + ph / 2);
+  g.rotate(-Math.PI / 2);
+  g.fillText(o.ylabel || '', 0, 0);
+  g.restore();
+}
+
+// Extra marks under the curves: circles, shaded bands, horizontal segments, horizontal and vertical lines
+export function drawMarks(f: PlotFrame, o: PlotOptions) {
+  const { g, m, pw, ph, X, Y, xmin, xmax } = f;
+  (o.circles || []).forEach(c => {
+    g.strokeStyle = c.color;
+    g.lineWidth = c.width || 1.5;
+    g.setLineDash(c.dash || [6, 4]);
+    g.beginPath();
+    g.ellipse(
+      X(c.cx),
+      Y(c.cy),
+      Math.abs(X(c.cx + c.r) - X(c.cx)),
+      Math.abs(Y(c.cy + c.r) - Y(c.cy)),
+      0,
+      0,
+      2 * Math.PI,
+    );
+    g.stroke();
+    g.setLineDash([]);
+  });
+  (o.bands || []).forEach(b => {
+    const xa = X(Math.max(b.x0, xmin)),
+      xb = X(Math.min(b.x1, xmax));
+    if (xb <= xa) return;
+    g.fillStyle = b.fill;
+    g.fillRect(xa, Y(b.y1), xb - xa, Y(b.y0) - Y(b.y1));
+    if (b.stroke) {
+      g.strokeStyle = b.stroke;
+      g.lineWidth = 1;
+      g.setLineDash([4, 3]);
+      g.strokeRect(xa, Y(b.y1), xb - xa, Y(b.y0) - Y(b.y1));
+      g.setLineDash([]);
+    }
+  });
+  (o.segs || []).forEach(s => {
+    g.strokeStyle = s.color;
+    g.setLineDash(s.dash || [6, 4]);
+    g.lineWidth = 1.4;
+    strokeLine(g, X(Math.max(s.x0, xmin)), Y(s.y), X(Math.min(s.x1, xmax)), Y(s.y));
+    g.setLineDash([]);
+  });
+  (o.hlines || []).forEach(h => {
+    g.strokeStyle = h.color;
+    g.setLineDash(h.dash || [5, 4]);
+    g.lineWidth = 1.2;
+    strokeLine(g, m.l, Y(h.v), m.l + pw, Y(h.v));
+    g.setLineDash([]);
+  });
+  (o.vlines || []).forEach(h => {
+    g.strokeStyle = h.color;
+    g.setLineDash(h.dash || [5, 4]);
+    g.lineWidth = 1.2;
+    strokeLine(g, X(h.v), m.t, X(h.v), m.t + ph);
+    g.setLineDash([]);
+    if (h.label) {
+      g.fillStyle = h.color;
+      g.font = '11px ' + UIFONT();
+      g.textAlign = 'left';
+      g.fillText(h.label, X(h.v) + 4, m.t + 13);
+    }
+  });
+}
+
+// One curve; it is interrupted at values that are not finite (and at x ≤ 0 on a logarithmic axis)
+export function drawSeries(f: PlotFrame, s: PlotSeries) {
+  const { g, X, Y } = f;
+  g.strokeStyle = s.color;
+  g.lineWidth = s.width || 2;
+  g.setLineDash(s.dash || []);
+  g.beginPath();
+  let pen = false;
+  for (let i = 0; i < s.x.length; i++) {
+    const vx = s.x[i],
+      vy = s.y[i];
+    if (!isFinite(vy) || (f.lx && vx <= 0)) {
+      pen = false;
+      continue;
+    }
+    const px = X(vx),
+      py = Math.max(-1e4, Math.min(1e4, Y(vy))); // keep far-off points within what the canvas can draw
+    if (pen) g.lineTo(px, py);
+    else g.moveTo(px, py);
+    pen = true;
+  }
+  g.stroke();
+  g.setLineDash([]);
+}
+
+// Markers (×) at given points
+export function drawPoints(f: PlotFrame, points: NonNullable<PlotOptions['points']>) {
+  const { g, X, Y } = f;
+  points.forEach(p => {
+    const px = X(p.x),
+      py = Y(p.y);
+    g.strokeStyle = p.color;
+    g.lineWidth = 2;
+    g.beginPath();
+    g.moveTo(px - 6, py - 6);
+    g.lineTo(px + 6, py + 6);
+    g.moveTo(px + 6, py - 6);
+    g.lineTo(px - 6, py + 6);
+    g.stroke();
+  });
+}
+
+// Legend of the named curves, in the top right corner
+export function drawLegend(f: PlotFrame, series: PlotSeries[]) {
+  const leg = series.filter((s): s is PlotSeries & { name: string } => !!s.name);
+  if (!leg.length) return;
+  const { g, m, pw } = f;
+  g.font = '12px ' + UIFONT();
+  g.textAlign = 'left';
+  const w = Math.max(...leg.map(s => g.measureText(s.name).width)),
+    bx = m.l + pw - w - 42,
+    by = m.t + 8;
+  g.fillStyle = COLORS.legendBack;
+  g.fillRect(bx - 6, by - 4, w + 44, leg.length * 17 + 6);
+  leg.forEach((s, i) => {
+    const y = by + 8 + i * 17;
+    g.strokeStyle = s.color;
+    g.lineWidth = s.width || 2;
+    g.setLineDash(s.dash || []);
+    strokeLine(g, bx, y, bx + 24, y);
+    g.setLineDash([]);
+    g.fillStyle = COLORS.text;
+    g.fillText(s.name, bx + 30, y + 4);
+  });
+}
+
+export const GHOST_COLORS = ['#9aa0aa', '#b7a99a', '#a3b3a0', '#b0a3b8'];
+// Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s) (no plots)
+export const PANELS = ['diag', 'time', 'tf', 'bode', 'nyq', 'pz'] as const;
+// Panels shown when nothing is stored
+export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
+// Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
+// but always shown above the plots
+export const PANELS_V = 3;
+// Hidden areas from stored data without the formulas: hidden with their own handle before they became a panel
+// (now the panel is hidden instead, see storedPanels)
+export function withoutTex(hidden: Record<string, boolean>): Record<string, boolean> {
+  const r = { ...hidden };
+  delete r.tex;
+  return r;
+}
+// Size of the formulas (px) for the bottom edge of their panel: f0 the size and h0 the height of the formulas when
+// the drag started, dh how far the edge moved. The formulas scale with their size, so the size changes in the
+// same ratio as the height; 4-60 px in steps of 0.5. wr: how many times wider the formulas may become and still fit
+// the width of the panel (the narrowest one decides); the size stops there (rounded down), unless that is below 4 px
+export const TEX_FS_MIN = 4,
+  TEX_FS_MAX = 60,
+  TEX_FS_DEFAULT = 14; // the size in the style sheet (.tex)
+export function texFsForHeight(f0: number, h0: number, dh: number, wr = Infinity): number {
+  const f = h0 > 0 ? (f0 * (h0 + dh)) / h0 : f0;
+  const fit = Math.floor(f0 * wr * 2) / 2;
+  const v = Math.round(Math.min(TEX_FS_MAX, f) * 2) / 2;
+  return Math.max(TEX_FS_MIN, Math.min(v, fit));
+}
+// Size the formulas are shown at: the chosen size (layout.texFs, or the default), made smaller while that is wider
+// than the panel. cur: the size shown now, wr: how many times wider the formulas may become at it (Infinity: not
+// measured). The chosen size is kept, so the formulas grow back when there is room again
+export function texFsShown(chosen: number, cur: number, wr: number): number {
+  if (!isFinite(wr)) return chosen;
+  return Math.max(TEX_FS_MIN, Math.min(chosen, Math.floor(cur * wr * 2) / 2));
+}
+// Shown panels from stored data (valid keys only; null when none). A list saved before the transfer functions
+// became a panel gets them added, unless they had been hidden with their handle; one saved before the block diagram
+// became a panel gets it added (it was always shown).
+export function storedPanels(panels: unknown, pv: unknown, hidden: unknown): string[] | null {
+  if (!Array.isArray(panels)) return null;
+  const p = PANELS.filter(k => panels.includes(k)) as string[];
+  if (!p.length) return null;
+  const v = typeof pv === 'number' ? pv : 1,
+    texHidden = !!hidden && typeof hidden === 'object' && (hidden as Record<string, unknown>).tex === true;
+  if (v < 2 && !texHidden) p.push('tf');
+  if (v < 3) p.push('diag');
+  return PANELS.filter(k => p.includes(k));
+}
+// Number of grid columns of a preset layout (1 column, 2 columns, 1 row) for the shown panels; the block diagram
+// is not counted: it lies on top across the whole width
+export function presetCols(mode: string, shown: Iterable<string>): number {
+  const n = [...shown].filter(k => k !== 'diag' && (PANELS as readonly string[]).includes(k)).length;
+  return Math.max(1, mode === '1' ? 1 : mode === 'row' ? n : Math.min(2, n));
+}
+export const MAX_COLS = 4; // columns of the free layout (18-tiles.ts)
+// Columns of the metric cards: all in one row up to four, otherwise two rows of equal length
+export const metricCols = (n: number) => (n <= 4 ? Math.max(n, 1) : Math.ceil(n / 2));
+// Metrics as cards or as a table (label and value in rows), chosen in the plot selection bar
+export function metricsHTML(items: Metric[]): string {
+  if (layout.mview === 'table')
+    return `<div class="mtab">${items.map(([k, v]) => `<div class="mr"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}</div>`;
+  return items.map(([k, v]) => `<div class="m"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+}
+// A number with d decimals and a unit, or — when there is no value
+export function fmtNum(v: number | null | undefined, d = 3, u = ''): string {
+  return v === null || v === undefined || !isFinite(v) ? '—' : v.toFixed(d) + u;
+}
+
+// Widen the range r to include the values of a that pass keep
+export function stretch(r: { lo: number; hi: number }, a: readonly number[], keep: (v: number) => boolean = isFinite) {
+  a.forEach(v => {
+    if (keep(v)) {
+      r.lo = Math.min(r.lo, v);
+      r.hi = Math.max(r.hi, v);
+    }
+  });
+}
+
+// Time response: output y(t) and control input u(t) with their metrics
+export function drawTime(sim: SimResult) {
+  const tmax = S.Tsim;
+  const vl: PlotLine[] = S.dOn && S.td < tmax ? [{ v: S.td, color: COLORS.alert, label: T('Disturbance') }] : [];
+  plot($('cvY'), {
+    series: [
+      ...ghosts.map((gh, i) => ({
+        x: gh.T,
+        y: gh.Y,
+        color: GHOST_COLORS[i],
+        width: 1.6,
+        name: T('Held {n}', { n: i + 1 }),
+      })),
+      { x: sim.T, y: sim.R, color: COLORS.reference, width: 1.4, dash: [6, 4], name: T('Reference r') },
+      ...sweepSeries(r => ({ x: r.sim.T, y: r.sim.Y })),
+      { x: sim.T, y: sim.Y, color: COLORS.output, width: 2.4, name: T('Output y') },
+    ],
+    xmin: 0,
+    xmax: tmax,
+    ...outputRange(sim),
+    xlabel: T('Time t [s]'),
+    ylabel: 'y',
+    vlines: vl,
+    ...specMarks(),
+  });
+  plot($('cvU'), {
+    series: [
+      ...sweepSeries(r => ({ x: r.sim.T, y: r.sim.U })),
+      { x: sim.T, y: sim.U, color: COLORS.input, width: 2, name: T('Control input u') },
+    ],
+    xmin: 0,
+    xmax: tmax,
+    ...inputRange(sim),
+    xlabel: T('Time t [s]'),
+    ylabel: 'u',
+    hlines: S.sat
+      ? [
+          { v: S.umax, color: COLORS.alert },
+          { v: -S.umax, color: COLORS.alert },
+        ]
+      : [],
+    vlines: vl,
+  });
+  $('divBanner').style.display = sim.diverged ? 'block' : 'none';
+  const items = timeMetrics(sim);
+  $('metrics').innerHTML = metricsHTML(items);
+  $('metrics').style.setProperty('--mcols', String(metricCols(items.length)));
+}
+
+// Vertical range of y(t): the reference, held responses, sweep runs and the output, leaving out values far
+// beyond the reference (automatic range when the response diverges or the reference is zero)
+export function outputRange(sim: SimResult): { ymin?: number; ymax?: number } {
+  const rmax = Math.max(0, ...sim.R.map(Math.abs));
+  if (sim.diverged || !(rmax > 0)) return {};
+  const r = { lo: 0, hi: 0 };
+  stretch(r, sim.R, () => true);
+  const ys = [...ghosts.map(g => g.Y), ...(lastSweep || []).filter(w => !w.sim.diverged).map(w => w.sim.Y), sim.Y];
+  ys.forEach(a => stretch(r, a, v => isFinite(v) && Math.abs(v) < 10 * rmax + 5));
+  const pad = (r.hi - r.lo) * 0.1 || 0.5;
+  return { ymin: r.lo - pad, ymax: r.hi + pad };
+}
+
+// Vertical range of u(t), with extreme peaks clipped so that a derivative kick does not squash the axis
+// (automatic range with saturation, where the limits ±umax are drawn)
+export function inputRange(sim: SimResult): { ymin?: number; ymax?: number } {
+  if (S.sat) return {};
+  const all = { lo: 0, hi: 0 };
+  stretch(all, sim.U);
+  const quantile = (a: number[]) => {
+    const s = a.filter(isFinite).sort((x, y) => x - y);
+    return (k: number) => s[Math.floor(k * (s.length - 1))] || 0;
+  };
+  const q = quantile(sim.U.slice()),
+    lo2 = Math.min(0, q(0.005)),
+    hi2 = Math.max(0, q(0.995)),
+    pad = (hi2 - lo2) * 0.2 || 0.5;
+  const r = { ymin: Math.max(all.lo, lo2 - pad * 2), ymax: Math.min(all.hi, hi2 + pad * 2) };
+  if (r.ymax - r.ymin < 1e-6) {
+    r.ymin -= 0.5;
+    r.ymax += 0.5;
+  }
+  const p = (r.ymax - r.ymin) * 0.08;
+  r.ymin -= p;
+  r.ymax += p;
+  (lastSweep || []).forEach(w => {
+    if (w.sim.diverged) return;
+    const qs = quantile(w.sim.U);
+    r.ymin = Math.min(r.ymin, qs(0.005));
+    r.ymax = Math.max(r.ymax, qs(0.995));
+  });
+  return r;
+}
+
+// Specification limits drawn on y(t) for step and trapezoid references: settling band, overshoot limit,
+// steady-state error limits
+export function specMarks(): { bands: PlotOptions['bands']; segs: PlotOptions['segs'] } {
+  const bands: PlotOptions['bands'] = [],
+    segs: PlotOptions['segs'] = [];
+  if (S.spec.show && (S.refType === 'step' || S.refType === 'trap') && Math.abs(S.R) > 0) {
+    const r0 = S.R,
+      lo = Math.min(r0 * 0.98, r0 * 1.02),
+      hi = Math.max(r0 * 0.98, r0 * 1.02);
+    if (specOn('ts'))
+      bands.push({
+        x0: S.rT0 + S.spec.ts.v,
+        x1: Infinity,
+        y0: lo,
+        y1: hi,
+        fill: COLORS.specBand,
+        stroke: COLORS.spec,
+      });
+    if (specOn('os')) segs.push({ x0: S.rT0, x1: Infinity, y: r0 * (1 + S.spec.os.v / 100), color: COLORS.alert });
+    if (specOn('sse'))
+      [r0 - S.spec.sse.v, r0 + S.spec.sse.v].forEach(y =>
+        segs.push({ x0: S.rT0, x1: Infinity, y, color: COLORS.spec, dash: [2, 3] }),
+      );
+  }
+  return { bands, segs };
+}
+
+// Metrics of the time response, depending on the kind of reference, plus the disturbance metrics
+export function timeMetrics(sim: SimResult): Metric[] {
+  const f = fmtNum,
+    ev = evalSpecs(),
+    ty = S.refType;
+  const pre = S.dOn ? T(' (before disturbance)') : '';
+  const iae: Metric = ['IAE ∫|e|dt', sim.diverged ? '—' : f(sim.iae, 3)];
+  const umax: Metric = [T('Max |u|'), sim.diverged ? '—' : f(Math.max(...sim.U.map(Math.abs)), 2)];
+  // error at the end and largest error, up to the disturbance (or the end)
+  const win = sim.diverged ? null : metricWindow(sim);
+  const eEnd = win ? sim.R[win.last] - sim.Y[win.last] : null;
+  let emaxAll: number | null = null;
+  if (win) {
+    emaxAll = 0;
+    for (let i = 0; i <= win.last; i++) emaxAll = Math.max(emaxAll, Math.abs(sim.R[i] - sim.Y[i]));
+  }
+  let cards: Metric[];
+  if (ty === 'step' || ty === 'trap') {
+    const mt = stepMetrics(sim);
+    cards = [
+      [T('Rise time (10–90%)'), specIcon('tr', ev) + (mt ? f(mt.rise, 2, ' s') : '—')],
+      [T('Max overshoot'), specIcon('os', ev) + (mt ? f(mt.os, 1, ' %') : '—')],
+      [
+        T('Settling time (±2%, from t₀)'),
+        specIcon('ts', ev) + (mt ? (mt.ts === null ? T('Not settled') : f(mt.ts, 2, ' s')) : '—'),
+      ],
+      [T('Steady-state error') + pre, specIcon('sse', ev) + (mt ? f(mt.sse, 4) : '—')],
+      iae,
+      umax,
+    ];
+  } else if (ty === 'ramp' || ty === 'parab') {
+    const name = ty === 'ramp' ? T('Steady-state velocity error') : T('Steady-state acceleration error');
+    cards = [[name + T(' (e at the end)') + pre, f(eEnd, 4)], [T('Max |e|') + pre, f(emaxAll, 4)], iae, umax];
+  } else if (ty === 'sine') {
+    const sm = sineMetrics(sim),
+      ok = sm && !sm.short,
+      none = '—' + (sm && sm.short ? T(' (too short)') : '');
+    cards = [
+      [T('Amplitude ratio |y|/|r| (ω = {w} rad/s)', { w: sm ? f(sm.w, 3) : '—' }), ok ? f(sm.ratio, 3) : none],
+      [T('Phase difference ∠y − ∠r'), ok ? f(sm.phase, 1, ' °') : none],
+      [twoDof() ? T('Theory |Gyr(jω)|') : T('Theory |T(jω)|'), sm ? f(sm.ratioT, 3) : '—'],
+      [twoDof() ? T('Theory ∠Gyr(jω)') : T('Theory ∠T(jω)'), sm ? f(sm.phT, 1, ' °') : '—'],
+      [T('Steady-state max |e|') + pre, ok ? f(sm.emax, 4) : none],
+      umax,
+    ];
+  } else {
+    cards = [[T('Max |e|') + pre, f(emaxAll, 4)], [T('e at the end') + pre, f(eEnd, 4)], iae, umax];
+  }
+  const dm = distMetrics(sim);
+  if (dm)
+    cards.push(
+      [T('Max deviation by the disturbance'), f(dm.dev, 4)],
+      [T('Recovery time after the disturbance'), dm.rec === null ? T('Not recovered') : f(dm.rec, 2, ' s')],
+    );
+  return cards;
+}
+export function bodeDescDefault() {
+  const on = [...document.querySelectorAll<HTMLElement>('#bodeOpts .ctg')]
+    .filter(l => l.querySelector<HTMLInputElement>('input')?.checked)
+    .map(l => T(l.dataset.desc || l.title));
+  $('bodeDesc').textContent = on.length ? on.join(' ／ ') : T('Select the curves to show');
+}
+/** A curve of the Bode plot: gain [dB] and phase [deg] at the frequencies fr.W, with its line style */
+interface BodeCurve {
+  name: string;
+  mag: number[];
+  ph: number[];
+  color: string;
+  dash: number[];
+  width: number;
+}
+
+// Bode plot: gain and phase of the selected curves (and of L(jω) for each sweep run), with the margins.
+// The curves are drawn from frB (the range set by hand, or the automatic one); the margins always come from fr.
+export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
+  const showL = $('bodeL').checked,
+    showS = $('bodeS').checked;
+  const sets = bodeCurves(frB),
+    vl: PlotLine[] = [];
+  if (showL) {
+    if (fr.wgc) vl.push({ v: fr.wgc, color: COLORS.output, label: 'ωgc' });
+    if (fr.wpc) vl.push({ v: fr.wpc, color: COLORS.alert, label: 'ωpc' });
+  }
+  const sw = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).mag })) : [],
+    swp = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).ph })) : [],
+    runs = showL ? (lastSweep || []).map(r => r.frB || r.fr) : [];
+  const named = sets.length > 0 || sw.length > 0; // a legend whenever a curve is shown, also a single one
+  const curves = (key: 'mag' | 'ph') =>
+    sets.map(s => ({
+      x: frB.W,
+      y: s[key],
+      color: s.color,
+      width: s.width,
+      dash: s.dash,
+      name: named ? s.name : undefined,
+    }));
+  const common = {
+    xlog: true,
+    xmin: frB.W[0],
+    xmax: frB.W[frB.W.length - 1],
+    xlabel: T('Frequency ω [rad/s]'),
+    vlines: vl,
+  };
+  // gain: whole multiples of 20 dB, at least −20 … 20 dB, at most ±120 dB
+  const gr = { lo: Infinity, hi: -Infinity };
+  sets.forEach(s => stretch(gr, s.mag));
+  if (!sets.length) Object.assign(gr, { lo: -20, hi: 20 });
+  gr.lo = Math.max(gr.lo, -120);
+  gr.hi = Math.min(gr.hi, 120);
+  runs.forEach(r =>
+    r.mag.forEach(v => {
+      if (isFinite(v)) {
+        gr.lo = Math.min(gr.lo, Math.max(v, -120));
+        gr.hi = Math.max(gr.hi, Math.min(v, 120));
+      }
+    }),
+  );
+  plot($('cvG'), {
+    ...common,
+    series: [...sw, ...curves('mag')],
+    ymin: Math.floor(Math.min(gr.lo, -20) / 20) * 20,
+    ymax: Math.ceil(Math.max(gr.hi, 20) / 20) * 20,
+    ylabel: T('Gain [dB]'),
+    hlines: [
+      { v: 0, color: COLORS.zeroDb, dash: [3, 3] },
+      ...(S.spec.show && specOn('gm') && showL ? [{ v: -S.spec.gm.v, color: COLORS.spec, dash: [6, 4] }] : []),
+      ...(S.spec.show && specOn('ms') && showS
+        ? [{ v: 20 * Math.log10(S.spec.ms.v), color: COLORS.sensitivity, dash: [2, 3] }]
+        : []),
+    ],
+    yticks: (a, b) => niceTicks(a, b, 6),
+  });
+  // phase: whole multiples of 90°, at least −180 … 0°, at most ±720°
+  const pr = { lo: Infinity, hi: -Infinity };
+  sets.forEach(s => stretch(pr, s.ph));
+  if (!sets.length) Object.assign(pr, { lo: -180, hi: 0 });
+  runs.forEach(r => stretch(pr, r.ph));
+  pr.lo = Math.max(pr.lo, -720);
+  pr.hi = Math.min(pr.hi, 720);
+  plot($('cvPh'), {
+    ...common,
+    series: [...swp, ...curves('ph')],
+    ymin: Math.floor(Math.min(pr.lo, -180) / 90) * 90,
+    ymax: Math.ceil(Math.max(pr.hi, 0) / 90) * 90,
+    ylabel: T('Phase [deg]'),
+    hlines: [
+      { v: -180, color: COLORS.alert, dash: [3, 3] },
+      ...(S.spec.show && specOn('pm') && showL ? [{ v: -180 + S.spec.pm.v, color: COLORS.spec, dash: [6, 4] }] : []),
+    ],
+    yticks: (a, b) => {
+      const t: number[] = [];
+      const step = b - a > 360 ? 90 : 45;
+      for (let v = Math.ceil(a / step) * step; v <= b; v += step) t.push(v);
+      return t;
+    },
+  });
+  showBodeRange(frB, frB !== fr);
+  $('margins').innerHTML = metricsHTML(marginMetrics(fr));
+  $('bodeNote').textContent = fr.openUnstable ? T(TXT_BODE_UNSTABLE) : T(TXT_BODE_RANGE, { a: fr.w0, b: fr.w1 });
+}
+
+// The frequency range of the Bode plot in its inputs, and whether it was set by hand
+export function showBodeRange(f: FreqResult, manual: boolean) {
+  $('wrLo').value = String(+f.W[0].toPrecision(4));
+  $('wrHi').value = String(+f.W[f.W.length - 1].toPrecision(4));
+  $('wrAuto').disabled = !manual;
+  $('wrState').textContent = manual
+    ? T('Set by hand (returns to automatic when the poles, zeros, dead time, or simulation time change)')
+    : T('Automatic');
+}
+// The curves selected with the Bode buttons, drawn in this order (L(jω) last, on top)
+export function bodeCurves(fr: FreqResult): BodeCurve[] {
+  const sets: BodeCurve[] = [];
+  const add = (
+    id: 'bodeL' | 'bodeP' | 'bodeC' | 'bodeS' | 'bodeT' | 'bodeD' | 'bodeR',
+    name: string,
+    r: { mag: number[]; ph: number[] },
+    color: string,
+    dash: number[],
+    width: number,
+  ) => {
+    if ($(id).checked) sets.push({ name, mag: r.mag, ph: r.ph, color, dash, width });
+  };
+  add('bodeP', 'P(jω)', fr.P, COLORS.plant, [7, 4], 2);
+  add('bodeC', 'C(jω)', fr.C, COLORS.input, [2, 3], 2.2);
+  add('bodeS', 'S(jω)', fr.S, COLORS.sensitivity, [8, 3], 2);
+  add('bodeD', 'Gyd(jω)', fr.D, COLORS.disturbanceTF, [2, 3], 2.2);
+  add('bodeR', 'Gyr(jω)', fr.Gyr, COLORS.referenceTF, [12, 5], 1.8);
+  add('bodeT', 'T(jω)', fr.T, COLORS.complementary, [9, 3, 2, 3], 2);
+  add('bodeL', 'L(jω)', fr, COLORS.output, [], 2.4);
+  return sets;
+}
+
+// Stability margins and closed-loop peaks (the closed-loop values only when the closed loop is stable)
+export function marginMetrics(fr: FreqResult): Metric[] {
+  const f = fmtNum,
+    ev = evalSpecs(),
+    clOK = !lastPZ || lastPZ.cl.every(z => z[0] < 0);
+  const withDb = (x: number) => {
+    const db = 20 * Math.log10(x);
+    return `${numStr(x)} (${f(Math.abs(db) < 0.005 ? 0 : db, 2, ' dB')})`;
+  };
+  return [
+    [T('Gain margin GM'), specIcon('gm', ev) + (fr.gm === null ? '∞' : f(fr.gm, 2, ' dB'))],
+    [T('Phase margin PM'), specIcon('pm', ev) + f(fr.pm, 1, ' °')],
+    [T('Gain crossover ωgc'), f(fr.wgc, 3, ' rad/s')],
+    [T('Phase crossover ωpc'), f(fr.wpc, 3, ' rad/s')],
+    [T('Peak sensitivity Ms'), specIcon('ms', ev) + (clOK && fr.ms !== null ? withDb(fr.ms) : '—')],
+    [T('Peak of T  Mt'), clOK && fr.mt !== null ? withDb(fr.mt) : '—'],
+    [T('Closed-loop bandwidth ωBW'), clOK ? f(fr.wbw, 3, ' rad/s') : '—'],
+    [
+      T('Peak disturbance gain max|Gyd|'),
+      clOK && fr.dmax !== null ? `${numStr(fr.dmax)} (ω = ${f(fr.wdmax, 3, ' rad/s')})` : '—',
+    ],
+  ];
+}
+export function drawNyq(fr: FreqResult) {
+  const re = fr.Lc.map(z => z[0]),
+    im = fr.Lc.map(z => z[1]);
+  let x0 = -2,
+    x1 = 1,
+    y0 = -1.5,
+    y1 = 1.5;
+  fr.Lc.forEach(z => {
+    if (Math.hypot(z[0], z[1]) < 6) {
+      x0 = Math.min(x0, z[0]);
+      x1 = Math.max(x1, z[0]);
+      y0 = Math.min(y0, z[1], -z[1]);
+      y1 = Math.max(y1, z[1], -z[1]);
+    }
+  });
+  // Equal aspect ratio
+  const cv = $('cvN');
+  const pw = cv.clientWidth - 74,
+    ph = cv.clientHeight - 48;
+  if (pw > 0) {
+    const sx = (x1 - x0) / pw,
+      sy = (y1 - y0) / ph,
+      s = Math.max(sx, sy) * 1.08;
+    const cx = (x0 + x1) / 2,
+      cy = (y0 + y1) / 2;
+    x0 = cx - (s * pw) / 2;
+    x1 = cx + (s * pw) / 2;
+    y0 = cy - (s * ph) / 2;
+    y1 = cy + (s * ph) / 2;
+  }
+  plot(cv, {
+    series: [
+      { x: re, y: im.map(v => -v), color: COLORS.negativeFreq, width: 1.4, dash: [5, 4], name: 'ω < 0' },
+      ...sweepSeries(r => ({ x: r.fr.Lc.map(z => z[0]), y: r.fr.Lc.map(z => z[1]) })),
+      { x: re, y: im, color: COLORS.output, width: 2.2, name: 'ω > 0' },
+    ],
+    xmin: x0,
+    xmax: x1,
+    ymin: y0,
+    ymax: y1,
+    xlabel: 'Re L(jω)',
+    ylabel: 'Im L(jω)',
+    points: [{ x: -1, y: 0, color: COLORS.alert }],
+    circles: [
+      ...($('nyqMs').checked && fr.ms !== null && fr.ms > 0 && (!lastPZ || lastPZ.cl.every(z => z[0] < 0))
+        ? [{ cx: -1, cy: 0, r: 1 / (fr.ms as number), color: COLORS.sensitivity, dash: [6, 4] }]
+        : []),
+      ...(S.spec.show && specOn('ms')
+        ? [{ cx: -1, cy: 0, r: 1 / S.spec.ms.v, color: COLORS.spec, dash: [2, 3], width: 1.3 }]
+        : []),
+    ],
+    vlines: [{ v: 0, color: COLORS.zeroLine, dash: [] }],
+  });
+}

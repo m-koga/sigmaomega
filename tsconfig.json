@@ -1,0 +1,23 @@
+{
+  // Type checking of the page script (npm run typecheck); the build removes the types itself (scripts/build.js).
+  // The files in src/ts are ES modules: each imports what it uses from the others. The build removes the
+  // module syntax and joins them into one classic script (scripts/build.ts).
+  // All strict checks are on ("strict"): every function and variable has a type, values that can be null or
+  // undefined are checked, caught errors are unknown, and so on.
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "types": [],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/ts/*.ts"]
+}

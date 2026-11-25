@@ -1,0 +1,143 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 Masanobu Koga
+/* ================= Export of results (CSV, PNG) ================= */
+import { T } from './02-i18n.ts';
+import { PLOTS } from './03-definitions.ts';
+import { numStr } from './04-parser.ts';
+import { S } from './05-state.ts';
+import { $, ctx2d } from './06-ui-build.ts';
+import { COLORS } from './09-drawing.ts';
+import { SWEEP_SYM } from './10-sweep.ts';
+import { copyText, saveFile } from './12-scenarios.ts';
+import { lastFr, lastFrB, lastPZ, lastSim, lastSweep } from './16-pole-zero.ts';
+
+/** A cell of a CSV file */
+type CsvCell = string | number | null | undefined;
+export const csvNum = (v: number | null | undefined) =>
+  v === null || v === undefined || !isFinite(v) ? '' : String(+(+v).toPrecision(8));
+export const csvRow = (a: CsvCell[]) =>
+  a
+    .map(x =>
+      typeof x === 'number' ? csvNum(x) : /[",\n]/.test(String(x)) ? `"${String(x).replace(/"/g, '""')}"` : String(x),
+    )
+    .join(',');
+export const csvText = (rows: CsvCell[][]) => '﻿' + rows.map(csvRow).join('\r\n') + '\r\n'; // BOM so that Excel reads UTF-8
+// Time response: t, r, y, u (and y, u of each value of the parameter sweep)
+export function timeCSV(sim: SimResult, sweep: SweepRun[] | null): string {
+  const sw = (sweep || []).filter(r => r.sim.T.length === sim.T.length),
+    p = S.sweep.p,
+    nm = (v: number) => `${SWEEP_SYM[p] || p}=${numStr(v)}`;
+  const head = ['t', 'r', 'y', 'u', ...sw.map(r => `y (${nm(r.v)})`), ...sw.map(r => `u (${nm(r.v)})`)];
+  const rows: CsvCell[][] = [head];
+  for (let i = 0; i < sim.T.length; i++)
+    rows.push([sim.T[i], sim.R[i], sim.Y[i], sim.U[i], ...sw.map(r => r.sim.Y[i]), ...sw.map(r => r.sim.U[i])]);
+  return csvText(rows);
+}
+// Frequency response: gains [dB] and phases [deg] of L, P, C, S, T, Gyd, Gyr
+export function freqCSV(fr: FreqResult): string {
+  const sets: [string, { mag: number[]; ph: number[] }][] = [
+    ['L', { mag: fr.mag, ph: fr.ph }],
+    ['P', fr.P],
+    ['C', fr.C],
+    ['S', fr.S],
+    ['T', fr.T],
+    ['Gyd', fr.D],
+    ['Gyr', fr.Gyr],
+  ];
+  const rows: CsvCell[][] = [['omega [rad/s]', ...sets.flatMap(([n]) => [`|${n}| [dB]`, `arg ${n} [deg]`])]];
+  for (let i = 0; i < fr.W.length; i++) rows.push([fr.W[i], ...sets.flatMap(([, s]) => [s.mag[i], s.ph[i]])]);
+  return csvText(rows);
+}
+// Nyquist plot: real and imaginary parts of L(jω)
+export function nyqCSV(fr: FreqResult): string {
+  const rows: CsvCell[][] = [['omega [rad/s]', 'Re L', 'Im L']];
+  for (let i = 0; i < fr.W.length; i++) rows.push([fr.W[i], fr.Lc[i][0], fr.Lc[i][1]]);
+  return csvText(rows);
+}
+// Poles and zeros: kind, real part, imaginary part, damping ratio, natural frequency
+export function pzCSV(pz: PZResult): string {
+  const rows: CsvCell[][] = [['kind', 'Re', 'Im', 'zeta', 'omega_n [rad/s]']];
+  (
+    [
+      ['plant pole', pz.pp],
+      ['plant zero', pz.pz],
+      ['controller pole', pz.cp],
+      ['controller zero', pz.cz],
+      ['closed-loop pole', pz.cl],
+    ] as [string, Complex[]][]
+  ).forEach(([k, list]) =>
+    list.forEach(z => {
+      const w = Math.hypot(z[0], z[1]);
+      rows.push([k, z[0], z[1], w > 1e-12 ? -z[0] / w : '', w]);
+    }),
+  );
+  if (pz.pade) rows.push(['note: dead time is approximated by a 3rd-order Pade approximation', '', '', '', '']);
+  return csvText(rows);
+}
+export let toastTimer: Timer | undefined;
+export function toast(msg: string, err?: boolean) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.toggle('err', !!err);
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 5000);
+}
+export async function exportCSV(kind: string) {
+  let text: string, name: string;
+  if (kind === 'time') {
+    if (!lastSim) return;
+    text = timeCSV(lastSim, lastSweep);
+    name = 'time_response.csv';
+  } else if (kind === 'bode') {
+    if (!lastFr) return;
+    text = freqCSV(lastFrB || lastFr);
+    name = 'frequency_response.csv';
+  } else if (kind === 'nyq') {
+    if (!lastFr) return;
+    text = nyqCSV(lastFr);
+    name = 'nyquist.csv';
+  } else {
+    if (!lastPZ) return;
+    text = pzCSV(lastPZ);
+    name = 'poles_zeros.csv';
+  }
+  const r = await saveFile(name, text, 'text/csv');
+  if (r === 'saved') toast(T('Saved as "{f}" (usually in the Downloads folder)', { f: name }));
+  else if (r === 'unavailable') {
+    const ok = await copyText(text.replace(/^﻿/, ''));
+    toast(
+      ok
+        ? T('This page cannot save files. The data was copied to the clipboard instead; paste it into a spreadsheet.')
+        : T('Could not save the file here.'),
+      !ok,
+    );
+  }
+}
+export const PNG_NAMES: Record<string, string> = Object.fromEntries(Object.entries(PLOTS).map(([k, v]) => [k, v.file]));
+// The plot as a PNG image (white background, at the screen's pixel density)
+export async function saveCanvasPNG(cv: HTMLCanvasElement) {
+  const c = document.createElement('canvas');
+  c.width = cv.width;
+  c.height = cv.height;
+  const g = ctx2d(c);
+  g.fillStyle = COLORS.white;
+  g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(cv, 0, 0);
+  await savePNG(c, PNG_NAMES[cv.id] || 'plot');
+}
+// Save a canvas as the PNG file name.png, with a message saying where it went (or that it could not be saved)
+export async function savePNG(c: HTMLCanvasElement, base: string) {
+  const blob = await new Promise<Blob | null>(res => c.toBlob(res, 'image/png'));
+  if (!blob) {
+    toast(T('Could not save the file here.'), true);
+    return;
+  }
+  const name = base + '.png',
+    r = await saveFile(name, blob, 'image/png');
+  if (r === 'saved') toast(T('Saved as "{f}" (usually in the Downloads folder)', { f: name }));
+  else if (r === 'unavailable') toast(T('Could not save the file here.'), true);
+}
+document
+  .querySelectorAll<HTMLElement>('[data-csv]')
+  .forEach(b => b.addEventListener('click', () => exportCSV(b.dataset.csv!))); // selected by [data-csv]

@@ -1,0 +1,449 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* Copyright 2026 Masanobu Koga */
+:root{
+  --bg:#f6f5f2; --panel:#ffffff; --ink:#1b1d22; --muted:#666b75; --line:#e2e0da;
+  --accent:#c62828; --blue:#1f5fbf; --orange:#d9822b; --green:#2e7d32; --grid:#ecebe6;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans JP",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+/* Header on one line: the description shortens with an ellipsis and is hidden on narrow screens */
+header{padding:12px 22px;border-bottom:1px solid var(--line);background:var(--panel);display:flex;align-items:center;gap:16px;flex-wrap:nowrap;white-space:nowrap}
+header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:.02em;flex:none;display:flex;align-items:baseline;gap:10px}
+.app-logo{flex:none;align-self:center;display:flex}
+.app-logo svg{width:28px;height:28px;display:block}
+.app-name{letter-spacing:.01em}
+.app-sub{font-size:14px;font-weight:500;letter-spacing:0;color:var(--ink)}
+header p{margin:0;color:var(--muted);font-size:13px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+header .lang-sel,header .ver{flex:none}
+@media (max-width:760px){header p{display:none} header{gap:10px;padding:10px 14px} header h1{font-size:17px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}}
+@media (max-width:480px){header .ver{display:none} header h1{font-size:15px} header .lang-sel{max-width:96px} header .app-sub{display:none} .app-logo svg{width:24px;height:24px}}
+.wrap{display:grid;grid-template-columns:min(var(--sideW,330px),40vw) 12px minmax(0,1fr);gap:4px;padding:16px;max-width:none;margin:0 auto}
+/* Side-by-side down to 641 px (the settings panel narrows with the window); stacked below */
+@media (max-width:640px){.wrap{grid-template-columns:1fr;gap:12px}.vsplit{display:none}}
+/* Resize handles */
+.vsplit{cursor:col-resize;position:relative;touch-action:none}
+.vsplit::after{content:"";position:absolute;left:5px;top:16px;bottom:16px;width:2px;border-radius:1px;background:var(--line)}
+.vsplit:hover::after,.vsplit.drag::after{background:var(--accent)}
+.hgrip{height:12px;cursor:row-resize;position:relative;touch-action:none;margin:2px 0}
+.hgrip::after{content:"";position:absolute;left:50%;top:4px;width:56px;height:4px;margin-left:-28px;border-radius:2px;background:#d6d3cb}
+.hgrip:hover::after,.hgrip.drag::after{background:var(--accent);width:90px;margin-left:-45px}
+.hgrip.collapsed{height:28px;border:1px dashed var(--line);border-radius:6px;background:#faf9f6}
+.hgrip.collapsed::after{top:5px}
+.hgrip.collapsed::before{content:attr(data-msg);position:absolute;left:0;right:0;top:11px;
+  text-align:center;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px}
+body.rz-x,body.rz-x *{cursor:col-resize!important;user-select:none}
+body.rz-y,body.rz-y *{cursor:row-resize!important;user-select:none}
+#diagBox{overflow:hidden}
+#diagBox.sized{overflow-x:auto;overflow-y:hidden}
+#diagBox.sized > svg{height:100%;width:auto;max-width:100%;margin:0 auto}   /* never wider than its area */
+.sub{margin-top:8px;border-top:1px dashed var(--line);padding-top:6px}
+.sub-h{font-size:12px;color:var(--muted);cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center;border-radius:3px}
+.sub-h::after{content:var(--t-shown,"Shown ▾");font-size:11px}
+.sub.folded .sub-h::after{content:var(--t-hidden,"Hidden ▸")}
+.sub-h:hover,.sub-h:hover::after{color:var(--accent)}
+.sub-h:focus-visible{outline:2px solid #c6282855;outline-offset:2px}
+.sub.folded .sub-b{display:none}
+.sub-b > .ex,.sub-b > .poles,.sub-b > .hint{margin-top:4px}
+.sub-b > .row{margin-top:4px}
+.tsim-row{max-width:520px;margin-top:12px;zoom:var(--ts,1)}
+.tsim-num{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--blue)}
+.tsim-num input{width:92px;padding:2px 6px;border:1px solid var(--line);border-radius:5px;font:inherit;color:inherit;text-align:right}
+.tsim-ticks{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);margin-top:1px}
+.cv-pz{height:460px;cursor:grab}
+.cv-pz.panning{cursor:grabbing}
+.pz-opts{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:4px}
+.zoomable{zoom:var(--zs,1)}
+.pz-wrap{position:relative}
+#pzBanner{display:block}
+.pz-tools{position:absolute;top:18px;right:22px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+/* like the buttons of the other plots: shown while the pointer is over the plot, with the keyboard, or while zoomed */
+.pz-wrap:hover .pz-tools,.pz-tools:has(:focus-visible),.pz-tools.zoomed{opacity:1}
+.plot-wrap{position:relative}
+.plot-wrap canvas{cursor:grab}
+.plot-wrap canvas.panning{cursor:grabbing}
+.plot-tools{position:absolute;top:16px;left:64px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+/* shown while the pointer is over the plot, while one of the buttons has the keyboard focus (not after a click, which
+   leaves the focus on the button), or while zoomed */
+.plot-wrap:hover .plot-tools,.plot-tools:has(:focus-visible),.plot-tools.zoomed{opacity:1}
+.plot-tools button{padding:2px 8px;font-size:12px;background:rgba(255,255,255,.92)}
+.pz-tools button{padding:3px 9px;font-size:12px;background:rgba(255,255,255,.92)}
+.pz-tip{position:absolute;display:none;pointer-events:none;background:#1b1d22;color:#fff;font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;font-family:"JetBrains Mono","Noto Sans JP",monospace;z-index:2}
+.pz-ok{background:#e8f5e9!important;color:var(--green)!important}
+table.pzt{border-collapse:collapse;width:100%;margin-top:10px;font-size:calc(13px*var(--ms,1))}
+table.pzt th,table.pzt td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.pzt th{font-weight:500;color:var(--muted);font-size:calc(12px*var(--ms,1));text-align:right}
+table.pzt td:first-child,table.pzt th:first-child{text-align:left}
+table.pzt td{font-family:"JetBrains Mono",monospace}
+table.pzt tr.dom td{background:#fff6f5}
+.pzwrap-tbl{overflow-x:auto}
+.lang-sel{margin-left:auto;width:auto;padding:3px 8px;font-size:12.5px;border-radius:12px}
+html[lang="zh-Hans"] body{font-family:"Noto Sans SC","Noto Sans JP",system-ui,sans-serif}
+html[lang="ko"] body{font-family:"Noto Sans KR","Noto Sans JP",system-ui,sans-serif}
+html[lang="th"] body{font-family:"Noto Sans Thai","Noto Sans JP",system-ui,sans-serif}
+.ver{margin-left:8px;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px 10px;cursor:pointer}
+.ver:hover{color:var(--accent);border-color:var(--accent)}
+.cl-back{display:none;position:fixed;inset:0;background:rgba(27,29,34,.35);z-index:50;align-items:center;justify-content:center;padding:20px}
+.cl-back.open{display:flex}
+.cl-box{background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+.cl-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.cl-head h2{margin:0;font-size:15px}
+.cl-foot{flex:none;padding:7px 18px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;text-align:right}
+.cl-foot a{color:inherit}
+.cl-x{border:none;background:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);padding:0 4px}
+.cl-body{overflow-y:auto;padding:6px 18px 16px}
+.cl-item{padding:10px 0;border-bottom:1px solid var(--line)}
+.cl-item:last-child{border-bottom:none}
+.cl-v{font-family:"JetBrains Mono",monospace;font-weight:600;color:var(--accent);font-size:13px}
+.cl-d{font-size:12px;color:var(--muted);margin-left:8px}
+.cl-item ul{margin:5px 0 0;padding-left:18px;font-size:13px;line-height:1.65}
+/* User manual (22-help.ts): the list of sections beside the text (above it on narrow screens) */
+.hp-box{max-width:980px;height:85vh}
+.hp-main{flex:1;min-height:0;display:flex}
+.hp-toc{flex:none;width:220px;overflow-y:auto;padding:10px 8px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.hp-link{border:none;background:none;text-align:left;padding:6px 10px;border-radius:6px;font-size:13px;color:var(--ink);cursor:pointer}
+.hp-link:hover,.hp-link:focus-visible{background:#f2f3f5}
+.hp-body{flex:1;min-width:0;overflow-y:auto;padding:4px 22px 24px;font-size:14px;line-height:1.75;position:relative}
+.hp-body section{padding-top:10px}
+.hp-body h3{font-size:16px;color:var(--accent);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.hp-body h4{font-size:14px;margin:14px 0 4px}
+.hp-body p{margin:6px 0}
+.hp-body ul,.hp-body ol{margin:6px 0;padding-left:22px}
+.hp-body table{border-collapse:collapse;margin:8px 0;font-size:13px;width:100%}
+.hp-body th,.hp-body td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.hp-body th{background:#f6f5f2}
+.hp-body td:first-child{min-width:7.5em}
+.hp-body code,.hp-body kbd{font-family:"JetBrains Mono",monospace;font-size:12.5px;background:#f2f3f5;border-radius:4px;padding:1px 5px}
+.hp-body kbd{border:1px solid var(--line);border-bottom-width:2px}
+.hp-body dt{font-weight:700;margin-top:10px}
+.hp-body dd{margin:2px 0 0 18px}
+.hp-fig{margin:10px 0 12px}
+.hp-fig img{display:block;max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.hp-fig figcaption{font-size:12.5px;line-height:1.6;color:var(--muted);margin-top:4px}
+.hp-body caption{caption-side:top;text-align:left;font-size:12.5px;line-height:1.6;color:var(--muted);padding:0 0 4px}
+.hp-num{font-weight:700;color:var(--ink);margin-right:.6em}
+.hp-ref{color:var(--accent);text-decoration:none;border-bottom:1px dotted currentColor;white-space:nowrap}
+.hp-ref:hover,.hp-ref:focus-visible{border-bottom-style:solid}
+.hp-hit{animation:hp-hit 1.6s ease-out}
+@keyframes hp-hit{0%,30%{outline:3px solid rgba(198,40,40,.45);outline-offset:3px}100%{outline:3px solid rgba(198,40,40,0);outline-offset:3px}}
+@media (max-width:640px){.hp-main{flex-direction:column}.hp-toc{width:auto;max-height:30%;border-right:none;border-bottom:1px solid var(--line)}.hp-body{padding:4px 14px 20px}}
+.reflbl{display:block;font-size:13px;margin:2px 0 4px}
+.reftex{font-size:13px;margin:8px 0 2px;color:var(--ink);overflow-x:auto;overflow-y:hidden}
+.spec-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 8px;margin:6px 0;padding:4px 0;border-bottom:1px dashed var(--line)}
+.spec-row .chk{margin:0}
+.spec-in{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.spec-in input.num{width:70px;padding:2px 6px;border:1px solid #e3e0d8;border-radius:5px;font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:600;color:var(--blue);text-align:right;background:#fff}
+.spec-u{font-size:12px;color:var(--muted);min-width:18px}
+.spec-res{grid-column:1 / -1;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);padding-left:24px}
+.spec-row.off .spec-in,.spec-row.off .spec-res{opacity:.4}
+.sp{font-weight:700;margin-right:4px}.sp.ok{color:var(--green)}.sp.ng{color:var(--accent)}
+.spec-sum{font-size:13px;font-weight:700;padding:6px 10px;border-radius:6px;background:var(--bg);margin-bottom:4px}
+.spec-sum.ok{background:#e8f5e9;color:var(--green)}.spec-sum.ng{background:#fdecea;color:var(--accent)}
+.m .v .sp{font-size:.9em}
+/* Table view of the metrics: two columns of rows where the width allows */
+.metrics:has(> .mtab){display:block}
+.mtab{columns:2 calc(260px*var(--ms));column-gap:calc(22px*var(--ms))}
+.mr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:calc(4px*var(--ms)) 2px;border-bottom:1px solid var(--line);break-inside:avoid}
+.mr .k{font-size:calc(12px*var(--ms));color:var(--muted)}
+.mr .v{font-family:"JetBrains Mono",monospace;font-size:calc(13.5px*var(--ms));font-weight:600;text-align:right;white-space:nowrap}
+.tune-grid{display:grid;grid-template-columns:1fr;gap:2px 8px;align-items:center;font-size:12.5px;margin-top:6px}
+.tune-grid label{color:var(--muted);margin-top:4px}
+.tune-grid select,.tune-grid input{width:100%;box-sizing:border-box;font-size:12.5px}
+.tune-grid input{padding:3px 6px;border:1px solid #e3e0d8;border-radius:5px;font-family:"JetBrains Mono",monospace;text-align:right}
+#tuneOut{margin-top:6px;line-height:1.7}
+#tuneOut .err{color:var(--accent)}
+#tuneApply{margin-top:6px}
+#tuneApply:disabled{opacity:.4;cursor:default}
+.sw-tab{width:100%;border-collapse:collapse;margin-top:8px;font-size:11.5px;font-family:"JetBrains Mono",monospace}
+.sw-tab th{font-family:inherit;font-weight:600;color:var(--muted);text-align:right;padding:2px 2px;border-bottom:1px solid var(--line);font-size:10.5px;line-height:1.25;vertical-align:bottom}
+.sw-tab td{text-align:right;padding:3px 2px;border-bottom:1px dashed var(--line);white-space:nowrap}
+.sw-tab th:first-child,.sw-tab td:first-child{text-align:left}
+.sw-tab th:nth-last-child(-n+2){white-space:nowrap}
+.sw-tab tbody tr{cursor:pointer}
+.sw-tab tbody tr:hover{background:#f3f1ec}
+.sw-tab tr.cur td{font-weight:700}
+.sw-sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+#sw-form.disabled,#sw-def.disabled{opacity:.45}
+.nyq-opt{margin:0}
+.tune-grid textarea{width:100%;box-sizing:border-box;font-size:12.5px;padding:4px 6px;border:1px solid #e3e0d8;border-radius:5px;font-family:inherit;resize:vertical}
+#sc-name{text-align:left;font-family:inherit}
+#sc-text{font-family:"JetBrains Mono",monospace;font-size:11px}
+.sc-btns{margin-top:6px}
+.sc-msg{font-size:12px;min-height:1em;margin-top:4px;color:var(--green)}
+.sc-msg.err{color:var(--accent)}
+.sc-group{font-size:11.5px;color:var(--muted);margin:8px 0 2px}
+.sc-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.sc-item .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-tag{font-size:12px;color:var(--blue);cursor:default}
+.sc-item .dt{font-size:10.5px;color:var(--muted);font-family:"JetBrains Mono",monospace}
+.sc-item button{padding:2px 8px;font-size:11.5px}
+.sc-item button.arm{background:var(--accent);color:#fff;border-color:var(--accent)}
+.task-banner{display:none;align-items:flex-start;gap:10px;margin-bottom:12px;padding:10px 14px;border-radius:10px;background:#fff8e1;border:1px solid #f0d58a;font-size:13.5px;line-height:1.6}
+.task-banner.on{display:flex}
+.task-banner > div{flex:1;white-space:pre-wrap}
+.toast{position:fixed;right:18px;bottom:18px;z-index:50;max-width:420px;padding:10px 14px;border-radius:8px;background:#1b1d22;color:#fff;font-size:13px;line-height:1.5;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:none}
+.toast.err{background:#c62828}
+.h2row .tool[data-csv]{white-space:nowrap}
+.stab,.ptab{flex:1;padding:6px 4px;font-size:12.5px;border:none;border-radius:7px;background:none;color:var(--muted);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stab:hover,.ptab:hover{color:var(--ink)}
+.stab.on,.ptab.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+/* the drop-down lists that choose the card of the settings panel; the list of the chosen card is marked */
+.smenu .vb-ddlist{min-width:230px;z-index:40}
+.side > .card.tab-hidden{display:none}
+.side .card.tab-hidden+.card{margin-top:0}
+.ctg-row{display:flex;flex-wrap:wrap;gap:6px}
+.ctg{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-size:12.5px;font-family:"JetBrains Mono",monospace;user-select:none;opacity:.55;transition:opacity .12s,border-color .12s,background .12s}
+.ctg input{position:absolute;opacity:0;width:0;height:0}
+.ctg:hover{opacity:.85}
+.ctg:has(input:checked){opacity:1;border-color:var(--c);background:color-mix(in srgb,var(--c) 9%,#fff);font-weight:700}
+.ctg:has(input:focus-visible){outline:2px solid #c6282855;outline-offset:2px}
+.ctg sub{font-size:.75em}
+.ctg-desc{font-size:12px;color:var(--muted);margin-top:6px;min-height:1.5em}
+#bodeOpts{display:block}
+.st-left{display:flex;align-items:center;gap:6px}
+.side-tools .tool.side-hide{font-size:14px;line-height:1;padding:2px 6px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--muted)}
+.side-tools .tool.side-hide:hover{color:var(--accent);border-color:var(--accent)}
+.side-open{display:none}
+/* Settings panel folded into a narrow strip (wide screens; phones use the bottom bar instead) */
+@media (min-width:641px){
+.wrap.side-collapsed{grid-template-columns:42px 0 minmax(0,1fr)}
+.wrap.side-collapsed .vsplit{visibility:hidden;pointer-events:none}   /* keep its grid column */
+.wrap.side-collapsed .side > :not(.side-open){display:none}
+.wrap.side-collapsed .side{padding-left:0;padding-right:0;overflow:visible}
+.wrap.side-collapsed .side-open{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;box-sizing:border-box;min-height:180px;padding:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--accent);cursor:pointer;font-size:13px;font-weight:700}
+.wrap.side-collapsed .side-open:hover{border-color:var(--accent)}
+}
+.so-arrow{font-size:15px}
+.so-label{writing-mode:vertical-rl;letter-spacing:.12em}
+/* ---- Smartphones ---- */
+.mnav{display:none}
+@media (max-width:640px){
+  /* bottom bar: settings or plots */
+  .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -4px 12px rgba(0,0,0,.06);padding:6px 10px calc(6px + env(safe-area-inset-bottom));gap:8px}
+  .mnav button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 0;border:none;border-radius:9px;background:none;color:var(--muted);font-size:14px;font-weight:600}
+  .mnav button.on{background:#fbeaea;color:var(--accent)}
+  .mnav svg{width:18px;height:18px}
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  body.m-plot .side, body.m-plot .vsplit{display:none}
+  body.m-set .main{display:none}
+  .side-tools .tool.side-hide{display:none}
+  .menubar.menubar{position:sticky;top:0;padding:0 6px}   /* over the rule below */
+  /* the lists open under the menu bar across the screen, so that none runs past an edge */
+  .menubar .vb-dd.vb-dd{position:static}
+  .menubar .vb-ddlist.vb-ddlist{left:12px;right:12px;top:calc(100% + 4px);min-width:0}
+  .menubar .vb-ddbtn.vb-ddbtn,.menubar .mb-help.mb-help{height:40px;padding:0 9px}
+  /* 16 px text in inputs so that iOS does not zoom in on focus */
+  input[type=number],input[type=text],select,textarea{font-size:16px !important}
+  .card{padding:14px}
+  .toast{left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom));max-width:none}
+}
+/* Narrower screens: the menus without their icons, so that they fit in one row (two on a phone) */
+@media (max-width:960px){.menubar .mb-ic{display:none} .menubar .vb-ddbtn.vb-ddbtn,.menubar .mb-help.mb-help{padding:0 8px}}
+/* Phones: short names of the menus and Help as its icon only, so that the menus fit in every language */
+.mb-short{display:none}
+@media (max-width:640px){.menubar .mb-help .mb-ic{display:block;width:18px;height:18px} .menubar .mb-help > span{display:none} .menubar .mb-full{display:none} .menubar .mb-short{display:inline} .menubar .vb-ddbtn.vb-ddbtn,.menubar .mb-help.mb-help{padding:0 6px}}
+/* Touch screens: plot buttons always visible, larger handles */
+@media (hover:none){
+  .plot-tools,.pz-tools{opacity:1}
+  .plot-tools button{padding:1px 6px;font-size:11px}
+  .hgrip{height:22px}
+}
+.side-tools{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin:0 2px 8px}
+.side-tools .tool{font-size:12px;color:var(--muted);cursor:pointer;background:none;border:none;padding:0}
+.side-tools .tool:hover{color:var(--accent)}
+.card-body{margin-top:10px}
+.side .card.folded{padding-top:10px;padding-bottom:10px}
+.h2row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.h2row .tool{font-size:11.5px;color:var(--muted);cursor:pointer;background:none;border:none;padding:0}
+.h2row .tool:hover{color:var(--accent)}
+/* On wide screens, scroll the left and right columns independently */
+@media (min-width:641px){
+  body{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+  header,.menubar{flex:none}
+  .wrap{flex:1 1 auto;min-height:0;width:100%;grid-template-rows:minmax(0,1fr);padding-top:0;padding-bottom:0}
+  .side,.main{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 6px 24px 2px;
+    scrollbar-width:thin;scrollbar-color:#c9c6be transparent}
+  .side::-webkit-scrollbar,.main::-webkit-scrollbar{width:8px}
+  .side::-webkit-scrollbar-thumb,.main::-webkit-scrollbar-thumb{background:#c9c6be;border-radius:4px}
+}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.side .card+.card{margin-top:12px}
+h2{font-size:13px;margin:0 0 10px;color:var(--accent);letter-spacing:.06em;font-weight:700}
+.row{display:block;margin:9px 0}
+.row .top{align-items:center}
+.row input.num{width:84px;padding:2px 6px;border:1px solid #e3e0d8;border-radius:5px;font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:600;color:var(--blue);text-align:right;background:#fff}
+.row input.num:hover{border-color:#bdb9b0}
+.row input.num:focus{outline:none;border-color:var(--accent);background:#fff}
+.row input.num.clamped{border-color:#d9822b;background:#fff8ef}
+.row .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.row .val{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--blue);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{width:100%;padding:6px 8px;border-radius:6px;border:1px solid var(--line);font:inherit;background:#fff}
+.chk{display:flex;align-items:center;gap:7px;margin:8px 0;font-size:13px;cursor:pointer}
+.chk input{accent-color:var(--accent)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-size:13px;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.disabled{opacity:.35;pointer-events:none}
+.tex{min-height:0;overflow-x:auto;overflow-y:hidden;font-size:var(--texFs,14px)}
+/* each formula at the left (MathJax centres display formulas and gives them margins) */
+#tf-wrap .tex{display:flex;flex-direction:column;align-items:flex-start;gap:var(--texGap)}
+#tf-wrap mjx-container[display='true']{text-align:left !important;margin:0 !important}
+.main{min-width:0}
+#diagBox > svg{width:calc(100% * var(--dgw,1));height:auto;display:block;margin:0 auto}
+/* The plot selection bar stays at the top while the plots scroll */
+/* Always one row: the plot buttons scroll sideways when they do not fit, and the layout and metrics
+   choices move into a small menu (⚙) when the row is too narrow for them (class compact, set by fitViewbar) */
+/* Menu bar under the header: every menu of the page, packed from the left; on a narrow screen it wraps to a second
+   row. Its drop-down lists open over the settings panel and the plots */
+/* Menu bar: a dark tool bar under the header; each menu has a line icon, the open menu and the one whose card is in the
+   settings panel (.smenu-btn.on) are underlined in the accent colour, and the lists fade in below it */
+.menubar{--mb-bg:#1f2430;display:flex;flex-wrap:wrap;align-items:stretch;gap:2px;padding:0 12px;background:var(--mb-bg);box-shadow:0 2px 8px rgba(15,20,30,.18);position:relative;z-index:30}
+.menubar .vb-ddbtn{position:relative;height:42px;border:none;border-radius:0;background:none;padding:0 12px;gap:7px;color:#c9cdd6;font-weight:500;letter-spacing:.01em;transition:background .15s,color .15s}
+.menubar .vb-ddbtn::after{content:'';position:absolute;left:10px;right:10px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--accent);transform:scaleX(0);transition:transform .18s ease-out}
+.menubar .vb-ddbtn:hover{background:rgba(255,255,255,.07);color:#fff}
+.menubar .vb-dd.open > .vb-ddbtn{background:rgba(255,255,255,.11);color:#fff}
+.menubar .vb-dd.open > .vb-ddbtn::after,.menubar .smenu-btn.on::after{transform:scaleX(1)}
+.menubar .smenu-btn.on{color:#fff;font-weight:700}
+.menubar .vb-ddbtn:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+.menubar .vb-caret{color:#8b91a0;transition:transform .18s}
+.menubar .vb-dd.open .vb-caret{transform:rotate(180deg);color:#fff}
+.mb-ic{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.mb-ic .mb-dot{fill:var(--mb-bg)}
+.mb-ic .mb-fill{fill:currentColor}
+/* Help at the right end of the menu bar: opens the user manual */
+.mb-help{margin-left:auto;flex:none;display:flex;align-items:center;gap:7px;height:42px;border:none;border-radius:0;background:none;padding:0 12px;color:#c9cdd6;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,color .15s}
+.mb-help:hover{background:rgba(255,255,255,.07);color:#fff}
+.mb-help:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+.menubar .vb-ddlist{top:calc(100% + 6px);border:1px solid rgba(15,20,30,.08);border-radius:12px;box-shadow:0 14px 34px rgba(15,20,30,.22),0 2px 6px rgba(15,20,30,.08);padding:6px}
+.menubar .vb-dd.open .vb-ddlist{animation:mb-in .14s ease-out}
+@keyframes mb-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.menubar .vb-dd.open .vb-ddlist{animation:none}.menubar .vb-ddbtn::after,.menubar .vb-caret{transition:none}}
+.smenu-btn.on{font-weight:700}
+.menubar .vb-ddlist .tool{border:none;border-radius:6px;background:none;color:var(--ink);padding:6px 10px 6px calc(10px + 1.4em);font-size:13px}
+.menubar .vb-ddlist .tool:hover,.menubar .vb-ddlist .tool:focus-visible{background:#f2f3f5;color:var(--ink)}
+.menubar > .vb-dd{flex:none}
+.menubar .vb-ddlist{min-width:200px}
+.vb-dd{position:relative}
+.vb-ddbtn{display:flex;align-items:center;gap:6px;max-width:100%;min-width:0;border:1px solid var(--line);border-radius:16px;background:#fff;padding:4px 10px 4px 13px;cursor:pointer;font-size:13px;color:var(--ink)}
+.vb-ddbtn:hover,.vb-dd.open .vb-ddbtn{border-color:var(--ink)}
+#panelSum{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vb-caret{flex:none;color:var(--muted);font-size:11px}
+.vb-ddlist{display:none;position:absolute;left:0;top:calc(100% + 4px);z-index:31;flex-direction:column;align-items:stretch;min-width:220px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.14);padding:6px}
+.vb-dd.open .vb-ddlist{display:flex}
+.vb-ddlist .tab{border:none;border-radius:6px;background:none;color:var(--ink);text-align:left;padding:6px 10px;white-space:nowrap}
+.vb-ddlist .tab::before{content:"";display:inline-block;width:1.4em;color:var(--accent)}
+.vb-ddlist .tab.on{background:none;color:var(--ink)}
+.vb-ddlist .tab.on::before{content:"✓";color:var(--accent)}
+.vb-ddlist .tab:hover,.vb-ddlist .tab:focus-visible{background:#f2f3f5}
+.vb-ddsep{height:1px;background:var(--line);margin:4px 2px}
+/* single choice (the layout of the plots): a check on the chosen item; the list opens towards the left */
+.vb-opt{border:none;border-radius:6px;background:none;color:var(--ink);text-align:left;padding:6px 10px;white-space:nowrap;cursor:pointer;font-size:13px}
+.vb-opt::before{content:"";display:inline-block;width:1.4em;color:var(--accent)}
+.vb-opt[aria-checked='true']::before{content:"✓"}
+.vb-opt:hover,.vb-opt:focus-visible{background:#f2f3f5;outline:none}
+.vb-ddlist .tool{text-align:left;padding:4px 10px 4px calc(10px + 1.4em);font-size:12.5px}
+.tab{border:1px solid var(--line);border-radius:16px;background:#fff;padding:5px 13px;cursor:pointer;font-size:13px}
+.tab::before{content:"＋ ";color:var(--muted)}
+.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab.on::before{content:"✓ ";color:#fff}
+.panels{display:grid;gap:12px;grid-template-columns:repeat(var(--pcols,1),minmax(0,1fr));align-items:start}
+/* Preset layouts: the block diagram on top across the whole width */
+.panels:not(.free) > #panel-diag{grid-column:1/-1}
+@media (max-width:920px){.panels{grid-template-columns:minmax(0,1fr)}}
+canvas{width:100%;display:block}
+.cv-main{height:290px}.cv-u{height:170px}.cv-bode{height:220px}.cv-nyq{height:440px}
+.metrics{--ms:1;display:grid;grid-template-columns:repeat(var(--mcols,3),minmax(0,1fr));gap:calc(8px*var(--ms));margin-top:12px}
+/* The number of columns comes from the number of cards (--mcols, set by drawTime), so the rows stay the same
+   when the width changes; two columns only in a very narrow panel */
+.tabpanel{container:panel / inline-size}
+/* Free layout: columns side by side, each stacking its panels; the boundaries change the widths */
+.panels{position:relative}
+.panels.free{display:flex;gap:0;align-items:flex-start}
+.pcol{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:12px}
+.pcol-grip{flex:none;width:12px;align-self:stretch;cursor:col-resize;position:relative;outline:none}
+.pcol-grip::after{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;border-radius:1px}
+.pcol-grip:hover::after,.pcol-grip:focus-visible::after,.pcol-grip.drag::after{background:var(--accent)}
+/* Rows: each row holds its panels side by side, with its own number of them */
+.panels.rows{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+/* the panels of a row are as tall as the tallest one (the room is left below their content) */
+.prow{display:flex;align-items:stretch;gap:0}
+.prow > .tabpanel{flex:1 1 0;min-width:0}
+.prow-grip{flex:none;width:12px;align-self:stretch;cursor:col-resize;position:relative;outline:none}
+.prow-grip::after{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;border-radius:1px}
+.prow-grip:hover::after,.prow-grip:focus-visible::after,.prow-grip.drag::after{background:var(--accent)}
+.pmove{flex:none;align-self:center;border:none;background:none;padding:0 4px 0 0;margin-left:-4px;font-size:15px;line-height:1;color:#b9b4ab;cursor:grab;touch-action:none}
+.pmove:hover,.pmove:focus-visible{color:var(--accent)}
+/* × at the right end of the title: hides the panel (not available for the last one shown) */
+.pclose{flex:none;align-self:center;border:none;background:none;padding:0 2px;margin-right:-4px;font-size:18px;line-height:1;color:#b9b4ab;cursor:pointer}
+.pclose:hover,.pclose:focus-visible{color:var(--accent)}
+.pclose:disabled{opacity:.35;cursor:default;color:#b9b4ab}
+.tabpanel .h2row{justify-content:flex-start}
+.tabpanel .h2row h2{flex:1;cursor:grab}
+.tabpanel.dragging{opacity:.45}
+/* Bottom edge of a plot panel: changes the heights of its plots in the same ratio */
+.tabpanel{position:relative}
+/* Tabs of the time response area: response metrics or simulation time */
+.tinfo{margin-top:12px}
+.ptabs{margin:0 0 8px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{flex:1 0 auto;min-width:72px;padding:6px 10px;overflow:visible;text-overflow:clip}
+/* both sections in the same place: the area keeps the height of the taller one, so switching does not move
+   what is below */
+.tsecs{display:grid}
+.tsec{grid-area:1 / 1;min-width:0}
+.tsec.off{visibility:hidden}
+.pgrip{position:absolute;left:16px;right:16px;bottom:-10px;height:10px;cursor:row-resize;touch-action:none;z-index:3;outline:none}
+.pgrip::after{content:'';position:absolute;left:0;right:0;top:4px;height:2px;border-radius:1px}
+.pgrip:hover::after,.pgrip:focus-visible::after,.pgrip.drag::after{background:var(--accent)}
+body.pdrag,body.pdrag *{cursor:grabbing !important;user-select:none}
+.pdrop{display:none;position:absolute;z-index:20;background:var(--accent);border-radius:2px;pointer-events:none}
+@media (max-width:920px){
+  .panels.free{flex-direction:column;align-items:stretch;gap:12px}
+  .pcol{flex:none !important;width:100%}
+  .pcol-grip,.pmove{display:none}
+  .prow{flex-direction:column;align-items:stretch;gap:12px}
+  .prow > .tabpanel{flex:none !important;width:100%}
+  .prow-grip{display:none}
+  .tabpanel .h2row h2{cursor:auto}
+}
+@container panel (max-width:380px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.m{min-width:0;background:var(--bg);border-radius:calc(8px*var(--ms));padding:calc(8px*var(--ms)) calc(10px*var(--ms))}
+.m .k{font-size:calc(11.5px*var(--ms));color:var(--muted)}
+.m .v{font-family:"JetBrains Mono",monospace;font-size:calc(17px*var(--ms));font-weight:600;margin-top:2px}
+.banner{display:none;margin-top:10px;padding:8px 12px;border-radius:8px;background:#fdecea;color:var(--accent);font-weight:700}
+.note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+/* Frequency range of the Bode plot: two numbers and a button back to the automatic range */
+.wr-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:12px}
+.wr-row input{width:92px;font:inherit;font-family:"JetBrains Mono",monospace;padding:2px 4px}
+.wr-row .wr-state{color:var(--muted)}
+.legend-ghost{font-size:12px;color:var(--muted);margin-top:6px}
+/* Transfer functions panel: P(s) above C(s) (and C_r(s)) in one column at every width, so that their equals signs
+   line up; the same space between all formulas, in proportion to their size */
+.main{container-type:inline-size}
+#tf-wrap{--texGap:calc(var(--texFs,14px) * 1.1);display:grid;grid-template-columns:1fr;gap:var(--texGap);padding:calc(var(--texGap) / 2) 0}
+.dg-left{min-width:0}
+/* On a wide right column the diagram keeps the size it had beside the formulas (63 % of the width); the handle
+   makes it larger */
+@container (min-width:860px){#diagBox:not(.sized) > svg{width:calc(63% * var(--dgw,1))}}
+.dg-left{position:relative}
+/* Zoom buttons of the block diagram, like those of the plots (21-diagram-zoom.ts) */
+.dg-tools{top:4px;left:4px;z-index:2}
+.dg-left:hover > .dg-tools{opacity:1}
+#diagBox.zoomed svg{cursor:grab}
+#diagBox.panning svg{cursor:grabbing}
+.tfin{margin-top:10px}
+.tfin .lbl{display:block;font-size:13px;margin:8px 0 3px}
+.tfin input[type=text]{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font-family:"JetBrains Mono",monospace;font-size:13px}
+.tfin input[type=text].bad{border-color:var(--accent);background:#fff6f5}
+.tfin input[type=text]:focus{outline:2px solid #c6282833;border-color:var(--accent)}
+.err{color:var(--accent);font-size:12px;min-height:16px;margin-top:5px;line-height:1.5}
+.ex{font-size:12px;color:var(--muted);margin-top:4px}
+.chip{padding:3px 8px;font-size:12px;margin:3px 4px 0 0;border-radius:12px}
+.poles{font-family:"JetBrains Mono",monospace;font-size:12px;background:var(--bg);border-radius:6px;padding:7px 9px;margin-top:8px;line-height:1.6;word-break:break-word}
+.poles b{font-family:"Noto Sans JP",sans-serif}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+.hint code{font-family:"JetBrains Mono",monospace;background:var(--bg);padding:0 3px;border-radius:3px}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}

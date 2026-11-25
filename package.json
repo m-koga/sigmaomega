@@ -1,0 +1,36 @@
+{
+  "name": "control-sim",
+  "private": true,
+  "description": "SigmaOmega — Feedback Control Simulator",
+  "author": "Masanobu Koga",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.ts",
+    "check": "node scripts/build.ts --check",
+    "typecheck": "tsc -p . && node scripts/gen-app-api.ts && tsc -p tsconfig.node.json",
+    "format": "prettier --write \"src/ts/*.ts\" scripts tests ui playwright.config.ts",
+    "format:check": "prettier --check \"src/ts/*.ts\" scripts tests ui playwright.config.ts",
+    "test": "node scripts/build.ts && npm run typecheck && node --test \"tests/*.test.ts\"",
+    "test:watch": "node --test --watch \"tests/*.test.ts\"",
+    "test:ui": "playwright test",
+    "test:all": "npm test && npm run test:ui",
+    "docs": "node scripts/build.ts && node scripts/gen-docs.ts",
+    "coverage": "node scripts/coverage.ts",
+    "pixcmp": "node scripts/pixcmp.ts",
+    "edits": "node scripts/publish-edits.ts",
+    "shots": "node scripts/help-shots.ts",
+    "icon": "node scripts/icon-png.ts",
+    "pages": "node scripts/pages.ts"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "mathjax": "^3.2.2",
+    "prettier": "^3.10.1",
+    "typescript": "^7.0.2"
+  }
+}

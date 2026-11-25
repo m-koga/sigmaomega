@@ -1,0 +1,5 @@
+# generated files
+src/ts/element-ids.d.ts
+tests/app-api.d.ts
+index.html
+coverage/

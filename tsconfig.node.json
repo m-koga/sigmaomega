@@ -1,0 +1,21 @@
+{
+  // Type checking of the build scripts and the tests (npm run typecheck). They are ES modules run by Node.js
+  // directly (Node removes the types). src/ts is included so that tests/app-api.d.ts can refer to the
+  // types of the page script, which tests/harness.ts gives the tests.
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "types": ["node"],
+    "module": "nodenext",
+    "moduleDetection": "legacy",   // files without import/export (src/ts) stay classic scripts
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true
+  },
+  "include": ["scripts/*.ts", "tests/*.ts", "ui/*.ts", "playwright.config.ts", "src/ts/*.ts"]
+}

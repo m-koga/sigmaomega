@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 Masanobu Koga
+/* ================= Internationalization =================
+   UI strings are written in English and translated into Japanese, Chinese, Korean, and Thai
+   through the dictionary I18N (keys are the English strings).
+   T(english, {vars}) returns the string in the current language; strings missing from the dictionary stay in English. */
+// prettier-ignore
+export const I18N: I18nDict = /*@@I18N@@*/{}; // the build puts the dictionary (src/i18n.json) here
+/** Display language and the matching lang attribute of the page */
+export type Lang = 'ja' | 'en' | 'zh' | 'ko' | 'th';
+export const LANGS: Record<Lang, string> = { ja: 'ja', en: 'en', zh: 'zh-Hans', ko: 'ko', th: 'th' };
+export const isLang = (x: unknown): x is Lang =>
+  typeof x === 'string' && Object.prototype.hasOwnProperty.call(LANGS, x);
+// Default language: the saved choice if any; otherwise the browser language (English if not supported)
+export function detectLang(): Lang {
+  const list = (
+    navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']
+  ).map(x => String(x).toLowerCase());
+  for (const x of list) {
+    const p = x.split('-')[0];
+    if (isLang(p)) return p;
+  }
+  return 'en';
+}
+export let LANG: Lang = 'en';
+// Change the display language (the page is updated by setLang in 17-events-layout.ts)
+export function setLangCode(l: Lang) {
+  LANG = l;
+}
+try {
+  const sv = localStorage.getItem('ctrlsim-lang');
+  LANG = isLang(sv) ? sv : detectLang();
+} catch (e) {
+  LANG = detectLang();
+}
+export function T(k: string, v?: TVars): string {
+  let s = k;
+  if (LANG !== 'en') {
+    const e = I18N[k];
+    const t = e && e[LANG];
+    if (t) s = t;
+  }
+  if (v) s = s.replace(/\{(\w+)\}/g, (m, n) => (n in v ? String(v[n]) : m));
+  return s;
+}
+export const PLANT_FMT =
+    'Write polynomials in \\(s\\) such as <code>2*s + 1</code> or <code>(s+1)^2(0.5s+1)</code> (* may be omitted; ^ takes integers 0–20). Coefficient vectors in descending powers such as <code>[1 3 2]</code> are also accepted. The numerator degree must be less than the denominator degree (strictly proper); the denominator may be up to degree 10.',
+  CTRL_FMT =
+    '\\(C(s)=N_c(s)/D_c(s)\\). Same syntax as the plant. The numerator degree must not exceed the denominator degree (proper). An ideal derivative \\(K_D s\\) cannot be written; add a filter such as \\(K_D s/(\\tau s+1)\\). Anti-windup and PI-D are available only for P/PI/PD/PID.';
+export const TXT_COLLAPSED = '"{name}" is hidden — drag down to show (double-click to reset)',
+  TXT_TIP = 'Drag to resize (going below the minimum hides it). Double-click to reset';
+export const TXT_BODE_UNSTABLE =
+    'Note: the open-loop transfer function (plant or controller) has poles in the right half-plane, so gain and phase margins alone cannot determine closed-loop stability. Check the Nyquist criterion (the number of counterclockwise encirclements of −1).',
+  TXT_BODE_RANGE =
+    'Gain and phase margins are found at the first crossover within 10^{a}–10^{b} rad/s (a range chosen automatically from the poles, zeros, and simulation time).';
+export const TXT_PZ1 =
+    'Closed-loop poles are the roots of the characteristic equation \\(D_P D_C + N_P N_C = 0\\) (\\(P=N_P/D_P,\\ C=N_C/D_C\\)).',
+  TXT_PZ2 =
+    ' The dead time \\(e^{-{L}s}\\) is replaced by a third-order Padé approximation, so the closed-loop poles are approximate (the actual system has infinitely many poles).',
+  TXT_PZ3 = ' Saturation is nonlinear and is not included in the pole calculation.';
+// Record the source (English) text of static strings (data-i18n / data-i18n-title)
+export const I18N_EL: [HTMLElement, 'html' | 'title', string][] = [];
+// innerHTML serializes "&" as "&amp;"; convert it back to match the dictionary keys
+document
+  .querySelectorAll<HTMLElement>('[data-i18n]')
+  .forEach(el => I18N_EL.push([el, 'html', el.innerHTML.replace(/&amp;/g, '&')]));
+document
+  .querySelectorAll<HTMLElement>('[data-i18n-title]')
+  .forEach(el => I18N_EL.push([el, 'title', el.getAttribute('title') ?? '']));
+// An element made by the script whose text is translated now and when the language changes
+export function i18nText(el: HTMLElement, key: string) {
+  I18N_EL.push([el, 'html', key]);
+  el.innerHTML = T(key);
+}
+// The same for the tooltip (title) of an element made by the script
+export function i18nTitle(el: HTMLElement, key: string) {
+  I18N_EL.push([el, 'title', key]);
+  el.title = T(key);
+}
+export function applyStaticI18n() {
+  I18N_EL.forEach(([el, kind, key]) => {
+    if (kind === 'html') el.innerHTML = T(key);
+    else el.setAttribute('title', T(key));
+  });
+  document.documentElement.lang = LANGS[LANG];
+  const hp = document.querySelector<HTMLElement>('header p');
+  if (hp && hp.textContent) hp.title = hp.textContent; // full description on hover
+  document.documentElement.style.setProperty('--t-shown', JSON.stringify(T('Shown ▾')));
+  document.documentElement.style.setProperty('--t-hidden', JSON.stringify(T('Hidden ▸')));
+  // the name SigmaOmega is not translated; the subtitle is
+  document.title = `SigmaOmega — ${T('Feedback Control Simulator')}`;
+}
+export const UIFONT = () =>
+  LANG === 'zh'
+    ? '"Noto Sans SC","Noto Sans JP",sans-serif'
+    : LANG === 'ko'
+      ? '"Noto Sans KR","Noto Sans JP",sans-serif'
+      : LANG === 'th'
+        ? '"Noto Sans Thai","Noto Sans JP",sans-serif'
+        : '"Noto Sans JP",sans-serif';

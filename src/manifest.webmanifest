@@ -1,0 +1,16 @@
+{
+  "name": "SigmaOmega — Feedback Control Simulator",
+  "short_name": "SigmaOmega",
+  "description": "Explore the time response, frequency response, and pole-zero map of feedback control systems interactively",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f5f2",
+  "theme_color": "#1f2430",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

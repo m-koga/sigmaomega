@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<!-- SPDX-License-Identifier: Apache-2.0. Copyright 2026 Masanobu Koga -->
+<!-- SigmaOmega icon: sigma and omega on the axes of the s-plane (s = sigma + j omega).
+     Drawn with strokes only (no font), so it looks the same everywhere; edit here, the build puts it into the page -->
+<defs><linearGradient id="so-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3142"/><stop offset="1" stop-color="#171b25"/></linearGradient></defs>
+<rect width="64" height="64" rx="14" fill="url(#so-bg)"/>
+<path d="M8 47H56M32.5 11V51" stroke="#59627a" stroke-width="1.8" stroke-linecap="round"/>
+<g fill="none" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+<circle cx="17" cy="34.5" r="6.8" stroke="#fff"/><path d="M17 27.7H28.6" stroke="#fff"/>
+<path d="M37 26.5Q37 41 41.5 41Q46 41 46 32.59Q46 41 50.5 41Q55 41 55 26.5" stroke="#e53935"/>
+</g>
+</svg>
