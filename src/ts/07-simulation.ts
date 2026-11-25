@@ -113,67 +113,110 @@ export function crossoverHigh(tf: TF, st: State = S): number {
   }
   return wh;
 }
-export function simulate(st: State = S) {
-  const tf = PLANTS[st.plant].tf(st);
-  const NS = 4000,
-    dt = st.Tsim / NS;
-  // NS recorded points; the controller is also updated between them (substeps, at most 100).
-  // Holding the controller output over a step h acts like a delay of h/2, so h is chosen to keep ω·h ≤ 0.02
-  // (phase error ≤ 0.6°) at the gain crossover and at the frequency of a periodic reference.
+// Time steps: NS recorded points, and m substeps of length h between them (the controller is updated at every
+// substep). Holding the controller output over a step h acts like a delay of h/2, so h is chosen to keep ω·h ≤ 0.02
+// (phase error ≤ 0.6°) at the gain crossover and at the frequency of a periodic reference; m is at most 100.
+const SIM_POINTS = 4000;
+function simSteps(tf: TF, st: State): { dt: number; m: number; h: number } {
+  const dt = st.Tsim / SIM_POINTS;
   const wh = crossoverHigh(tf, st),
     wr = st.refType === 'sine' || st.refType === 'square' ? (2 * Math.PI) / st.rPer : 0;
-  const m = Math.max(1, Math.min(100, Math.ceil((dt * Math.max(wh, wr)) / 0.02))),
-    h = dt / m;
-  const ps = discretize(makeSS(tf.num, tf.den), h);
+  const m = Math.max(1, Math.min(100, Math.ceil((dt * Math.max(wh, wr)) / 0.02)));
+  return { dt, m, h: dt / m };
+}
+/** The controller during a simulation: out() gives its output before saturation for the reference r and the
+ * measured output ym; step() advances its state by one substep, given the output after saturation u */
+interface SimController {
+  out(r: number, ym: number): number;
+  step(r: number, ym: number, ur: number, u: number): void;
+}
+function simController(st: State, h: number): SimController {
+  // a controller entered as a transfer function: its discretized state space, driven by the error
   const cr = isTFMode(st) ? ctrlRational(st) : null;
-  const cs = cr ? discretize(makeSS(cr.num, cr.den), h) : null;
-  const dsteps = Math.round(tf.L / h);
-  const buf = new Array(dsteps).fill(0);
-  let bi = 0;
-  const useP = hasTerm(st, 'P'),
-    useI = hasTerm(st, 'I'),
-    useD = hasTerm(st, 'D');
-  const kp = useP ? st.Kp : 0,
-    ki = useI ? st.Ki : 0,
+  if (cr) {
+    const cs = discretize(makeSS(cr.num, cr.den), h);
+    let xc: number[] = new Array(cs.n).fill(0);
+    return {
+      out: (r, ym) => ssOut(cs, xc, r - ym),
+      step: (r, ym) => {
+        xc = ssStepD(cs, xc, r - ym);
+      },
+    };
+  }
+  // PID (and its P, PI, PD forms) with set-point weights b, c, a first-order filter N on the derivative, and
+  // conditional integration (anti-windup) while the actuator saturates
+  const useD = hasTerm(st, 'D');
+  const kp = hasTerm(st, 'P') ? st.Kp : 0,
+    ki = hasTerm(st, 'I') ? st.Ki : 0,
     kd = useD ? st.Kd : 0;
   const { b: wb, c: wc } = spWeights(st);
   const alpha = 1 - Math.exp(-st.N * h);
-  const rnd = mulberry32(12345);
-  const gauss = () => {
-    let u1 = rnd() || 1e-12,
-      u2 = rnd();
-    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  let xi = 0, // integral of the error
+    xf = 0; // filtered derivative signal
+  return {
+    out: (r, ym) => {
+      const D = useD ? kd * st.N * (wc * r - ym - xf) : 0;
+      return kp * (wb * r - ym) + ki * xi + D;
+    },
+    step: (r, ym, ur, u) => {
+      const e = r - ym;
+      if (!(st.sat && st.aw && ur !== u && Math.sign(e) === Math.sign(ur))) xi += e * h;
+      xf += alpha * (wc * r - ym - xf);
+    },
   };
-  let x = new Array(ps.n).fill(0),
-    xc: number[] = cs ? new Array(cs.n).fill(0) : [],
-    xi = 0,
-    xf = 0,
+}
+// Dead time of n substeps: a ring buffer that returns the input of n calls before (zero at first)
+function delayLine(n: number): (u: number) => number {
+  if (n <= 0) return u => u;
+  const buf: number[] = new Array(n).fill(0);
+  let k = 0;
+  return u => {
+    const out = buf[k];
+    buf[k] = u;
+    k = (k + 1) % n;
+    return out;
+  };
+}
+// Measurement noise: normal with standard deviation st.noise, from a fixed seed (the same settings give the same
+// noise every time); zero without drawing numbers when there is no noise
+function noiseSource(st: State): () => number {
+  if (!(st.noise > 0)) return () => 0;
+  const rnd = mulberry32(12345);
+  return () => {
+    const u1 = rnd() || 1e-12,
+      u2 = rnd();
+    return st.noise * (Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2));
+  };
+}
+// The closed-loop response: reference r → controller → (saturation) → dead time → (+ disturbance) → plant → y,
+// with the measurement noise added to y in the feedback. Stops when the response diverges.
+export function simulate(st: State = S) {
+  const tf = PLANTS[st.plant].tf(st);
+  const NS = SIM_POINTS,
+    { dt, m, h } = simSteps(tf, st);
+  const ps = discretize(makeSS(tf.num, tf.den), h);
+  const ctrl = simController(st, h),
+    delay = delayLine(Math.round(tf.L / h)),
+    noise = noiseSource(st);
+  let x: number[] = new Array(ps.n).fill(0),
     iae = 0,
     diverged = false;
   const T: number[] = [],
     R: number[] = [],
     Y: number[] = [],
     U: number[] = [];
+  // the response counts as diverged beyond 1000 times the size of the reference and the disturbance
   let rAbs = 0;
   for (let i = 0; i <= NS; i += 4) rAbs = Math.max(rAbs, Math.abs(refValue(i * dt, st)));
   const lim = 1e3 * (rAbs + Math.abs(st.dOn ? st.d : 0) + 1);
   outer: for (let i = 0; i <= NS; i++) {
-    const nz = st.noise > 0 ? st.noise * gauss() : 0; // Measurement noise is held constant over each recorded step
+    const nz = noise(); // held over each recorded step
     for (let q = 0; q < m; q++) {
       const t = i * dt + q * h;
       const y = ssOut(ps, x, 0);
       const ym = y + nz;
-      const r = refValue(t, st),
-        e = r - ym;
-      let ur: number,
-        sD = 0;
-      if (cs) {
-        ur = ssOut(cs, xc, e);
-      } else {
-        sD = wc * r - ym;
-        const D = useD ? kd * st.N * (sD - xf) : 0;
-        ur = kp * (wb * r - ym) + ki * xi + D;
-      }
+      const r = refValue(t, st);
+      const ur = ctrl.out(r, ym);
       const u = st.sat ? Math.max(-st.umax, Math.min(st.umax, ur)) : ur;
       if (q === 0) {
         T.push(t);
@@ -187,21 +230,8 @@ export function simulate(st: State = S) {
         if (i === NS) break outer;
       }
       iae += Math.abs(r - y) * h;
-      if (cs) {
-        xc = ssStepD(cs, xc, e);
-      } else {
-        let integ = true;
-        if (st.sat && st.aw && ur !== u && Math.sign(e) === Math.sign(ur)) integ = false;
-        if (integ) xi += e * h;
-        xf += alpha * (sD - xf);
-      }
-      let ud: number;
-      if (dsteps > 0) {
-        ud = buf[bi];
-        buf[bi] = u;
-        bi = (bi + 1) % dsteps;
-      } else ud = u;
-      const up = ud + (st.dOn && t >= st.td ? st.d : 0);
+      ctrl.step(r, ym, ur, u);
+      const up = delay(u) + (st.dOn && t >= st.td ? st.d : 0);
       x = ssStepD(ps, x, up);
     }
   }

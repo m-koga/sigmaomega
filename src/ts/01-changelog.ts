@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.73.7',
+    d: '2026-11-25',
+    en: [
+      'Development: the parser of transfer functions is split into its steps (normalizing the input, the coefficient vector, the tokens, and the grammar, which is written out in a comment), and the simulation into the choice of the time step, the controller (PID or transfer function, with its state), the dead time and the noise, so that the main loop shows only the signal flow; results are unchanged (pixel comparison identical)',
+    ],
+    ja: [
+      '開発：伝達関数の構文解析を段階ごと（入力の正規化、係数ベクトル、字句、文法。文法はコメントに明記）に、シミュレーションを時間刻みの決定・制御器（PID か伝達関数と、その状態）・むだ時間・ノイズに分け、主ループには信号の流れだけが見えるようにした。結果は変わらない（ピクセル比較で一致）',
+    ],
+  },
+  {
     v: '1.73.6',
     d: '2026-11-25',
     en: [

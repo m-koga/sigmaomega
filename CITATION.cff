@@ -11,7 +11,7 @@ authors:
   - family-names: Koga
     given-names: Masanobu
     affiliation: Kyushu Institute of Technology
-version: 1.73.6
+version: 1.73.7
 date-released: 2026-11-25
 license: Apache-2.0
 repository-code: "https://github.com/m-koga/sigmaomega"

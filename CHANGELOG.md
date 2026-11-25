@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.73.7 (2026-11-25)
+- Development: the parser of transfer functions is split into its steps (normalizing the input, the coefficient vector, the tokens, and the grammar, which is written out in a comment), and the simulation into the choice of the time step, the controller (PID or transfer function, with its state), the dead time and the noise, so that the main loop shows only the signal flow; results are unchanged (pixel comparison identical)
+
 ## v1.73.6 (2026-11-25)
 - Development: the coverage report counts the browser tests again (they had counted as 0% since the page script was compacted); together the tests run 98.9% of the lines and 1009 of 1018 functions
 - Development: the edits for publishing leave an unchanged <title> line out, which edit_version refuses to touch

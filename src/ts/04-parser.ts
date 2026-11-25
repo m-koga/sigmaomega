@@ -23,9 +23,9 @@ export function trimPoly(desc: Poly): Poly {
   while (i < desc.length - 1 && Math.abs(desc[i]) < 1e-14) i++;
   return desc.slice(i);
 }
-// Returns coefficients in descending powers
-export function parsePoly(str: string): Poly {
-  str = str
+// Full-width and look-alike characters typed with a Japanese keyboard, ** for powers and a capital S, made plain
+function normalizeExpr(str: string): string {
+  return str
     .trim()
     .replace(/\*\*/g, '^')
     .replace(/[−–ー]/g, '-')
@@ -35,16 +35,19 @@ export function parsePoly(str: string): Poly {
     .replace(/（/g, '(')
     .replace(/）/g, ')')
     .replace(/＋/g, '+');
-  if (!str) throw new Error(T('The expression is empty'));
-  if (/^\[.*\]$/.test(str)) {
-    const v = str
-      .slice(1, -1)
-      .split(/[\s,;]+/)
-      .filter(x => x)
-      .map(Number);
-    if (!v.length || v.some(x => !isFinite(x))) throw new Error(T('Cannot read the coefficient vector as numbers'));
-    return trimPoly(v);
-  }
+}
+// A coefficient vector in descending powers, such as [1 3 2] or [1, 3, 2]
+function parseCoefVector(str: string): Poly {
+  const v = str
+    .slice(1, -1)
+    .split(/[\s,;]+/)
+    .filter(x => x)
+    .map(Number);
+  if (!v.length || v.some(x => !isFinite(x))) throw new Error(T('Cannot read the coefficient vector as numbers'));
+  return trimPoly(v);
+}
+// Tokens: numbers (also 1e-3 and .5), the variable s, operators and parentheses; spaces are skipped
+function tokenizeExpr(str: string): string[] {
   const toks: string[] = [];
   const re = /(\d+\.?\d*(?:e[+-]?\d+)?|\.\d+(?:e[+-]?\d+)?|s|[-+*/^()])/y;
   let pos = 0;
@@ -62,6 +65,15 @@ export function parsePoly(str: string): Poly {
     toks.push(m[1]);
     pos = re.lastIndex;
   }
+  return toks;
+}
+// Recursive descent over the tokens; polynomials are kept in ascending powers while parsing
+//   expr = term (('+' | '-') term)*
+//   term = unary (('*' | '/') unary | power)*  (a product may leave out '*': 2s, (s+1)(s+2))
+//   unary = ('-' | '+') unary | power
+//   power = primary ('^' primary)?  (integer exponent 0..20)
+//   primary = 's' | number | '(' expr ')'
+function parseTokens(toks: string[]): Poly {
   let i = 0;
   const peek = () => toks[i],
     next = () => toks[i++];
@@ -136,6 +148,13 @@ export function parsePoly(str: string): Poly {
   const r = expr();
   if (i < toks.length) throw new Error(T('"{t}" is in an invalid position', { t: toks[i] }));
   return trimPoly(r.slice().reverse());
+}
+// A polynomial in s typed by the user, or a coefficient vector; returns coefficients in descending powers
+export function parsePoly(input: string): Poly {
+  const str = normalizeExpr(input);
+  if (!str) throw new Error(T('The expression is empty'));
+  if (/^\[.*\]$/.test(str)) return parseCoefVector(str);
+  return parseTokens(tokenizeExpr(str));
 }
 // Roots by the Durand–Kerner method (coefficients in descending powers)
 export function polyRoots(desc: Poly, init?: Complex[]): Complex[] {
