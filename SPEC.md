@@ -15,7 +15,7 @@ SigmaOmega (Feedback Control Simulator) is teaching software for control enginee
 | Purpose | Let students try the analysis and design of feedback control systems, based on block diagrams, in lectures and exercises |
 | Main users | Students of control engineering; teachers showing examples in lectures |
 | How it is used | Open one HTML file (`index.html`) in a browser. No server-side computation or sign-in |
-| Publication | A claude.ai artifact (shared within the organization); source on GitHub. For a GitHub Pages site, `npm run pages` writes the page with a web app manifest and its icons (192×192, 512×512 and a maskable 512×512), so that the site can be installed as an app |
+| Publication | A claude.ai artifact (shared within the organization); source on GitHub (`m-koga/sigmaomega`). A version tag pushed by the maintainer makes a GitHub release with `index.html` and the site as a zip file, and deploys the site to GitHub Pages when Pages is set to GitHub Actions (`.github/workflows/release.yml`); `CITATION.cff` gives the reference. For the GitHub Pages site, `npm run pages` writes the page with a web app manifest and its icons (192×192, 512×512 and a maskable 512×512), so that the site can be installed as an app |
 | Systems covered | Single-input single-output linear time-invariant systems (dead time included) in a single feedback loop |
 
 Terms: P(s) is the plant, C(s) the controller, L(s) = C(s)P(s) the open-loop transfer function, S = 1/(1+L) the sensitivity function and T = L/(1+L) the complementary sensitivity function. A "panel" is a frame that shows one plot, a "card" is a group of inputs in the settings panel, and a "scenario" is a named copy of all the settings.

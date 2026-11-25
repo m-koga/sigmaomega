@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { load } from './harness.ts';
-import { generate } from '../scripts/gen-docs.ts';
+import { generate, releaseNotes } from '../scripts/gen-docs.ts';
 
 const { api, html } = load();
 const cmp = (a: string, b: string) => {
@@ -46,4 +46,27 @@ test('CHANGELOG.md (English) and CHANGELOG.ja.md (Japanese) are up to date (gene
     assert.ok(fs.existsSync(file), `${name} is missing (run npm run docs)`);
     assert.equal(fs.readFileSync(file, 'utf8'), text, `${name} is out of date (run npm run docs)`);
   }
+});
+
+test('release notes (for the GitHub release) give the items of a version in English and Japanese', () => {
+  const cl = load().api.CHANGELOG as { v: string; d: string; en: string[]; ja: string[] }[];
+  const notes = releaseNotes(),
+    e = cl[0];
+  assert.ok(notes.startsWith(`SigmaOmega — Feedback Control Simulator v${e.v} (${e.d})\n`));
+  for (const i of [...e.en, ...e.ja]) assert.ok(notes.includes(`- ${i}\n`), i);
+  assert.ok(notes.includes(`sigmaomega-site-v${e.v}.zip`));
+  // an older version by number, with or without "v"; an unknown one is refused
+  const old = cl[3];
+  assert.ok(releaseNotes(`v${old.v}`).includes(`- ${old.en[0]}\n`));
+  assert.equal(releaseNotes(old.v), releaseNotes(`v${old.v}`));
+  assert.throws(() => releaseNotes('0.0.0'), /not in the change log/);
+});
+
+test('CITATION.cff has the version and date of the newest entry and the license of package.json', () => {
+  const cff = fs.readFileSync(path.join(import.meta.dirname, '..', 'CITATION.cff'), 'utf8'),
+    e = (load().api.CHANGELOG as { v: string; d: string }[])[0];
+  assert.match(cff, new RegExp(`^version: ${e.v.replace(/\./g, '\\.')}$`, 'm'));
+  assert.match(cff, new RegExp(`^date-released: ${e.d}$`, 'm'));
+  assert.match(cff, /^license: Apache-2\.0$/m);
+  assert.match(cff, /^cff-version: 1\.2\.0$/m);
 });

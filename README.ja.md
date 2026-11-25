@@ -33,7 +33,17 @@ SigmaOmega は、ブラウザで動くフィードバック制御系のシミュ
 
 ## 使い方
 
-`index.html` をブラウザで開きます。
+SigmaOmega は次の 3 つの方法で使えます。
+
+- **オンライン**：<https://m-koga.github.io/sigmaomega/>（GitHub Pages を有効にした後）。スマートフォンやパソコンでは、アプリとしてインストールできます（ホーム画面に追加、またはブラウザのメニューの「インストール」）。
+- **ダウンロード**：各[リリース](https://github.com/m-koga/sigmaomega/releases)に、シミュレーター全体を 1 ファイルにした `index.html` があります。保存してブラウザで開きます。`sigmaomega-site-vX.Y.Z.zip` は、自分のサーバーに置くためのサイト一式（ページ、マニフェスト、アイコン）です。
+- **ソースから**：`npm ci && npm run build` の後、`index.html` を開きます。
+
+ページはフォントと数式表示（MathJax）をインターネットから読み込みます。接続がなくても動きますが、フォントはパソコンのものになり、数式は TeX の書き方のまま表示されます。
+
+### SigmaOmega の引用
+
+文献として引用するときは [CITATION.cff](CITATION.cff) を使ってください（GitHub では *Cite this repository* として表示されます）。リリースごとの版番号と日付で生成しています。
 
 仕様（画面、機能、計算方式、非機能要件、開発とテスト）は [SPEC.ja.md](SPEC.ja.md)（[English](SPEC.md)）にまとめています。書かれている動作を変えたときは、両方の言語の仕様書も更新してください。
 
@@ -122,7 +132,7 @@ npm run coverage -- --unit  # 単体テストだけ（ブラウザ不要）
 テストを実行しながら `src/ts/*.ts` のどの部分が実行されたかを記録し、ファイルごとの表を表示します。表には、単体テスト・ブラウザのテスト・両方を合わせたときに実行されたコードの文字数の割合と、行・関数の割合が出ます。一度も実行されなかった関数は `coverage/uncovered.txt` に、一度も実行されなかった行は `coverage/uncovered-lines.txt` に一覧が出ます（数値は `coverage/summary.json`）。版 1.46.16 では、テスト全体でコードの文字数の約 97%、行の 98%、724 個中 720 個の関数が実行されます。残りの 4 つは、MathJax やファイルの読み込みに失敗したときの処理です。
 
 機能を追加・変更したら `npm test`（画面に関わる変更では `npm run test:ui` も）を実行し、すべて成功することを確かめてから公開します。
-GitHub に push すると、GitHub Actions（`.github/workflows/test.yml`）でも同じテストが自動で実行されます。結果はリポジトリの「Actions」タブで確認できます。
+GitHub に push すると、GitHub Actions（`.github/workflows/test.yml`）でも同じテストが自動で実行されます（版のタグを push するとリリースも始まります。`.github/workflows/release.yml`。「版の管理と更新履歴」を参照）。結果はリポジトリの「Actions」タブで確認できます。
 
 ## 開発（ソースファイルとビルド）
 
@@ -231,9 +241,10 @@ layout（大きさ、図、折りたたみ） ──▶ applyLayout() (17) ─�
 
 - 版番号は `src/ts/01-changelog.ts` の `CHANGELOG` 配列の先頭の版で、画面右上に表示されます（`npm run build` で `<meta name="version">` にも書き込まれます）。
 - 新しい版は `CHANGELOG` 配列の先頭に追加し、`en` に英語、`ja` に日本語の項目を書きます。
-- 更新履歴のファイルは `npm run docs` で生成します：[CHANGELOG.md](CHANGELOG.md)（英語）、[CHANGELOG.ja.md](CHANGELOG.ja.md)（日本語）。直接編集しないでください。
+- 更新履歴のファイルは `npm run docs` で生成します：[CHANGELOG.md](CHANGELOG.md)（英語）、[CHANGELOG.ja.md](CHANGELOG.ja.md)（日本語）。引用情報の [CITATION.cff](CITATION.cff)（最新の版番号と日付）も同時に作ります。直接編集しないでください。
 - README は英語版（[README.md](README.md)）と日本語版（このファイル）があります。内容を変えたときは両方を更新してください。
-- Git のタグ（`v1.25.1` など）は、必要に応じて GitHub の「Releases」から付けます。
+- **リリース。** 開発者が手で、最新の版のタグを push してリリースします：`git tag v1.73.5 && git push origin v1.73.5`。すると `.github/workflows/release.yml` が、タグが更新履歴の最新の版であることを確かめ、単体テストを実行し、`index.html` とサイト一式の zip を添えた GitHub のリリースを作ります。リリースの説明は更新履歴から英語と日本語で作ります（`node scripts/gen-docs.ts --notes`）。GitHub Pages の公開元が GitHub Actions に設定されていれば（Settings › Pages › Source: GitHub Actions）、サイト（`npm run pages`）を <https://m-koga.github.io/sigmaomega/> に配置します。設定されていなければ、この手順は飛ばします。ワークフローを手で実行すると（Actions › Release › Run workflow）、リリースを作らずに現在の `main` を Pages に配置します。
+- **DOI。** リポジトリを公開した後、[Zenodo](https://zenodo.org/) と連携すると（GitHub でログインし、リポジトリをオンにする）、リリースごとに DOI が付きます。Zenodo は `CITATION.cff` を読み取ります。
 
 ## 使っているもの
 

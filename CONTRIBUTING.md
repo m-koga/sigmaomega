@@ -24,7 +24,7 @@ All of `npm test`, `npm run test:ui`, `npm run check` and `npm run format:check`
 
 ## Rules
 
-- **Edit the sources, not the generated files.** `index.html`, `CHANGELOG*.md`, `src/ts/element-ids.d.ts` and `tests/app-api.d.ts` are written by the build; regenerate them (`npm run docs`, `npm test`), also after resolving a merge conflict.
+- **Edit the sources, not the generated files.** `index.html`, `CHANGELOG*.md`, `CITATION.cff`, `src/ts/element-ids.d.ts` and `tests/app-api.d.ts` are written by the build; regenerate them (`npm run docs`, `npm test`), also after resolving a merge conflict.
 - **Version and change log.** Every change of the app gets a new version at the top of `CHANGELOG` in `src/ts/01-changelog.ts` (Semantic Versioning: 2nd number for new features, 3rd for fixes and wording), with the same items in English (`en`) and Japanese (`ja`).
 - **Languages.** UI strings, code comments and test names are in English; UI strings are translated through `src/i18n.json` (Japanese, Chinese, Korean, Thai). The user manual (`src/ts/22-help.ts`) is written in English and Japanese. README, SPEC and CONTRIBUTING exist in English and Japanese: update both.
 - **Specification.** When a change alters what `SPEC.md` / `SPEC.ja.md` describe, update both.

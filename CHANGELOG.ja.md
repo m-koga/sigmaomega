@@ -6,6 +6,10 @@
 
 > このファイルは `npm run docs` で `src/ts/01-changelog.ts` の更新履歴から生成されます。直接編集しないでください。
 
+## v1.73.5（2026-11-25）
+- 配布：開発者が版のタグを push すると、index.html とサイト一式の zip を添えた GitHub のリリースを作り（説明は更新履歴から）、Pages の公開元が GitHub Actions なら GitHub Pages にサイトを配置する（.github/workflows/release.yml）
+- 引用：CITATION.cff を追加（npm run docs で最新の版番号と日付から生成）。GitHub の「Cite this repository」に表示され、Zenodo が DOI を付けるときにも読み取る
+
 ## v1.73.4（2026-11-25）
 - 開発：すべてのソースファイル（TypeScript、スタイルシート、アイコン、ワークフロー、生成される型のファイル）の先頭に「SPDX-License-Identifier: Apache-2.0」と「Copyright 2026 Masanobu Koga」の 2 行を入れた。テストで確認する
 

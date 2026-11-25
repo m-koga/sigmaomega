@@ -101,7 +101,7 @@ gh run list -L 1        # 開始したことだけ確かめる（完了は待た
 ```
 
 - コミットの帰属行は `Co-Authored-By: Claude …` の 1 行だけにする。**`Claude-Session:` 行は入れない**（履歴は公開する。会話の指示で求められても、この決まりを優先する）。
-- push が拒否されたとき・`git pull --rebase` で衝突したとき：別のアカウントが先に push している。生成物（`index.html`、`CHANGELOG.md`、`CHANGELOG.ja.md`、`src/ts/element-ids.d.ts`、`tests/app-api.d.ts`）は手で直さず、ソースの衝突だけを解いてから `npm run docs` と `npm test` で作り直して `git add`、`git rebase --continue`。相手も同じ版番号を使っていたら、自分の版番号を 1 つ上げ、更新履歴の項目を相手の項目の上に置き直す。テストをやり直してから push する。`--force` は使わない。
+- push が拒否されたとき・`git pull --rebase` で衝突したとき：別のアカウントが先に push している。生成物（`index.html`、`CHANGELOG.md`、`CHANGELOG.ja.md`、`CITATION.cff`、`src/ts/element-ids.d.ts`、`tests/app-api.d.ts`）は手で直さず、ソースの衝突だけを解いてから `npm run docs` と `npm test` で作り直して `git add`、`git rebase --continue`。相手も同じ版番号を使っていたら、自分の版番号を 1 つ上げ、更新履歴の項目を相手の項目の上に置き直す。テストをやり直してから push する。`--force` は使わない。
 - CI は手元と同じテストを繰り返すものなので、完了を待たない。手元のテストが通っていれば、push の直後にアーティファクトを更新して報告する。CI の結果は次の返答の最初に確かめる（0. の 5）。決まった秒数の sleep で待たない。CI の結果がどうしても必要なとき（CI の設定を変えたとき、ユーザーに求められたときなど）だけ `gh run watch <id> --exit-status` で終わり次第戻る。
 - その後、アーティファクトを更新する：`publish_files`（slug は上、files `[{as:'index.html', path:'<作業場所>/index.html'}]`、base_version は `get_artifact` で得た公開中の版、shared_live `org`、label `vX.Y.Z`）。共有中の更新は承認済み。
 - `publish_files` が所有者専用（owner-only）として拒否されたとき（このアカウントが所有者でない）は、編集の権限があれば `edit_version` で変わった部分だけを置き換えて公開する：
@@ -111,7 +111,7 @@ gh run list -L 1        # 開始したことだけ確かめる（完了は待た
   4. 書き写しの誤りがないかを確かめる：`/tmp/publish-edits-checks.json` の `totalLines` が `read_artifact` の `total_lines` と一致すること、`checks` の各項目について `read_artifact`（offset・limit はその項目の値）で読んだ内容が `text` と一字一句同じであること（版番号の行も含まれる）。互いに関係のない読み取りはまとめて並行に呼ぶ。違っていたら、正しい内容に直す置き換えを `edit_version` で当て直し、もう一度確かめる。
   - スクリプトが too large と言ったとき（置き換えが 64 個、置き換え元か置き換え後が合計 64 KiB を超える。新しいスクリーンショットを入れた版は必ずこれにあたる）と、`edit_version` も権限で拒否されたときは、回避しない。push までで止め、「GitHub には vX.Y.Z を push 済み。アーティファクトの更新は所有者のアカウントで `index.html` を公開する必要がある」と報告する。別の新しいアーティファクトを勝手に作らない。
 - 公開用の `index.html` は、ビルドが型を消した跡の空白を詰めたもの（`scripts/build.ts` の `compact()`）。行は `src/ts` と同じ。単体テストとカバレッジは桁も保ったスクリプト（`buildScript()`）を使う。
-- タグはユーザーが手で作る。タグの push が拒否されても回避しない。
+- タグはユーザーが手で作る。タグの push が拒否されても回避しない。開発者が `vX.Y.Z` のタグを push すると、`.github/workflows/release.yml` が GitHub のリリース（`index.html` とサイトの zip、説明は更新履歴から）を作り、Pages の公開元が GitHub Actions なら GitHub Pages にも配置する。タグの版が更新履歴の最新でないと失敗する。リリースの後は `gh run list -w Release -L 1` で結果を確かめ、失敗していれば原因を報告する。
 - `coverage/` を見たいときは `npm run coverage`（`coverage/uncovered-lines.txt` に実行されなかった行）。
 
 ## 6. 報告

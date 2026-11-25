@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Masanobu Koga
+# Release, when the developer pushes a version tag (git tag vX.Y.Z && git push origin vX.Y.Z):
+#   build:   check that the tag is the newest version of the change log, run the unit tests, write the GitHub Pages
+#            site (npm run pages) and the release notes (from the change log)
+#   release: publish a GitHub release with index.html and the site as a zip file
+#   pages:   deploy the site to GitHub Pages, only when Pages is set to deploy from GitHub Actions
+#            (Settings › Pages › Build and deployment › Source: GitHub Actions); otherwise this job is skipped
+# Run it by hand (Actions › Release › Run workflow) to deploy the site of the current main without a release.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      pages: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - id: version
+        name: Version of the page (and of the tag)
+        run: |
+          v=$(sed -n 's/.*<meta name="version" content="\([^"]*\)".*/\1/p' index.html)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$v" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME is not the newest version of the change log (v$v)"
+            exit 1
+          fi
+      - run: npm run check
+      - run: npm test
+      - name: Site, release notes and files
+        run: |
+          npm run pages
+          node scripts/gen-docs.ts --notes "${{ steps.version.outputs.version }}" > release-notes.md
+          mkdir dist
+          cp index.html dist/
+          (cd site && zip -qr "../dist/sigmaomega-site-v${{ steps.version.outputs.version }}.zip" .)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: |
+            dist/
+            release-notes.md
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - id: pages
+        name: Is GitHub Pages set to deploy from GitHub Actions?
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null)" = workflow ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GitHub Pages is not set to deploy from GitHub Actions, so the site is not deployed"
+          fi
+
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --title "SigmaOmega v${{ needs.build.outputs.version }}" \
+            --notes-file release-notes.md
+
+  pages:
+    needs: build
+    if: needs.build.outputs.pages == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
