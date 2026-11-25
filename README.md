@@ -36,7 +36,7 @@ SigmaOmega is a browser-based simulator for feedback control systems. Its name c
 
 There are three ways to use SigmaOmega:
 
-- **Online**: <https://m-koga.github.io/sigmaomega/> (once GitHub Pages is enabled). On a phone or a computer the page can be installed as an app (Add to Home Screen, or Install in the browser's menu).
+- **Online**: <https://m-koga.github.io/sigmaomega/> (GitHub Pages; updated with each release). On a phone or a computer the page can be installed as an app (Add to Home Screen, or Install in the browser's menu).
 - **Download**: each [release](https://github.com/m-koga/sigmaomega/releases) has `index.html`, the whole simulator in one file: save it and open it in a browser. `sigmaomega-site-vX.Y.Z.zip` holds the web site (page, manifest and icons) for your own server.
 - **From the source**: `npm ci && npm run build`, then open `index.html`.
 

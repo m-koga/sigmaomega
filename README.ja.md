@@ -35,7 +35,7 @@ SigmaOmega は、ブラウザで動くフィードバック制御系のシミュ
 
 SigmaOmega は次の 3 つの方法で使えます。
 
-- **オンライン**：<https://m-koga.github.io/sigmaomega/>（GitHub Pages を有効にした後）。スマートフォンやパソコンでは、アプリとしてインストールできます（ホーム画面に追加、またはブラウザのメニューの「インストール」）。
+- **オンライン**：<https://m-koga.github.io/sigmaomega/>（GitHub Pages。リリースごとに更新）。スマートフォンやパソコンでは、アプリとしてインストールできます（ホーム画面に追加、またはブラウザのメニューの「インストール」）。
 - **ダウンロード**：各[リリース](https://github.com/m-koga/sigmaomega/releases)に、シミュレーター全体を 1 ファイルにした `index.html` があります。保存してブラウザで開きます。`sigmaomega-site-vX.Y.Z.zip` は、自分のサーバーに置くためのサイト一式（ページ、マニフェスト、アイコン）です。
 - **ソースから**：`npm ci && npm run build` の後、`index.html` を開きます。
 
