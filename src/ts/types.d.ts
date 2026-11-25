@@ -34,7 +34,7 @@ interface SpecItem {
   on: boolean;
   v: number;
 }
-/** Definition of a design specification (SPECS in 03-definitions.ts) */
+/** Definition of a design specification (SPECS in 05-definitions.ts) */
 interface SpecDef {
   /** text before the limit, in English (translated through the dictionary) */
   label: string;
@@ -143,7 +143,7 @@ interface Layout {
   hidden: Record<string, boolean>;
   subs: Record<string, boolean>;
   panels: string[] | null;
-  /** version of the panel list (PANELS_V in 09-drawing.ts) */
+  /** version of the panel list (PANELS_V in 14-view.ts) */
   pv: number;
   /** '1', '2', 'row' or 'free' (tiles) */
   pcols: string | null;
@@ -171,7 +171,7 @@ declare var MathJax: any;
 /** claude.ai artifact viewer API (only inside the viewer) */
 declare var claude: { use(name: string): Promise<any> } | undefined;
 // Functions the script puts on window: renderTeX is called by MathJax when it has loaded (src/index.html);
-// diagViewReset shows the whole block diagram after a new drawing (21-diagram-zoom.ts)
+// diagViewReset shows the whole block diagram after a new drawing (27-diagram-zoom.ts)
 interface Window {
   renderTeX?: () => void;
   diagViewReset?: () => void;
@@ -237,16 +237,16 @@ interface DiscreteSS extends StateSpace {
 type NumKey = { [K in keyof State]-?: State[K] extends number ? K : never }[keyof State];
 
 // Results of the main computations (inferred from the functions that make them)
-type SimResult = ReturnType<typeof import('./07-simulation.ts').simulate>;
-type FreqResult = ReturnType<typeof import('./08-frequency.ts').freqResp>;
-type BodeSeries = ReturnType<typeof import('./08-frequency.ts').bodeSeries>;
-type StepMetrics = ReturnType<typeof import('./07-simulation.ts').stepMetrics>;
+type SimResult = ReturnType<typeof import('./08-simulation.ts').simulate>;
+type FreqResult = ReturnType<typeof import('./07-frequency.ts').freqResp>;
+type BodeSeries = ReturnType<typeof import('./07-frequency.ts').bodeSeries>;
+type StepMetrics = ReturnType<typeof import('./08-simulation.ts').stepMetrics>;
 
 /** Handle of setTimeout */
 type Timer = ReturnType<typeof setTimeout>;
 
-type PZResult = ReturnType<typeof import('./16-pole-zero.ts').computePZ>;
-type SpecKey = keyof typeof import('./03-definitions.ts').SPECS;
+type PZResult = ReturnType<typeof import('./09-loop.ts').computePZ>;
+type SpecKey = keyof typeof import('./05-definitions.ts').SPECS;
 /** Result of one specification: checked or not, whether it applies, measured value, met or not */
 interface SpecResult {
   key: SpecKey;

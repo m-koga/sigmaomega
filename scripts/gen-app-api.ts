@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 // Generate tests/app-api.d.ts: the types of the page script as the tests see it.
-//  - AppApi: every exported name of src/ts with its type, e.g.  simulate: typeof import('../src/ts/07-simulation.ts').simulate;
+//  - AppApi: every exported name of src/ts with its type, e.g.  simulate: typeof import('../src/ts/08-simulation.ts').simulate;
 //    tests/harness.ts gives the tests an object of this type (api.S, api.simulate, ...).
 //  - the same names declared as globals: in the built page they are globals, which the browser tests use in
 //    code run inside the page (page.evaluate).

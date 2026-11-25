@@ -1,224 +1,30 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-/* ================= Events ================= */
+/* ================= Layout of the page: areas under the plots, their handles, the settings panel and the plot panels ================= */
 import { APP_VERSION, CHANGELOG } from './01-changelog.ts';
-import {
-  T,
-  TXT_COLLAPSED,
-  TXT_TIP,
-  applyStaticI18n,
-  docsLang,
-  docsTranslated,
-  i18nText,
-  i18nTitle,
-  setLangCode,
-} from './02-i18n.ts';
-import type { Lang } from './02-i18n.ts';
-import { CARD_GROUP, CARD_KEYS, PLOTS, sideCardOf, switchDefaults } from './03-definitions.ts';
-import { S, defaults, ghosts } from './05-state.ts';
-import {
-  $,
-  buildCtrlCustom,
-  buildPlant,
-  buildStatic,
-  byId,
-  loadFromPID,
-  qs,
-  renderTeX,
-  setPrevPlant,
-  subFolded,
-  showCtrlParam,
-} from './06-ui-build.ts';
+import { T, TXT_COLLAPSED, TXT_TIP, docsLang, docsTranslated } from './02-i18n.ts';
+import { CARD_GROUP, CARD_KEYS, PLOTS, sideCardOf } from './05-definitions.ts';
+import { $, byId, dragger, i18nText, i18nTitle, qs } from './13-dom.ts';
 import {
   DEFAULT_PANELS,
+  INFO_AREAS,
   PANELS,
-  PANELS_V,
-  bodeDescDefault,
-  presetCols,
-  storedPanels,
-  withoutTex,
-} from './09-drawing.ts';
-import { resetSweepUI } from './10-sweep.ts';
-import { renderScenarios, showTask } from './12-scenarios.ts';
-import { renderTune } from './13-tuning.ts';
-import { buildSpecs } from './14-specs.ts';
-import { lastSim, redraw, update } from './16-pole-zero.ts';
-import { arrangePanels, fitTex, normTiles, tilesFromPreset } from './18-tiles.ts';
-import { normRows, rowsFromPreset, splitFullRows } from './19-rows.ts';
-
-$('plant').onchange = () => {
-  S.plant = $('plant').value;
-  buildPlant();
-  renderTeX();
-  update();
-};
-$('mode').onchange = () => {
-  const prev = S.mode;
-  S.mode = $('mode').value;
-  switchDefaults(prev, S.mode).forEach(showCtrlParam);
-  if (prev !== 'custom') S.lastPid = prev;
-  if (S.mode === 'custom' && prev !== 'custom' && !S.ccTouched) loadFromPID(prev, false);
-  buildCtrlCustom();
-  renderTeX();
-  update();
-};
-(['dOnMeas', 'dOn', 'sat', 'aw', 'tdof'] as const).forEach(
-  id =>
-    ($(id).onchange = () => {
-      S[id] = $(id).checked;
-      update();
-    }),
-);
-$('hold').onclick = () => {
-  if (!lastSim) return;
-  if (ghosts.length >= 4) ghosts.shift();
-  ghosts.push({ T: lastSim.T.slice(), Y: lastSim.Y.slice() });
-  ghostText();
-  update();
-};
-$('clearHold').onclick = () => {
-  ghosts.length = 0;
-  ghostText();
-  update();
-};
-export function ghostText() {
-  $('ghostInfo').textContent = ghosts.length
-    ? T('Holding {n} (gray lines)', { n: ghosts.length })
-    : T('Held responses are overlaid as gray lines (up to 4).');
-}
-$('reset').onclick = () => {
-  showTask('', '');
-  defaults();
-  S.ccTouched = false;
-  setPrevPlant('first');
-  buildPlant();
-  buildCtrlCustom();
-  buildSpecs();
-  buildStatic();
-  resetSweepUI();
-  renderTeX();
-  update();
-};
-export let rt: Timer | undefined;
-window.addEventListener('resize', () => {
-  clearTimeout(rt);
-  rt = setTimeout(redraw, 80);
-});
-export let rafId = 0;
-export function scheduleRedraw() {
-  if (!rafId)
-    rafId = requestAnimationFrame(() => {
-      rafId = 0;
-      redraw();
-    });
-}
+  defaultLayout,
+  isHidden,
+  layout,
+  rowsFromPreset,
+  saveLayout,
+  setLayout,
+  setShownPanels,
+  shownPanels,
+  subFolded,
+  tilesFromPreset,
+} from './14-view.ts';
+import { diagMaxH, fitTex, renderTune } from './17-panels.ts';
+import { redraw, scheduleRedraw } from './18-update.ts';
+import { applyPanels } from './23-tiles.ts';
 
 /* ===== Resizing display areas (drag) ===== */
-export const LAYOUT_KEY = 'ctrlsim-layout-v1';
-// Plots shown (time response, Bode, Nyquist, pole-zero map)
-export let shownPanels = new Set<string>(['time']);
-// Replace the layout (from a scenario); applyLayout() shows it
-export function setLayout(l: Layout) {
-  layout = l;
-}
-/* Areas under the plots: their sections are shown one at a time with tabs, and one handle below the area
-   scales the shown section and hides the whole area with its tabs. tabs: [section, tab name]
-   (defined before the layout is read: infoTabs checks the stored tabs against it) */
-export const INFO_AREAS: Record<string, { label: string; tabs: [string, string][] }> = {
-  tinfo: {
-    label: 'Response metrics and simulation time',
-    tabs: [
-      ['metrics', 'Response metrics'],
-      ['tsim', 'Simulation time'],
-    ],
-  },
-  binfo: {
-    label: 'Bode plot details',
-    tabs: [
-      ['bodeopts', 'Curves'],
-      ['margins', 'Stability margins'],
-      ['bodenote', 'Note'],
-    ],
-  },
-  ninfo: {
-    label: 'Nyquist plot details',
-    tabs: [
-      ['nyqopts', 'Options'],
-      ['nyqnote', 'Note'],
-    ],
-  },
-  pinfo: {
-    label: 'Pole-zero map details',
-    tabs: [
-      ['pzopts', 'Display'],
-      ['pzbanner', 'Stability'],
-      ['pzrange', 'Gain ranges'],
-      ['pztable', 'Pole list'],
-      ['pznote', 'Note'],
-      ['pzhelp', 'How to use'],
-    ],
-  },
-};
-// The layout of a first visit: the one place that lists every item of the layout with its default (used at start,
-// by resetLayout and for scenarios without a layout, 12-scenarios.ts). A new item is added here, to the Layout type
-// and, if it is stored, to the reading below and to scLayout
-export function defaultLayout(): Layout {
-  return {
-    sideW: null,
-    h: {},
-    texFs: null,
-    ms: null,
-    msb: null,
-    ts: null,
-    zs: {},
-    hidden: {},
-    subs: {},
-    panels: null,
-    pv: PANELS_V,
-    pcols: null,
-    tiles: null,
-    rows: null,
-    stab: 'sys',
-    scard: 'plant',
-    sideCollapsed: false,
-    mview: 'cards',
-    itabs: {},
-    mtab: 'plot',
-  };
-}
-export let layout: Layout = defaultLayout();
-try {
-  const s = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
-  if (s && typeof s === 'object')
-    layout = {
-      ...defaultLayout(), // items not read below keep their defaults
-      sideW: s.sideW || null,
-      h: s.h || {},
-      texFs: s.texFs || null,
-      ms: s.ms || null,
-      msb: 'msb' in s ? s.msb || null : s.ms || null, // layouts saved before msb existed: the same as ms
-      ts: s.ts || null,
-      zs: s.zs || {},
-      hidden: withoutTex(s.hidden || {}),
-      subs: s.subs || {},
-      panels: storedPanels(s.panels, s.pv, s.hidden),
-      pv: PANELS_V,
-      pcols: s.pcols || null,
-      tiles: normTiles(s.tiles),
-      rows: normRows(s.rows),
-      stab: s.stab || 'sys',
-      scard: sideCardOf(s.scard, s.stab),
-      sideCollapsed: !!s.sideCollapsed,
-      mview: s.mview === 'table' ? 'table' : 'cards',
-      itabs: infoTabs(s.itabs, s.ttab),
-      mtab: s.mtab === 'set' ? 'set' : 'plot',
-    };
-} catch (e) {}
-export function saveLayout() {
-  try {
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
-  } catch (e) {}
-}
 
 // Area key for each handle, and the elements of that area
 document.querySelectorAll<HTMLElement>('.hgrip[data-target]').forEach(g => (g.dataset.key = g.dataset.target));
@@ -266,7 +72,6 @@ export const areaEls = (key: string): HTMLElement[] =>
         : key === 'margins'
           ? [$('margins')]
           : [byId(key)];
-export const isHidden = (key: string) => !!layout.hidden[key];
 export function setHidden(key: string, on: boolean) {
   if (on) layout.hidden[key] = true;
   else delete layout.hidden[key];
@@ -309,43 +114,12 @@ export function applyLayout() {
   setMobileView(layout.mtab || 'plot');
   $('mview').value = layout.mview || 'cards';
   Object.keys(INFO_AREAS).forEach(a => setInfoTab(a, layout.itabs[a]));
-  shownPanels = new Set((layout.panels || DEFAULT_PANELS).filter(k => (PANELS as readonly string[]).includes(k)));
-  if (!shownPanels.size) shownPanels.add('time');
+  setShownPanels(layout.panels || DEFAULT_PANELS);
   applyPanels();
   document.querySelectorAll<HTMLElement>('.sub').forEach(s => {
     const f = subFolded(s.dataset.sub ?? '');
     s.classList.toggle('folded', f);
     qs('.sub-h', s).setAttribute('aria-expanded', f ? 'false' : 'true');
-  });
-}
-// Drag a handle along x or y: onStart gives the starting value, onMove gets start + displacement, onEnd is called at the end
-export function dragger(
-  handle: HTMLElement,
-  axis: 'x' | 'y',
-  onStart: () => number,
-  onMove: (v: number) => void,
-  onEnd: () => void,
-) {
-  handle.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    handle.setPointerCapture(e.pointerId);
-    const p0 = axis === 'y' ? e.clientY : e.clientX;
-    const s0 = onStart();
-    handle.classList.add('drag');
-    document.body.classList.add(axis === 'y' ? 'rz-y' : 'rz-x');
-    const mv = (ev: PointerEvent) => onMove(s0 + (axis === 'y' ? ev.clientY : ev.clientX) - p0);
-    const up = () => {
-      handle.removeEventListener('pointermove', mv);
-      handle.removeEventListener('pointerup', up);
-      handle.removeEventListener('pointercancel', up);
-      handle.classList.remove('drag');
-      document.body.classList.remove('rz-x', 'rz-y');
-      onEnd();
-    };
-    handle.addEventListener('pointermove', mv);
-    handle.addEventListener('pointerup', up);
-    handle.addEventListener('pointercancel', up);
   });
 }
 // Cards of the settings panel: each card gets its key; the heading stays a plain heading (one card is shown at a time)
@@ -423,17 +197,6 @@ export function setSideCard(key: string) {
   });
   if (key === 'tune') renderTune();
 }
-// Selected tab of each area: a known section, else the first (ttab: the setting of version 1.50)
-export function infoTabs(src: unknown, ttab?: unknown): Record<string, string> {
-  const r: Record<string, string> = {},
-    o = src && typeof src === 'object' ? (src as Record<string, unknown>) : {};
-  if (ttab === 'tsim' && o.tinfo === undefined) r.tinfo = 'tsim';
-  Object.entries(INFO_AREAS).forEach(([a, d]) => {
-    const v = o[a];
-    if (typeof v === 'string' && d.tabs.some(([k]) => k === v)) r[a] = v;
-  });
-  return r;
-}
 // Shows section key of area a (the first one when key is not one of its sections)
 export function setInfoTab(a: string, key: string | undefined) {
   const d = INFO_AREAS[a],
@@ -491,25 +254,6 @@ Object.entries(INFO_AREAS).forEach(([a, d]) => {
     });
   });
 });
-// Plot selection (multiple allowed) and layout
-export function applyPanels() {
-  PANELS.forEach(k => {
-    const on = shownPanels.has(k);
-    $(`panel-${k}`).style.display = on ? '' : 'none';
-    const t = qs(`.tab[data-tab="${k}"]`);
-    t.classList.toggle('on', on);
-    t.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  // the last panel shown cannot be hidden: its × is not available
-  document.querySelectorAll<HTMLButtonElement>('.pclose').forEach(b => (b.disabled = shownPanels.size === 1));
-  const mode = layout.pcols || '2';
-  if (mode === 'free' && !layout.tiles) layout.tiles = tilesFromPreset('2', [...shownPanels]);
-  if (mode === 'rows' && !layout.rows) layout.rows = rowsFromPreset('2', [...shownPanels]);
-  if (layout.rows) layout.rows = splitFullRows(layout.rows, shownPanels);
-  $('pcols').value = mode;
-  $('panels').style.setProperty('--pcols', String(presetCols(mode, shownPanels)));
-  arrangePanels(mode);
-}
 export function panelsChanged() {
   layout.panels = PANELS.filter(k => shownPanels.has(k));
   saveLayout();
@@ -551,7 +295,7 @@ $('panelsAll').onclick = () => {
   panelsChanged();
   showPlotsOnPhone();
 };
-// (the drop-down lists of the menu bar: 20-menubar.ts)
+// (the drop-down lists of the menu bar: 26-menubar.ts)
 $('pcols').onchange = () => {
   const prev = layout.pcols || '2';
   layout.pcols = $('pcols').value;
@@ -564,15 +308,6 @@ $('pcols').onchange = () => {
 };
 export const TIP = T(TXT_TIP);
 
-// Tallest height of the block diagram that still fits the width of its area (the drawing keeps its proportions);
-// Infinity before it is drawn or while it is hidden
-export function diagMaxH(): number {
-  const box = $('diagBox'),
-    svg = box.querySelector<SVGSVGElement>('svg'),
-    vb = svg?.viewBox?.baseVal;
-  if (!vb || !vb.width || !box.clientWidth) return Infinity;
-  return Math.floor((box.clientWidth * vb.height) / vb.width);
-}
 // Vertical: height of the block diagram and plots (hidden below half the minimum); the block diagram stops when it
 // fills the width
 document.querySelectorAll<HTMLElement>('.hgrip[data-target]').forEach(g => {
@@ -642,7 +377,7 @@ document.querySelectorAll<HTMLElement>('.hgrip[data-target]').forEach(g => {
 // under the plots (there is no button for it any more; kept for scripts and tests)
 export function resetLayout() {
   const { stab, scard, mview, itabs, mtab } = layout;
-  layout = { ...defaultLayout(), stab, scard, mview, itabs, mtab };
+  setLayout({ ...defaultLayout(), stab, scard, mview, itabs, mtab });
 
   saveLayout();
   applyLayout();
@@ -758,21 +493,3 @@ export function renderChangelog() {
     if (e.key === 'Escape' && back.classList.contains('open')) close();
   });
 })();
-export function setLang(l: Lang) {
-  setLangCode(l);
-  try {
-    localStorage.setItem('ctrlsim-lang', l);
-  } catch (e) {}
-  $('langSel').value = l;
-  applyStaticI18n();
-  buildPlant();
-  buildStatic();
-  buildCtrlCustom();
-  ghostText();
-  refreshGripLabels();
-  renderChangelog();
-  renderScenarios();
-  bodeDescDefault();
-  update();
-  renderTeX();
-}

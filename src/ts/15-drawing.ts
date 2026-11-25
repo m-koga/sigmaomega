@@ -2,52 +2,15 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Drawing ================= */
 import { T, TXT_BODE_RANGE, TXT_BODE_UNSTABLE, UIFONT } from './02-i18n.ts';
-import { numStr } from './04-parser.ts';
-import { S, ghosts } from './05-state.ts';
-import { $, ctx2d } from './06-ui-build.ts';
-import { metricWindow, sineMetrics, stepMetrics } from './07-simulation.ts';
-import { distMetrics, twoDof } from './08-frequency.ts';
-import { sweepSeries } from './10-sweep.ts';
-import { evalSpecs, specIcon, specOn } from './14-specs.ts';
-import { PLOT_VIEWS } from './15-zoom.ts';
-import { lastPZ, lastSweep } from './16-pole-zero.ts';
-import { layout } from './17-events-layout.ts';
-
-/* Colours of the plots, by role (the colours of the page itself are in style.css) */
-export const COLORS = {
-  // axes and text
-  text: '#1b1d22', // axis names and legend text
-  tick: '#666b75', // tick labels
-  grid: '#ecebe6', // grid lines
-  gridDecade: '#e4e2dc', // decade lines of a logarithmic axis
-  gridMinor: '#f3f2ee', // 2 … 9 × 10^n lines of a logarithmic axis
-  zeroLine: '#c9c6be', // zero line, imaginary axis of the Nyquist plot
-  frame: '#bdb9b0', // frame of the plot area
-  axisPZ: '#9a968c', // real and imaginary axes of the pole-zero map
-  legendBack: 'rgba(255,255,255,.88)',
-  legendBackPZ: 'rgba(255,255,255,.9)',
-  white: '#fff', // outline of dots, background of saved PNG files
-  // signals and curves
-  reference: '#666b75', // reference r
-  output: '#1f5fbf', // output y, L(jω), ωgc, ω > 0 of the Nyquist plot, plant poles and zeros
-  input: '#d9822b', // control input u, C(jω), controller poles and zeros
-  plant: '#2e7d32', // P(jω)
-  sensitivity: '#8e24aa', // S(jω), Ms circle and limit line
-  complementary: '#00897b', // T(jω)
-  disturbanceTF: '#8d6e63', // Gyd(jω)
-  referenceTF: '#33363d', // Gyr(jω)
-  negativeFreq: '#9aa0aa', // ω < 0 of the Nyquist plot
-  zeroDb: '#888', // 0 dB line
-  locus: '#7b4fa3', // root locus
-  dampingGrid: 'rgba(123,79,163,.35)', // ζ–ωn grid lines
-  dampingLabel: 'rgba(123,79,163,.8)', // ζ–ωn grid labels
-  // limits and specifications
-  alert: '#c62828', // saturation limits, disturbance time, −180°, ωpc, −1 point, overshoot limit, closed-loop poles
-  spec: '#2e7d32', // specification lines: settling band, error limits, GM, PM, Ms circle, design region
-  specBand: 'rgba(46,125,50,.16)', // settling band
-  rightHalfPlane: 'rgba(198,40,40,0.06)', // unstable half of the pole-zero map
-  outsideRegion: 'rgba(60,60,60,.07)', // outside the design region of the pole specifications
-};
+import { numStr } from './03-math.ts';
+import { PLOTS } from './05-definitions.ts';
+import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
+import { distMetrics, twoDof } from './07-frequency.ts';
+import { metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
+import { evalSpecs, specIcon, specOn } from './11-specs.ts';
+import { sweepSeries } from './12-sweep.ts';
+import { $, ctx2d, savePNG } from './13-dom.ts';
+import { COLORS, PLOT_VIEWS, layout } from './14-view.ts';
 
 export function niceTicks(min: number, max: number, n = 6): number[] {
   const span = max - min || 1;
@@ -359,60 +322,6 @@ export function drawLegend(f: PlotFrame, series: PlotSeries[]) {
 }
 
 export const GHOST_COLORS = ['#9aa0aa', '#b7a99a', '#a3b3a0', '#b0a3b8'];
-// Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s) (no plots)
-export const PANELS = ['diag', 'time', 'tf', 'bode', 'nyq', 'pz'] as const;
-// Panels shown when nothing is stored
-export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
-// Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
-// but always shown above the plots
-export const PANELS_V = 3;
-// Hidden areas from stored data without the formulas: hidden with their own handle before they became a panel
-// (now the panel is hidden instead, see storedPanels)
-export function withoutTex(hidden: Record<string, boolean>): Record<string, boolean> {
-  const r = { ...hidden };
-  delete r.tex;
-  return r;
-}
-// Size of the formulas (px) for the bottom edge of their panel: f0 the size and h0 the height of the formulas when
-// the drag started, dh how far the edge moved. The formulas scale with their size, so the size changes in the
-// same ratio as the height; 4-60 px in steps of 0.5. wr: how many times wider the formulas may become and still fit
-// the width of the panel (the narrowest one decides); the size stops there (rounded down), unless that is below 4 px
-export const TEX_FS_MIN = 4,
-  TEX_FS_MAX = 60,
-  TEX_FS_DEFAULT = 14; // the size in the style sheet (.tex)
-export function texFsForHeight(f0: number, h0: number, dh: number, wr = Infinity): number {
-  const f = h0 > 0 ? (f0 * (h0 + dh)) / h0 : f0;
-  const fit = Math.floor(f0 * wr * 2) / 2;
-  const v = Math.round(Math.min(TEX_FS_MAX, f) * 2) / 2;
-  return Math.max(TEX_FS_MIN, Math.min(v, fit));
-}
-// Size the formulas are shown at: the chosen size (layout.texFs, or the default), made smaller while that is wider
-// than the panel. cur: the size shown now, wr: how many times wider the formulas may become at it (Infinity: not
-// measured). The chosen size is kept, so the formulas grow back when there is room again
-export function texFsShown(chosen: number, cur: number, wr: number): number {
-  if (!isFinite(wr)) return chosen;
-  return Math.max(TEX_FS_MIN, Math.min(chosen, Math.floor(cur * wr * 2) / 2));
-}
-// Shown panels from stored data (valid keys only; null when none). A list saved before the transfer functions
-// became a panel gets them added, unless they had been hidden with their handle; one saved before the block diagram
-// became a panel gets it added (it was always shown).
-export function storedPanels(panels: unknown, pv: unknown, hidden: unknown): string[] | null {
-  if (!Array.isArray(panels)) return null;
-  const p = PANELS.filter(k => panels.includes(k)) as string[];
-  if (!p.length) return null;
-  const v = typeof pv === 'number' ? pv : 1,
-    texHidden = !!hidden && typeof hidden === 'object' && (hidden as Record<string, unknown>).tex === true;
-  if (v < 2 && !texHidden) p.push('tf');
-  if (v < 3) p.push('diag');
-  return PANELS.filter(k => p.includes(k));
-}
-// Number of grid columns of a preset layout (1 column, 2 columns, 1 row) for the shown panels; the block diagram
-// is not counted: it lies on top across the whole width
-export function presetCols(mode: string, shown: Iterable<string>): number {
-  const n = [...shown].filter(k => k !== 'diag' && (PANELS as readonly string[]).includes(k)).length;
-  return Math.max(1, mode === '1' ? 1 : mode === 'row' ? n : Math.min(2, n));
-}
-export const MAX_COLS = 4; // columns of the free layout (18-tiles.ts)
 // Columns of the metric cards: all in one row up to four, otherwise two rows of equal length
 export const metricCols = (n: number) => (n <= 4 ? Math.max(n, 1) : Math.ceil(n / 2));
 // Metrics as cards or as a table (label and value in rows), chosen in the plot selection bar
@@ -825,4 +734,16 @@ export function drawNyq(fr: FreqResult) {
     ],
     vlines: [{ v: 0, color: COLORS.zeroLine, dash: [] }],
   });
+}
+export const PNG_NAMES: Record<string, string> = Object.fromEntries(Object.entries(PLOTS).map(([k, v]) => [k, v.file]));
+// The plot as a PNG image (white background, at the screen's pixel density)
+export async function saveCanvasPNG(cv: HTMLCanvasElement) {
+  const c = document.createElement('canvas');
+  c.width = cv.width;
+  c.height = cv.height;
+  const g = ctx2d(c);
+  g.fillStyle = COLORS.white;
+  g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(cv, 0, 0);
+  await savePNG(c, PNG_NAMES[cv.id] || 'plot');
 }

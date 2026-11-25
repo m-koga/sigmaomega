@@ -20,7 +20,7 @@ test('the version number of the page is the first entry of CHANGELOG', () => {
 
 test('the screenshots of the user manual: one in English and one in Japanese for each figure, all in the page', async () => {
   const root = path.join(import.meta.dirname, '..'),
-    help = fs.readFileSync(path.join(root, 'src/ts/22-help.ts'), 'utf8'),
+    help = fs.readFileSync(path.join(root, 'src/ts/28-help.ts'), 'utf8'),
     figs = [...help.matchAll(/<figure class="hp-fig" data-img="([\w-]+)"/g)].map(m => m[1]),
     names = [...new Set(figs)].sort();
   // each figure is in the English and the Japanese text

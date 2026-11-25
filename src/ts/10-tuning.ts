@@ -2,14 +2,11 @@
 // Copyright 2026 Masanobu Koga
 /* ================= PID tuning rules ================= */
 import { T } from './02-i18n.ts';
-import { PLANTS } from './03-definitions.ts';
-import { lastOf, numStr, polyRoots, trimPoly } from './04-parser.ts';
-import { S } from './05-state.ts';
-import { $, buildCtrlCustom, renderTeX, showCtrlParam } from './06-ui-build.ts';
-import { discretize, makeSS, ssOut, ssStepD } from './07-simulation.ts';
-import { bodeSeries, evalPr, freqRange } from './08-frequency.ts';
-import { update } from './16-pole-zero.ts';
-import { layout } from './17-events-layout.ts';
+import { lastOf, polyRoots, trimPoly } from './03-math.ts';
+import { PLANTS } from './05-definitions.ts';
+import { S } from './06-state.ts';
+import { bodeSeries, evalPr, freqRange } from './07-frequency.ts';
+import { discretize, makeSS, ssOut, ssStepD } from './08-simulation.ts';
 
 /** A tuning rule or plant model that cannot be applied: why (a code for tuneErr) */
 interface TuneFail {
@@ -44,7 +41,8 @@ interface TuneGains {
   lam?: number;
 }
 /** Result of a tuning rule, with the model it used (or why it cannot be applied) */
-type TuneResult = (TuneGains & { err?: undefined; model: PlantModel }) | { err: string; model: PlantModel | TuneFail };
+export type TuneResult =
+  (TuneGains & { err?: undefined; model: PlantModel }) | { err: string; model: PlantModel | TuneFail };
 /* ---- Tuning rules ----
    To add a rule, add an entry to TUNE_RULES with its menu name (and its translations in i18n.json), the plant
    model it uses and its gains for each controller type; the menu, the checks and the result follow from it. */
@@ -264,103 +262,3 @@ export function tuneRule(method: string, type: string, lam: number | null = null
 }
 // Gains of the parallel form C(s) = KP + KI/s + KD s/(s/N+1)
 export const tuneGains = (r: TuneGains) => ({ Kp: r.Kp, Ki: r.Ti ? r.Kp / r.Ti : 0, Kd: r.Td ? r.Kp * r.Td : 0 });
-export let lastTune: TuneResult | null = null;
-export function tuneVisible() {
-  const c = document.querySelector<HTMLElement>('.side > .card[data-card="tune"]');
-  return !!c && layout.scard === 'tune'; // the card shown in the settings panel
-}
-export function buildTune() {
-  const opt = (v: string, l: string, cur: string) =>
-    `<option value="${v}"${v === cur ? ' selected' : ''}>${l}</option>`;
-  const inner = `<div class="tune-grid">
-      <label for="tuneMethod">${T('Method')}</label><select id="tuneMethod">${TUNE_METHODS.map(m => opt(m, tuneLabel(m), S.tune.method)).join('')}</select>
-      <label for="tuneType">${T('Controller type')}</label><select id="tuneType">${TUNE_TYPES.map(m => opt(m, T(m + ' control'), S.tune.type)).join('')}</select>
-      <label for="tuneLam" id="tuneLamL">${T('IMC filter time constant λ')}</label><input type="number" id="tuneLam" step="any" min="0" placeholder="${T('auto')}" value="${S.tune.lam ?? ''}">
-    </div>
-    <div class="poles" id="tuneOut"></div>
-    <button class="chip" id="tuneApply">${T('Apply to the controller')}</button>
-    <div class="hint">${T('The model is identified from the step or frequency response of P(s) alone, so the closed-loop response can differ from what the rule aims for. The derivative filter N keeps its current value.')}</div>`;
-  $('ctrl-tune').innerHTML = inner;
-  $('tuneMethod').onchange = () => {
-    S.tune.method = $('tuneMethod').value;
-    renderTune();
-  };
-  $('tuneType').onchange = () => {
-    S.tune.type = $('tuneType').value;
-    renderTune();
-  };
-  $('tuneLam').onchange = () => {
-    const v = parseFloat($('tuneLam').value);
-    S.tune.lam = isFinite(v) && v > 0 ? v : null;
-    $('tuneLam').value = String(S.tune.lam ?? '');
-    renderTune();
-  };
-  $('tuneLam').onkeydown = e => {
-    if (e.key === 'Enter') $('tuneLam').blur();
-  };
-  $('tuneApply').onclick = applyTune;
-}
-export function renderTune() {
-  const box = $('tuneOut');
-  if (!box) return;
-  const imc = S.tune.method === 'imc';
-  $('tuneLam').style.display = $('tuneLamL').style.display = imc ? '' : 'none';
-  if (!tuneVisible()) {
-    lastTune = null;
-    return;
-  } // computed only while its card is shown
-  const r = (lastTune = tuneRule(S.tune.method, S.tune.type, S.tune.lam)),
-    m = r.model,
-    n = numStr,
-    out: string[] = [];
-  if (m.err === undefined && m.kind === 'ult')
-    out.push(T('Ultimate gain Ku = {Ku}, ultimate period Pu = {Pu} s', { Ku: n(m.sgn * m.Ku), Pu: n(m.Pu) }));
-  else if (m.err === undefined) {
-    out.push(
-      m.K !== null
-        ? T('Model from the step response of P(s) (tangent at the steepest point): K = {K}, T = {T}, L = {L}', {
-            K: n(m.sgn * m.K),
-            T: n(m.T ?? NaN),
-            L: n(m.L),
-          })
-        : T('Model from the step response of P(s) (tangent at the steepest point): slope R = {R}, L = {L}', {
-            R: n(m.sgn * m.R),
-            L: n(m.L),
-          }),
-    );
-  }
-  if (r.err !== undefined) out.push(`<span class="err">${tuneErr(r.err)}</span>`);
-  else {
-    if (imc) out.push(T('λ = {l} (automatic value when blank)', { l: n(r.lam ?? NaN) }));
-    const g = tuneGains(r),
-      ks: string[] = [`K<sub>P</sub> = <b>${n(r.Kp)}</b>`],
-      ts: string[] = [];
-    if (r.Ti !== undefined) {
-      ks.push(`K<sub>I</sub> = <b>${n(g.Ki)}</b>`);
-      ts.push(`T<sub>I</sub> = ${n(r.Ti)}`);
-    }
-    if (r.Td !== undefined) {
-      ks.push(`K<sub>D</sub> = <b>${n(g.Kd)}</b>`);
-      ts.push(`T<sub>D</sub> = ${n(r.Td)}`);
-    }
-    out.push(ks.join('　'));
-    if (ts.length) out.push('(' + ts.join('　') + ')');
-  }
-  box.innerHTML = out.join('<br>');
-  $('tuneApply').disabled = !!r.err;
-}
-export function applyTune() {
-  const r = lastTune;
-  if (!r || r.err !== undefined) return;
-  const g = tuneGains(r),
-    type = S.tune.type;
-  S.mode = type;
-  S.lastPid = type;
-  S.Kp = +g.Kp.toPrecision(4);
-  if (type !== 'P') S.Ki = +g.Ki.toPrecision(4);
-  if (type === 'PID') S.Kd = +g.Kd.toPrecision(4);
-  (['Kp', 'Ki', 'Kd'] as NumKey[]).forEach(showCtrlParam);
-  buildCtrlCustom();
-  renderTeX();
-  update();
-}

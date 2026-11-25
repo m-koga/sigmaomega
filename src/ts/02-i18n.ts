@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-/* ================= Internationalization =================
+/* ================= Internationalization: languages, the dictionary and T() =================
    UI strings are written in English and translated into Japanese, Chinese, Korean, and Thai
    through the dictionary I18N (keys are the English strings).
    T(english, {vars}) returns the string in the current language; strings missing from the dictionary stay in English. */
@@ -37,7 +37,7 @@ export function detectLang(): Lang {
   return 'en';
 }
 export let LANG: Lang = 'en';
-// Change the display language (the page is updated by setLang in 17-events-layout.ts)
+// Change the display language (the page is updated by setLang in 29-language.ts)
 export function setLangCode(l: Lang) {
   LANG = l;
 }
@@ -72,38 +72,6 @@ export const TXT_PZ1 =
   TXT_PZ2 =
     ' The dead time \\(e^{-{L}s}\\) is replaced by a third-order Padé approximation, so the closed-loop poles are approximate (the actual system has infinitely many poles).',
   TXT_PZ3 = ' Saturation is nonlinear and is not included in the pole calculation.';
-// Record the source (English) text of static strings (data-i18n / data-i18n-title)
-export const I18N_EL: [HTMLElement, 'html' | 'title', string][] = [];
-// innerHTML serializes "&" as "&amp;"; convert it back to match the dictionary keys
-document
-  .querySelectorAll<HTMLElement>('[data-i18n]')
-  .forEach(el => I18N_EL.push([el, 'html', el.innerHTML.replace(/&amp;/g, '&')]));
-document
-  .querySelectorAll<HTMLElement>('[data-i18n-title]')
-  .forEach(el => I18N_EL.push([el, 'title', el.getAttribute('title') ?? '']));
-// An element made by the script whose text is translated now and when the language changes
-export function i18nText(el: HTMLElement, key: string) {
-  I18N_EL.push([el, 'html', key]);
-  el.innerHTML = T(key);
-}
-// The same for the tooltip (title) of an element made by the script
-export function i18nTitle(el: HTMLElement, key: string) {
-  I18N_EL.push([el, 'title', key]);
-  el.title = T(key);
-}
-export function applyStaticI18n() {
-  I18N_EL.forEach(([el, kind, key]) => {
-    if (kind === 'html') el.innerHTML = T(key);
-    else el.setAttribute('title', T(key));
-  });
-  document.documentElement.lang = LANGUAGES[LANG].tag;
-  const hp = document.querySelector<HTMLElement>('header p');
-  if (hp && hp.textContent) hp.title = hp.textContent; // full description on hover
-  document.documentElement.style.setProperty('--t-shown', JSON.stringify(T('Shown ▾')));
-  document.documentElement.style.setProperty('--t-hidden', JSON.stringify(T('Hidden ▸')));
-  // the name SigmaOmega is not translated; the subtitle is
-  document.title = `SigmaOmega — ${T('Feedback Control Simulator')}`;
-}
 export const UIFONT = (): string => LANGUAGES[LANG].font;
 // The options of the language menu
 export const langOptions = (): string =>

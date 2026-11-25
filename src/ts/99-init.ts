@@ -4,14 +4,23 @@
    Builds the user interface and runs the first simulation.
    This file is the last one of the script; the unit tests load all the other files without it,
    so that the computation can be tested without a real page. */
-import { LANG, applyStaticI18n, isLang, langOptions } from './02-i18n.ts';
-import { $, buildCtrlCustom, buildMenus, buildPlant, buildStatic, renderTeX } from './06-ui-build.ts';
-import { bodeDescDefault } from './09-drawing.ts';
-import { buildSweep } from './10-sweep.ts';
-import { buildScenarios, loadScenarioFromURL } from './12-scenarios.ts';
-import { buildSpecs } from './14-specs.ts';
-import { update } from './16-pole-zero.ts';
-import { ghostText, renderChangelog, setLang } from './17-events-layout.ts';
+import { LANG, isLang, langOptions } from './02-i18n.ts';
+import { $, applyStaticI18n } from './13-dom.ts';
+import { bodeDescDefault } from './15-drawing.ts';
+import { renderTeX } from './17-panels.ts';
+import { update } from './18-update.ts';
+import {
+  buildCtrlCustom,
+  buildMenus,
+  buildPlant,
+  buildSpecs,
+  buildStatic,
+  buildSweep,
+  ghostText,
+} from './19-controls.ts';
+import { renderChangelog } from './24-layout.ts';
+import { buildScenarios, loadScenarioFromURL } from './25-scenarios.ts';
+import { setLang } from './29-language.ts';
 
 $('langSel').innerHTML = langOptions();
 $('langSel').onchange = () => {

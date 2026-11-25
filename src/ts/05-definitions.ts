@@ -2,8 +2,7 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Definitions ================= */
 // Entries of a set of setting definitions, with the keys typed as numeric settings of State
-import { cT, nT, pMul, pScale, ratTeX } from './04-parser.ts';
-import { S } from './05-state.ts';
+import { cT, nT, pMul, pScale, ratTeX } from './03-math.ts';
 
 export const entriesOf = (defs: ParamDefs) => Object.entries(defs) as [NumKey, ParamDef][];
 // Typed values may go beyond the slider range up to the limits hard of each parameter (physically meaningful limits)
@@ -181,30 +180,12 @@ export const PID_MODES: string[] = ctrlKeys.filter(k => CONTROLLERS[k].kind === 
   COMP_MODES: string[] = ctrlKeys.filter(k => CONTROLLERS[k].kind === 'tf' && k !== 'custom'); // lead/lag type
 export const MODE_PARAMS: Record<string, NumKey[]> = Object.fromEntries(ctrlKeys.map(k => [k, CONTROLLERS[k].p]));
 export const MODE_NAMES: Record<string, string> = Object.fromEntries(ctrlKeys.map(k => [k, CONTROLLERS[k].name]));
-// Controllers handled as transfer functions (lead, lag, custom)
-export const isTFMode = (st: State = S) => CONTROLLERS[st.mode].kind === 'tf';
 // Whether a PID-type controller has the P, I or D term
 const TERM_GAIN = { P: 'Kp', I: 'Ki', D: 'Kd' } as const;
 export const hasTerm = (st: State, t: 'P' | 'I' | 'D') =>
   CONTROLLERS[st.mode].kind === 'pid' && CONTROLLERS[st.mode].p.includes(TERM_GAIN[t]);
 // Initial value of parameter k for controller kind m
 export const ctrlDefault = (m: string, k: NumKey): number => CONTROLLERS[m]?.defaults?.[k] ?? CTRL[k].val;
-// Switching from kind prev to kind next: a parameter still at the initial value of prev gets the initial value
-// of next (a value changed by hand is kept)
-export function switchDefaults(prev: string, next: string, st: State = S): NumKey[] {
-  const keys = [
-      ...new Set([
-        ...Object.keys(CONTROLLERS[prev]?.defaults ?? {}),
-        ...Object.keys(CONTROLLERS[next]?.defaults ?? {}),
-      ]),
-    ] as NumKey[],
-    changed = keys.filter(k => st[k] === ctrlDefault(prev, k) && ctrlDefault(next, k) !== st[k]);
-  changed.forEach(k => (st[k] = ctrlDefault(next, k)));
-  return changed; // the parameters whose inputs need to show the new value
-}
-export function ctrlRational(st: State = S): Rational {
-  return CONTROLLERS[st.mode].rational(st);
-}
 export const REFP: ParamDefs = {
   R: { label: '', min: -2, max: 2, step: 0.1, val: 1, hard: [-BIG, BIG] },
   rT0: { label: 'Start time \\(t_0\\) [s]', min: 0, max: 100, step: 0.5, val: 0, hard: [0, 1e5] },
@@ -260,27 +241,6 @@ export const REF_TYPES: Record<string, RefType> = {
     tex: 'r(t)=A\\sin\\dfrac{2\\pi(t-t_0)}{T_p}\\quad(t\\ge t_0)',
   },
 };
-export function refValue(t: number, st: State = S): number {
-  const R = st.R,
-    tau = t - st.rT0;
-  if (tau < 0) return 0;
-  switch (st.refType) {
-    case 'ramp':
-      return R * tau;
-    case 'parab':
-      return 0.5 * R * tau * tau;
-    case 'trap':
-      return R * Math.min(tau / st.rW, 1);
-    case 'pulse':
-      return tau < st.rW ? R : 0;
-    case 'square':
-      return tau % st.rPer < st.rPer / 2 ? R : 0;
-    case 'sine':
-      return R * Math.sin((2 * Math.PI * tau) / st.rPer);
-    default:
-      return R;
-  }
-}
 export const INPUTS: ParamDefs = {
   noise: {
     label: 'Measurement noise std. dev. \\(\\sigma_n\\)',
@@ -333,8 +293,8 @@ export function hardRange(k: string, fallback = BIG): readonly [number, number] 
 
 /* ---- Design specifications ----
    In the order of the card "Design specifications". To add one, add an entry here and its measurement to
-   SPEC_MEASURES (14-specs.ts); the row of the card, the default, the check, the sweep table and the saved scenarios
-   follow. Its label needs translations in src/i18n.json; a line on a plot is drawn in 09-drawing.ts.
+   SPEC_MEASURES (11-specs.ts); the row of the card, the default, the check, the sweep table and the saved scenarios
+   follow. Its label needs translations in src/i18n.json; a line on a plot is drawn in 15-drawing.ts.
      label: text before the limit; unit: unit of the limit and of the measured value; low: smallest limit that can
      be typed; bound: 'max' when the measured value must be ≤ the limit, 'min' when ≥; on, v: default */
 export const SPECS = {

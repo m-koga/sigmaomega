@@ -5,91 +5,12 @@
    so one row can hold the block diagram alone, the next two plots and the next three. The ⠿ handle (or the title)
    of a panel moves it: within a row, into another row or into a new row. The boundary between two panels of a row
    changes their widths. On a narrow screen the panels are shown one below the other.
-   The layout is applied while 17-events-layout.ts loads, before this file has run: what that uses is made of
-   function declarations (and constants of earlier files). */
-import { i18nTitle } from './02-i18n.ts';
-import { $, byId } from './06-ui-build.ts';
-import { MAX_COLS, PANELS, presetCols } from './09-drawing.ts';
-import { redraw } from './16-pole-zero.ts';
-import { applyPanels, layout, saveLayout, scheduleRedraw, shownPanels } from './17-events-layout.ts';
+   The stored arrangement is read and checked in 14-view.ts (normRows); 24-layout.ts applies it. */
+import { $, byId, i18nTitle } from './13-dom.ts';
+import { MAX_COLS, layout, saveLayout, shownPanels } from './14-view.ts';
+import { redraw, scheduleRedraw } from './18-update.ts';
 
 // ---- Operations on the arrangement (no page access)
-
-// A valid arrangement in rows from stored data: every panel exactly once (the block diagram, when missing, in a row
-// of its own on top; other missing panels together in a new row at the bottom), positive widths; null when nothing
-// usable
-export function normRows(src: unknown): RowTiles | null {
-  if (!src || typeof src !== 'object' || !Array.isArray((src as RowTiles).rows)) return null;
-  const seen = new Set<string>(),
-    rows: RowTiles['rows'] = [];
-  for (const r of (src as RowTiles).rows) {
-    if (!r || typeof r !== 'object' || !Array.isArray(r.panels)) continue;
-    const panels: string[] = [],
-      w: number[] = [];
-    (r.panels as unknown[]).forEach((k, i) => {
-      if (typeof k !== 'string' || !(PANELS as readonly string[]).includes(k) || seen.has(k)) return;
-      seen.add(k);
-      const v = Array.isArray(r.w) ? r.w[i] : 1;
-      panels.push(k);
-      w.push(typeof v === 'number' && isFinite(v) && v > 0 ? Math.min(v, 100) : 1);
-    });
-    if (panels.length) rows.push({ panels, w });
-  }
-  if (!rows.length) return null;
-  if (!seen.has('diag')) rows.unshift({ panels: ['diag'], w: [1] });
-  pushRows(
-    rows,
-    PANELS.filter(k => !seen.has(k) && k !== 'diag'),
-  );
-  return { rows };
-}
-// Adds panels at the bottom in new rows of at most MAX_COLS
-function pushRows(rows: RowTiles['rows'], panels: string[]) {
-  for (let i = 0; i < panels.length; i += MAX_COLS) {
-    const p = panels.slice(i, i + MAX_COLS);
-    rows.push({ panels: p, w: p.map(() => 1) });
-  }
-}
-// The arrangement with no row showing more than MAX_COLS panels: the panels beyond go into a new row below (a
-// hidden panel shown again comes back in its row, which may be full)
-export function splitFullRows(t: RowTiles, shown: Set<string>): RowTiles {
-  const rows: RowTiles['rows'] = [];
-  t.rows.forEach(r => {
-    let cur = { panels: [] as string[], w: [] as number[] },
-      n = 0;
-    r.panels.forEach((k, j) => {
-      if (shown.has(k) && n === MAX_COLS) {
-        rows.push(cur);
-        cur = { panels: [], w: [] };
-        n = 0;
-      }
-      if (shown.has(k)) n++;
-      cur.panels.push(k);
-      cur.w.push(r.w[j]);
-    });
-    rows.push(cur);
-  });
-  return rows.length === t.rows.length ? t : { rows };
-}
-
-// The arrangement in rows that looks like a preset layout: the block diagram in a row of its own on top, the other
-// shown panels n to a row (1 column: one, 2 columns: two, 1 row: all, at most MAX_COLS); the hidden panels together
-// in rows at the bottom, so that they come back side by side
-export function rowsFromPreset(mode: string, shown: string[]): RowTiles {
-  const n = Math.min(MAX_COLS, presetCols(mode, shown)),
-    vis = PANELS.filter(k => k !== 'diag' && shown.includes(k)),
-    rows: RowTiles['rows'] = [];
-  if (shown.includes('diag')) rows.push({ panels: ['diag'], w: [1] });
-  for (let i = 0; i < vis.length; i += n) {
-    const p = vis.slice(i, i + n);
-    rows.push({ panels: p, w: p.map(() => 1) });
-  }
-  pushRows(
-    rows,
-    PANELS.filter(k => !shown.includes(k)),
-  );
-  return { rows };
-}
 
 /** Where a panel is dropped: before the index-th shown panel of row `row` (index = number shown: at the end), or
     into a new row inserted before row newRow (newRow = number of rows: at the bottom) */
@@ -146,7 +67,7 @@ export function stepRowTile(
 
 const MIN_ROW_PANEL_W = 200; // narrowest panel in a row when the boundary is dragged [px]
 
-// Puts the panels into their rows (called by arrangePanels in 18-tiles.ts)
+// Puts the panels into their rows (called by arrangePanels in 23-tiles.ts)
 export function arrangeRows(host: HTMLElement) {
   const t = layout.rows;
   if (!t) return;
@@ -231,15 +152,6 @@ function makeRowGrip(i: number, a: string, b: string) {
     redraw();
   });
   return g;
-}
-
-// Moves panel k in the arrangement in rows and shows the result
-export function moveRowTo(k: string, to: RowDrop) {
-  if (!layout.rows) return;
-  layout.rows = moveRowTile(layout.rows, k, to, shownPanels);
-  saveLayout();
-  applyPanels();
-  requestAnimationFrame(redraw);
 }
 
 // Where a panel dragged to (x, y) would go in the arrangement in rows, and the line that shows it (relative to the

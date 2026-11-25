@@ -7,69 +7,27 @@
    title) of a panel moves it: within a column, to another column or into a new column (up to MAX_COLS). The
    boundary between two columns changes their widths; the plots keep their own height handles. On a narrow
    screen the columns are shown one below the other.
-   The layout is applied while 17-events-layout.ts loads, before this file has run: what that uses is made of
-   function declarations (and MAX_COLS from 09-drawing.ts). */
-import { i18nTitle } from './02-i18n.ts';
-import { $, byId, qs } from './06-ui-build.ts';
-import { MAX_COLS, PANELS, TEX_FS_DEFAULT, presetCols, texFsForHeight, texFsShown } from './09-drawing.ts';
-import { redraw } from './16-pole-zero.ts';
-import { arrangeRows, dropAtRows, moveRowTo, rowsFromPreset, stepRowTile } from './19-rows.ts';
+   The stored arrangement is read and checked in 14-view.ts (normTiles); 24-layout.ts applies it. */
+import { $, byId, dragger, i18nTitle, qs } from './13-dom.ts';
 import {
-  applyPanels,
-  diagMaxH,
-  dragger,
+  MAX_COLS,
+  MIN_COL_W,
+  PANELS,
   isHidden,
   layout,
+  presetCols,
+  rowsFromPreset,
   saveLayout,
-  scheduleRedraw,
   shownPanels,
-} from './17-events-layout.ts';
-
-const MIN_COL_W = 320; // narrowest column: when the boundary is dragged and when a column is added [px]
+  splitFullRows,
+  tilesFromPreset,
+} from './14-view.ts';
+import { diagMaxH, fitTex, texFsForHeight, texWidthRatio } from './17-panels.ts';
+import { redraw, scheduleRedraw } from './18-update.ts';
+import { arrangeRows, dropAtRows, moveRowTile, stepRowTile } from './22-rows.ts';
+import type { RowDrop } from './22-rows.ts';
 
 // ---- Operations on the arrangement (no page access)
-
-// A valid arrangement from stored data: every panel exactly once (missing ones go to the column with the fewest
-// panels; the block diagram, missing from arrangements saved before it was a panel, on top of the first column),
-// at most MAX_COLS columns, positive widths; null when nothing usable is stored
-export function normTiles(src: unknown): Tiles | null {
-  if (!src || typeof src !== 'object' || !Array.isArray((src as Tiles).cols)) return null;
-  const seen = new Set<string>(),
-    cols: Tiles['cols'] = [];
-  for (const c of (src as Tiles).cols.slice(0, MAX_COLS)) {
-    if (!c || typeof c !== 'object' || !Array.isArray(c.panels)) continue;
-    const panels: string[] = [];
-    for (const k of c.panels as unknown[])
-      if (typeof k === 'string' && (PANELS as readonly string[]).includes(k) && !seen.has(k)) {
-        seen.add(k);
-        panels.push(k);
-      }
-    if (!panels.length) continue;
-    const w = typeof c.w === 'number' && isFinite(c.w) && c.w > 0 ? Math.min(c.w, 100) : 1;
-    cols.push({ w, panels });
-  }
-  if (!cols.length) return null;
-  PANELS.filter(k => !seen.has(k)).forEach(k =>
-    k === 'diag' ? cols[0].panels.unshift(k) : fewest(cols).panels.push(k),
-  );
-  return { cols };
-}
-function fewest(cols: Tiles['cols']) {
-  return cols.reduce((a, c) => (c.panels.length < a.panels.length ? c : a));
-}
-
-// The arrangement that looks like a preset layout: the shown panels row by row in 1, 2 or n columns (the block
-// diagram, across the whole width in the preset, on top of the first column); the hidden panels go to the column
-// with the fewest panels
-export function tilesFromPreset(mode: string, shown: string[]): Tiles {
-  const vis = PANELS.filter(k => k !== 'diag' && shown.includes(k)),
-    n = Math.min(MAX_COLS, presetCols(mode, shown)),
-    cols: Tiles['cols'] = Array.from({ length: n }, () => ({ w: 1, panels: [] as string[] }));
-  if (shown.includes('diag')) cols[0].panels.push('diag');
-  vis.forEach((k, i) => cols[i % n].panels.push(k));
-  PANELS.filter(k => !shown.includes(k)).forEach(k => fewest(cols).panels.push(k));
-  return { cols };
-}
 
 /** Where a panel is dropped: before the index-th shown panel of column col (index = number shown: at the end),
     or into a new column inserted before column newCol (newCol = number of columns: at the right end) */
@@ -391,28 +349,6 @@ function setPlotHeights(plots: PanelPlot[], h0: number[], f: number) {
   });
   scheduleRedraw();
 }
-// How many times wider the formulas may become and still fit the width of their boxes (the widest formula decides;
-// Infinity before they are drawn). 2 % is left for rounding
-function texWidthRatio(): number {
-  let r = Infinity;
-  ['tex-C', 'tex-P'].forEach(id => {
-    const el = byId(id);
-    el.querySelectorAll('mjx-container > svg').forEach(svg => {
-      const w = svg.getBoundingClientRect().width;
-      if (w > 0 && el.clientWidth > 0) r = Math.min(r, (el.clientWidth * 0.98) / w);
-    });
-  });
-  return r;
-}
-// Show the formulas at the chosen size, or smaller so that they fit the width of the panel. Called after they are
-// drawn (renderTeX), when the layout is applied, when the size is chosen, and when the width of the panel changes
-export function fitTex() {
-  const box = $('tf-wrap'),
-    cur = parseFloat(getComputedStyle($('tex-P')).fontSize) || TEX_FS_DEFAULT,
-    f = texFsShown(layout.texFs || TEX_FS_DEFAULT, cur, texWidthRatio());
-  if (f === TEX_FS_DEFAULT && !layout.texFs) box.style.removeProperty('--texFs');
-  else box.style.setProperty('--texFs', f + 'px');
-}
 // ...when the width of the formulas' boxes changes (the window, the columns, the panel shown again)
 if (typeof ResizeObserver !== 'undefined') {
   let lastW = -1;
@@ -511,3 +447,30 @@ PANELS.forEach(k => {
     redraw();
   });
 });
+// Moves panel k in the arrangement in rows and shows the result
+export function moveRowTo(k: string, to: RowDrop) {
+  if (!layout.rows) return;
+  layout.rows = moveRowTile(layout.rows, k, to, shownPanels);
+  saveLayout();
+  applyPanels();
+  requestAnimationFrame(redraw);
+}
+// Plot selection (multiple allowed) and layout
+export function applyPanels() {
+  PANELS.forEach(k => {
+    const on = shownPanels.has(k);
+    $(`panel-${k}`).style.display = on ? '' : 'none';
+    const t = qs(`.tab[data-tab="${k}"]`);
+    t.classList.toggle('on', on);
+    t.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  // the last panel shown cannot be hidden: its × is not available
+  document.querySelectorAll<HTMLButtonElement>('.pclose').forEach(b => (b.disabled = shownPanels.size === 1));
+  const mode = layout.pcols || '2';
+  if (mode === 'free' && !layout.tiles) layout.tiles = tilesFromPreset('2', [...shownPanels]);
+  if (mode === 'rows' && !layout.rows) layout.rows = rowsFromPreset('2', [...shownPanels]);
+  if (layout.rows) layout.rows = splitFullRows(layout.rows, shownPanels);
+  $('pcols').value = mode;
+  $('panels').style.setProperty('--pcols', String(presetCols(mode, shownPanels)));
+  arrangePanels(mode);
+}

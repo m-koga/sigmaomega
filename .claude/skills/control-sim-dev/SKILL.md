@@ -28,17 +28,20 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
 - `src/index.html`（`@@VERSION@@`、`/*@@CSS@@*/`、`//@@JS@@` を置き換えるひな形）、`src/style.css`、`src/i18n.json`、`src/ts/*.ts`。
 - `src/ts/NN-*.ts` は ES モジュール。`scripts/build.ts` が型を除き、`import`/`export` を消して、ファイル名の順に 1 つのスクリプトにつなぎ、`index.html` を作る。
   - 新しいソースファイルの先頭には `// SPDX-License-Identifier: Apache-2.0` と `// Copyright 2026 Masanobu Koga` の 2 行を入れる（CSS・YAML・HTML はそれぞれのコメントの書き方。`tests/license-headers.test.ts` が確かめる）。
-  - ファイル：01 更新履歴、02 翻訳、03 定義（設定パネルのカード `CARD_KEYS`・`CARD_GROUP` も）、04 構文解析、05 状態、06 画面の構築、07 シミュレーション、08 周波数応答、09 描画、10 掃引、11 書き出し、12 例題、13 自動調整、14 設計仕様、15 拡大縮小、16 極・零点配置、17 イベントとレイアウト、18 図の配置と高さ（列の自由な配置）、19 行による配置、20 メニューバー（共通の `dropdown()`）、21 ブロック線図の拡大・縮小・移動と PNG、22 利用者マニュアル（本文は英語と日本語。辞書を通さない。章「例題で試す」の `<figure data-img>` のスクリーンショットは `src/help-img/<名前>.<en|ja>.webp`。画面の見た目や演習の数値が変わる変更のあとは `npm run shots` で撮り直してから `npm run build`。新しい画像を入れた版は `edit_version` では公開できない。アイコンの図案は `src/icon.svg`。変えたら `npm run icon` で PNG のアイコン（`src/icon-180.png`、`-192`、`-512`、`-maskable-512`）も作り直す。GitHub Pages 用のサイトは `npm run pages` で `site/` に書き出す（マニフェストは `src/manifest.webmanifest`。アーティファクトには入らない）。図と表には `data-id` と説明文（`figcaption`・`caption`）を付け、本文から `<a class="hp-ref" href="#" data-ref="id"></a>` で参照する。番号は表示時に章ごとに振る）、99 起動。
-  - 画面：ヘッダーの下のメニューバー（ファイル、表示する図、系の設定、解析・設計、図の並び方、指標の表示）。その下に設定パネル（選んだカード 1 枚だけ）と図の区画。新しいプルダウンは `20-menubar.ts` の `dropdown()` を使う。
+  - ファイルは層（`tests/modules.test.ts` が確かめる。各ファイルは番号の小さいファイルからだけ import する。下の層が上の層を呼ぶ必要ができたら、そのコードを下に移すか、上の層で設定する。01–12 はページに触れない）：
+    - 計算：01 更新履歴、02 翻訳（`T()`・`LANGUAGES`）、03 複素数と多項式・数の表記、04 構文解析、05 定義（設定パネルのカード `CARD_KEYS`・`CARD_GROUP` も）、06 状態（`S`、`ctrlRational`・`refValue` など設定から決まるもの、最後の結果 `lastSim` など。書き換えは `setResults()`）、07 周波数応答、08 シミュレーション、09 ループと閉ループ極・根軌跡、10 調整則、11 設計仕様の評価、12 掃引の計算。
+    - 表示：13 ページの要素（`$`・`byId`）・ファイル・メッセージ・ページの翻訳、14 表示の状態（`layout`・`shownPanels`・`PLOT_VIEWS`・`COLORS`・行と列の配置の正規化）、15 描画、16 極・零点配置の描画、17 パネルの内容（ブロック線図・式・設計仕様・調整則・掃引の表示）、18 `update()`・`redraw()`。
+    - 操作：19 設定パネルの構築とイベント、20 図の操作（拡大縮小・極・零点配置・ボードとナイキストの表示項目）、21 書き出し、22 行による配置、23 図の配置と高さ（列の自由な配置、`applyPanels`）、24 ページのレイアウト（図の下の区画・設定パネル・更新履歴）、25 例題、26 メニューバー（共通の `dropdown()`）、27 ブロック線図の拡大・縮小・移動と PNG、28 利用者マニュアル（本文は英語と日本語。辞書を通さない。章「例題で試す」の `<figure data-img>` のスクリーンショットは `src/help-img/<名前>.<en|ja>.webp`。画面の見た目や演習の数値が変わる変更のあとは `npm run shots` で撮り直してから `npm run build`。新しい画像を入れた版は `edit_version` では公開できない。アイコンの図案は `src/icon.svg`。変えたら `npm run icon` で PNG のアイコン（`src/icon-180.png`、`-192`、`-512`、`-maskable-512`）も作り直す。GitHub Pages 用のサイトは `npm run pages` で `site/` に書き出す（マニフェストは `src/manifest.webmanifest`。アーティファクトには入らない）。図と表には `data-id` と説明文（`figcaption`・`caption`）を付け、本文から `<a class="hp-ref" href="#" data-ref="id"></a>` で参照する。番号は表示時に章ごとに振る）、29 言語の切り替え（`setLang`）、99 起動。
+  - 画面：ヘッダーの下のメニューバー（ファイル、表示する図、系の設定、解析・設計、図の並び方、指標の表示）。その下に設定パネル（選んだカード 1 枚だけ）と図の区画。新しいプルダウンは `26-menubar.ts` の `dropdown()` を使う。
 - 型：`src/ts/types.d.ts`（import なし＝グローバル）。`src/ts/element-ids.d.ts` と `tests/app-api.d.ts` は生成物。
 - 拡張は表に 1 項目を足す方式：
-  - `PLANTS`、`CONTROLLERS`、`PLOTS`、パラメータ（`PARAMS`・`CTRL` ほか。入力範囲 `hard`、記号 `sym`、掃引の値 `sweep`）、設計仕様 `SPECS`：`03-definitions.ts`（設計仕様の測り方は `14-specs.ts` の `SPEC_MEASURES`）
+  - `PLANTS`、`CONTROLLERS`、`PLOTS`、パラメータ（`PARAMS`・`CTRL` ほか。入力範囲 `hard`、記号 `sym`、掃引の値 `sweep`）、設計仕様 `SPECS`：`05-definitions.ts`（設計仕様の測り方は `11-specs.ts` の `SPEC_MEASURES`）
   - 言語 `LANGUAGES`：`02-i18n.ts`
-  - `TUNE_RULES`：`13-tuning.ts`
-  - `INFO_AREAS`：`17-events-layout.ts`（図の下のタブ付き区画）
+  - `TUNE_RULES`：`10-tuning.ts`
+  - `INFO_AREAS`：`14-view.ts`（図の下のタブ付き区画）
   - `tests/kinds.test.ts` が全項目を確かめる。
 - 計算関数は設定を最後の引数 `st: State = S` で受け取る（グローバルを暗黙に読まない）。
-- レイアウト（`layout`）は設定と別。ブラウザに保存し、例題にも入る（読み込みの検証は `12-scenarios.ts` の `scLayout`）。新しい項目は、既定値を `17-events-layout.ts` の `defaultLayout()`（1 か所）に足し、保存するなら 17 の読み込みと 12 の `scLayout` の検証にも足す。
+- レイアウト（`layout`）は設定と別。ブラウザに保存し、例題にも入る（読み込みの検証は `25-scenarios.ts` の `scLayout`）。新しい項目は、既定値を `14-view.ts` の `defaultLayout()`（1 か所）に足し、保存するなら 14 の読み込みと 25 の `scLayout` の検証にも足す。
 
 ## 2. 書き方の決まり
 

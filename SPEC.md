@@ -284,23 +284,25 @@ Tests check that the time response matches the analytic solutions of first- and 
 
 ## 11. Development and quality assurance
 
-The source is TypeScript in `src/` (21 files, about 8,900 lines), built into `index.html`. In version 1.61.4 all 109 unit tests and 99 browser tests pass.
+The source is TypeScript in `src/` (30 script files in layers, about 9,700 lines), built into `index.html`. A file uses only files with a lower number, and files 01–12 do not touch the page (`tests/modules.test.ts`). In version 1.61.4 all 109 unit tests and 99 browser tests pass.
 
 ### 11.1 Source layout
 
 | File | Contents |
 | --- | --- |
 | `src/index.html`, `src/style.css`, `src/i18n.json` | Page template, stylesheet, translation dictionary |
-| `01-changelog` to `05-state` | Change log, translation, definitions of plants, controllers and references, transfer-function parser, state |
-| `06-ui-build` | Building the inputs and other parts of the page |
-| `07-simulation` to `09-drawing` | Simulation, frequency response, drawing |
-| `10-sweep` to `14-specs` | Sweep, export, scenarios, auto-tuning, design specifications |
-| `15-zoom`, `16-pole-zero` | Zoom, pole-zero map and root locus |
-| `17-events-layout` | Events, layout, and `defaultLayout()`, the single place for the layout defaults |
-| `18-tiles`, `19-rows` | Free arrangement in columns, arrangement in rows |
-| `20-menubar` | Menu bar and the shared drop-down `dropdown()` |
-| `21-diagram-zoom` | Zoom, pan and PNG of the block diagram |
-| `22-help` | User manual (text in English and Japanese, its screenshots and its dialog) |
+| `01-changelog` to `04-parser` | Basics: change log, translation, complex numbers and polynomials, transfer-function parser |
+| `05-definitions`, `06-state` | Model: definitions of plants, controllers, references, parameters and specifications; the settings, what follows from them, and the last results |
+| `07-frequency` to `12-sweep` | Computing (no access to the page): frequency response, simulation, loop and root locus, auto-tuning rules, design specifications, parameter sweep |
+| `13-dom`, `14-view` | Page basics: elements, files, messages and translation of the page; view state (layout and its defaults `defaultLayout()`, shown plots, zoomed views, colours) |
+| `15-drawing` to `18-update` | Showing: drawing of the plots and of the pole-zero map, contents of the panels and formulas, `update()` and `redraw()` |
+| `19-controls`, `20-zoom`, `21-export` | Settings panel and its events; interaction with the plots (zoom, pole-zero map, plot options); export |
+| `22-rows`, `23-tiles`, `24-layout` | Arrangement in rows, free arrangement in columns, layout of the page |
+| `25-scenarios` | Scenarios (save and load) |
+| `26-menubar` | Menu bar and the shared drop-down `dropdown()` |
+| `27-diagram-zoom` | Zoom, pan and PNG of the block diagram |
+| `28-help` | User manual (text in English and Japanese, its screenshots and its dialog) |
+| `29-language` | Switching the language |
 | `99-init` | Start-up |
 
 ### 11.2 From build to release

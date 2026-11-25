@@ -6,7 +6,7 @@
    Japanese here (like the change log, not through the dictionary); in Chinese, Korean and Thai the English text is
    shown with a note. It is drawn in the language of the page each time it is opened. */
 import { T, docsLang, docsTranslated } from './02-i18n.ts';
-import { $ } from './06-ui-build.ts';
+import { $ } from './13-dom.ts';
 
 /** A section of the manual: its id, and its title and HTML in English and Japanese */
 interface HelpSection {

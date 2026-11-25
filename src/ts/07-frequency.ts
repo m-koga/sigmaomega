@@ -1,18 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Frequency response ================= */
-import { CONTROLLERS, PID_MODES, PLANTS, ctrlRational, isTFMode, hasTerm } from './03-definitions.ts';
-import { polyRoots } from './04-parser.ts';
-import { S } from './05-state.ts';
+import { cadd, cdiv, cmul, polyRoots, polyval } from './03-math.ts';
+import { CONTROLLERS, PID_MODES, PLANTS, hasTerm } from './05-definitions.ts';
+import { S, ctrlRational, isTFMode } from './06-state.ts';
 
-export const cadd = (a: Complex, b: Complex): Complex => [a[0] + b[0], a[1] + b[1]];
-export const cmul = (a: Complex, b: Complex): Complex => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
-export const cdiv = (a: Complex, b: Complex): Complex => {
-  const d = b[0] * b[0] + b[1] * b[1];
-  return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d];
-};
-export const polyval = (p: Poly, s: Complex): Complex =>
-  p.reduce<Complex>((acc, c) => cadd(cmul(acc, s), [c, 0]), [0, 0]);
 // C(jω)P(jω) (without dead time)
 // C(jω)
 export function evalC(w: number, st: State = S): Complex {

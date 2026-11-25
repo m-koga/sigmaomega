@@ -6,11 +6,9 @@
    double-click shows the whole diagram. The zoom changes only the part of the drawing that is shown (the viewBox of
    its SVG); the size of the area stays (its bottom edge changes that). A new drawing (other parts
    of the loop, another language) shows the whole diagram again. PNG saves what is shown, on a white background. */
-import { i18nText, i18nTitle } from './02-i18n.ts';
-import { $, qs } from './06-ui-build.ts';
-import { COLORS } from './09-drawing.ts';
-import { savePNG } from './11-export.ts';
-import { ZOOM_BUTTONS } from './15-zoom.ts';
+import { $, i18nText, i18nTitle, qs, savePNG } from './13-dom.ts';
+import { COLORS } from './14-view.ts';
+import { ZOOM_BUTTONS } from './20-zoom.ts';
 
 export const DIAG_ZOOM_HELP = 'Wheel: zoom / Drag: pan / Double-click: show all',
   DIAG_ZOOM_MAX = 8; // largest zoom factor

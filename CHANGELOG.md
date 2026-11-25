@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.73.9 (2026-11-26)
+- Development: the script is in layers with no cycles: each file of src/ts imports only from files with a lower number (it used to have two cycles, one of 4 and one of 12 files), and files 01–12 (math, parser, definitions, state, frequency response, simulation, loop and root locus, tuning rules, specifications, sweep) do not touch the page; tests/modules.test.ts checks both
+- Development: new files for what was mixed with other topics: complex numbers and polynomials (03-math), the loop and root locus (09-loop), page elements and files (13-dom), the view state (14-view: layout, shown plots, plot views, colours), the contents of the panels and formulas (17-panels), update and redraw (18-update), and the language switch (29-language); what is drawn is separate from what reacts to input (for example, a click on a row of the sweep table is set up once with the other controls); the page and the plots are unchanged (pixel comparison identical)
+
 ## v1.73.8 (2026-11-25)
 - Development: each parameter carries its own limits for typed values, its symbol and its first sweep values (they were in three separate lists), the design specifications are one table (label, unit, smallest limit, direction, default and measurement) from which the rows of the card, the defaults and the checks are made, and the languages are one table (page language, name, font of the plots, language of the manual) from which the language menu is made; adding a parameter, a specification or a language is now one entry, checked by the tests; the page and the plots are unchanged (pixel comparison identical)
 - Development: the test that no Japanese is written in the script outside the dictionary now checks the whole script (it had stopped at the dictionary)

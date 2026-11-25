@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.73.9',
+    d: '2026-11-26',
+    en: [
+      'Development: the script is in layers with no cycles: each file of src/ts imports only from files with a lower number (it used to have two cycles, one of 4 and one of 12 files), and files 01–12 (math, parser, definitions, state, frequency response, simulation, loop and root locus, tuning rules, specifications, sweep) do not touch the page; tests/modules.test.ts checks both',
+      'Development: new files for what was mixed with other topics: complex numbers and polynomials (03-math), the loop and root locus (09-loop), page elements and files (13-dom), the view state (14-view: layout, shown plots, plot views, colours), the contents of the panels and formulas (17-panels), update and redraw (18-update), and the language switch (29-language); what is drawn is separate from what reacts to input (for example, a click on a row of the sweep table is set up once with the other controls); the page and the plots are unchanged (pixel comparison identical)',
+    ],
+    ja: [
+      '開発：スクリプトを循環のない層にした。src/ts の各ファイルは番号の小さいファイルからだけ import する（以前は 4 ファイルと 12 ファイルの 2 つの循環があった）。ファイル 01–12（数学、構文解析、定義、状態、周波数応答、シミュレーション、ループと根軌跡、調整則、設計仕様、掃引）はページに触れない。どちらも tests/modules.test.ts が確かめる',
+      '開発：ほかの内容と混ざっていたものを新しいファイルに分けた：複素数と多項式（03-math）、ループと根軌跡（09-loop）、ページの要素とファイル（13-dom）、表示の状態（14-view：レイアウト、表示する図、図の拡大、色）、パネルの内容と式（17-panels）、更新と再描画（18-update）、言語の切り替え（29-language）。描く処理と入力に応じる処理を分けた（例：掃引の表の行のクリックは、ほかの操作と一緒に一度だけ設定する）。画面と図は変わらない（ピクセル比較で一致）',
+    ],
+  },
+  {
     v: '1.73.8',
     d: '2026-11-25',
     en: [

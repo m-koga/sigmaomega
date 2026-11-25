@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Design specifications ================= */
-import { T, i18nText } from './02-i18n.ts';
-import { SPECS, SPEC_KEYS } from './03-definitions.ts';
-import { numStr } from './04-parser.ts';
-import { S } from './05-state.ts';
-import { $, byId } from './06-ui-build.ts';
-import { stepMetrics } from './07-simulation.ts';
-import { lastFr, lastPZ, lastSim, redraw, resetLocus } from './16-pole-zero.ts';
+import { SPECS, SPEC_KEYS } from './05-definitions.ts';
+import { S, lastFr, lastPZ, lastSim } from './06-state.ts';
+import { stepMetrics } from './08-simulation.ts';
 
 export const specOn = (k: SpecKey, st: State = S): boolean => st.spec[k].on;
 // Design region for the poles (second-order approximations): ζ ≥ ζmin, −Re ≥ σmin
@@ -112,82 +108,6 @@ export const specIcon = (k: SpecKey, ev: SpecEval | null | undefined): string =>
   if (!e || !e.on || !e.applicable || e.ok === null) return '';
   return e.ok ? '<span class="sp ok">✓</span>' : '<span class="sp ng">✗</span>';
 };
-export function renderSpecs(): SpecEval {
-  specRows();
-  const ev = evalSpecs();
-  let n = 0,
-    bad = 0;
-  SPEC_KEYS.forEach(k => {
-    const e = ev[k],
-      row = byId(`specrow-${k}`),
-      res = byId(`res-${k}`);
-    row.classList.toggle('off', !e.on);
-    const unit = SPECS[k].unit,
-      v = e.value === null ? (e.applicable && e.none ? T(e.none) : '—') : numStr(e.value) + (unit ? ' ' + unit : '');
-    res.innerHTML = (e.on && e.applicable ? specIcon(k, ev) : '') + v;
-    if (e.on && e.applicable) {
-      n++;
-      if (!e.ok) bad++;
-    }
-  });
-  const sum = $('specSum');
-  sum.className = 'spec-sum' + (n ? (bad ? ' ng' : ' ok') : '');
-  sum.textContent = !n
-    ? T('No specifications enabled')
-    : bad
-      ? T('{n} specification(s) not met', { n: bad })
-      : T('All enabled specifications are met');
-  return ev;
-}
-// The rows of the card, made once from SPECS: the ids specrow-k, spec-k-on, spec-k and res-k
-export function specRows() {
-  const box = $('specRows');
-  if (box.childElementCount) return;
-  for (const k of SPEC_KEYS) {
-    const d = SPECS[k],
-      row = document.createElement('div');
-    row.className = 'spec-row';
-    row.id = `specrow-${k}`;
-    row.innerHTML =
-      `<label class="chk"><input type="checkbox" id="spec-${k}-on"><span></span></label>` +
-      `<span class="spec-in"><input type="number" class="num" id="spec-${k}" step="any" min="${d.low}">` +
-      ` <span class="spec-u">${d.unit}</span></span><span class="spec-res" id="res-${k}"></span>`;
-    i18nText(row.querySelector('label span') as HTMLElement, d.label);
-    box.append(row);
-  }
-}
-export function buildSpecs() {
-  specRows();
-  SPEC_KEYS.forEach(k => {
-    const cb = byId<HTMLInputElement>(`spec-${k}-on`),
-      inp = byId<HTMLInputElement>(`spec-${k}`);
-    cb.checked = S.spec[k].on;
-    inp.value = String(S.spec[k].v);
-    cb.onchange = () => {
-      S.spec[k].on = cb.checked;
-      afterSpec();
-    };
-    inp.onchange = () => {
-      const v = parseFloat(inp.value);
-      if (isFinite(v) && v >= SPECS[k].low) S.spec[k].v = v;
-      inp.value = String(S.spec[k].v);
-      afterSpec();
-    };
-    inp.onkeydown = e => {
-      if (e.key === 'Enter') inp.blur();
-    };
-  });
-  $('spec-show').checked = S.spec.show;
-  $('spec-show').onchange = () => {
-    S.spec.show = $('spec-show').checked;
-    afterSpec();
-  };
-}
-export function afterSpec() {
-  resetLocus();
-  renderSpecs();
-  redraw();
-}
 // Ranges [a, b] of the gain factor k on the root locus for which all closed-loop poles are in the design region
 export function specKRanges(locus: LocusPoint[], reg: { zmin: number; smin: number }): [number, number][] {
   const ok = locus.map(({ k, r }) => ({ k, ok: r.every(z => inRegion(z, reg)) })),

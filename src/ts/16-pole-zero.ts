@@ -1,179 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-/* ================= Pole-zero map ================= */
-// Controller transfer function (P/PI/PD/PID are converted to rational form; common factors at the origin are cancelled)
+/* ================= Pole-zero map: drawing, view and tooltips ================= */
 import { LANG, T, TXT_PZ1, TXT_PZ2, TXT_PZ3, UIFONT } from './02-i18n.ts';
-import { CONTROLLERS, CTRL, PLANTS, ctrlRational, isTFMode } from './03-definitions.ts';
-import { lastOf, numStr, pAdd, pMul, pScale, polyRoots, trimPoly } from './04-parser.ts';
-import { S } from './05-state.ts';
-import { $, buildCtrlCustom, ctx2d, fmtVal, must, scheduleFormulas, syncControls } from './06-ui-build.ts';
-import { simulate } from './07-simulation.ts';
-import { WR_MAX, WR_MIN, bodeRange, bodeResp, freqResp, rangeSig } from './08-frequency.ts';
-import { COLORS, bodeDescDefault, drawBode, drawNyq, drawTime, niceTicks, strokeLine } from './09-drawing.ts';
-import { SWEEP_COLORS, renderSweepTable, renderSweepUI, sweepName, sweepRuns } from './10-sweep.ts';
-import { saveCanvasPNG } from './11-export.ts';
-import { renderTune } from './13-tuning.ts';
-import { poleRegion, renderSpecs, specKRanges } from './14-specs.ts';
-import { PLOT_VIEWS } from './15-zoom.ts';
-import { shownPanels } from './17-events-layout.ts';
+import { numStr } from './03-math.ts';
+import { S, lastPZ, lastSweep } from './06-state.ts';
+import { locus, stableKRanges } from './09-loop.ts';
+import { poleRegion, specKRanges } from './11-specs.ts';
+import { SWEEP_COLORS, sweepName } from './12-sweep.ts';
+import { $, ctx2d } from './13-dom.ts';
+import { COLORS } from './14-view.ts';
+import { niceTicks, strokeLine } from './15-drawing.ts';
 
-export function ctrlTF(st: State = S): Rational {
-  let num: Poly, den: Poly;
-  if (isTFMode(st)) {
-    const r = ctrlRational(st);
-    num = r.num;
-    den = r.den;
-  } else {
-    const Kp = st.Kp,
-      Ki = st.Ki,
-      Kd = st.Kd,
-      N = st.N;
-    let m = st.mode;
-    if (m === 'PD' && Kd === 0) m = 'P';
-    if (m === 'PID' && Kd === 0) m = 'PI';
-    if (m === 'P') {
-      num = [Kp];
-      den = [1];
-    } else if (m === 'PI') {
-      num = [Kp, Ki];
-      den = [1, 0];
-    } else if (m === 'PD') {
-      num = [Kp + Kd * N, Kp * N];
-      den = [1, N];
-    } else {
-      num = [Kp + Kd * N, Kp * N + Ki, Ki * N];
-      den = [1, N, 0];
-    }
-  }
-  num = trimPoly(num.slice());
-  den = trimPoly(den.slice());
-  while (num.length > 1 && den.length > 1 && Math.abs(lastOf(num)) < 1e-14 && Math.abs(lastOf(den)) < 1e-14) {
-    num = num.slice(0, -1);
-    den = den.slice(0, -1);
-  }
-  return { num, den };
-}
-export const pAddDesc = (a: Poly, b: Poly): Poly => pAdd(a.slice().reverse(), b.slice().reverse()).reverse();
-// Open-loop transfer function L(s) = num/den (dead time replaced by a third-order Padé approximation)
-export function loopRational(st: State = S) {
-  const tf = PLANTS[st.plant].tf(st),
-    c = ctrlTF(st);
-  let Nd = [1],
-    Dd = [1];
-  if (tf.L > 0) {
-    const L = tf.L;
-    Nd = [-(L ** 3) / 120, (L * L) / 10, -L / 2, 1];
-    Dd = [L ** 3 / 120, (L * L) / 10, L / 2, 1];
-  } // third-order Padé approximation
-  return { num: trimPoly(pMul(pMul(tf.num, c.num), Nd)), den: trimPoly(pMul(pMul(tf.den, c.den), Dd)), tf, c };
-}
-// Pair each root in r with the nearest root of prev (keeps the branches continuous)
-export function matchRoots(prev: Complex[], r: Complex[]): Complex[] {
-  const used = new Array(r.length).fill(false);
-  return prev.map(p => {
-    let bi = -1,
-      bd = Infinity;
-    r.forEach((q, i) => {
-      if (used[i]) return;
-      const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
-      if (d < bd) {
-        bd = d;
-        bi = i;
-      }
-    });
-    used[bi] = true;
-    return r[bi];
-  });
-}
-// Root locus: closed-loop poles of den + k num for the gain factors ks (k = 1 is the current setting)
-export function rootLocus(ks: number[], st: State = S): LocusPoint[] {
-  const { num, den } = loopRational(st);
-  const out: LocusPoint[] = [];
-  let prev: Complex[] | null = null;
-  for (const k of ks) {
-    const chr = trimPoly(pAddDesc(den, pScale(num, k)));
-    let r = polyRoots(chr, prev ?? undefined);
-    if (prev && prev.length === r.length) r = matchRoots(prev, r);
-    out.push({ k, r });
-    prev = r;
-  }
-  return out;
-}
-export const LOCUS_KS = (() => {
-  const a: number[] = [];
-  for (let i = 0; i <= 640; i++) a.push(Math.pow(10, -4 + (8 * i) / 640));
-  a.push(1);
-  return a.sort((x, y) => x - y);
-})();
-// Ranges of k (within 1e-4 … 1e4) for which all closed-loop poles are in the left half-plane
-export function stableRanges(st: State = S): [number, number][] {
-  const { num, den } = loopRational(st);
-  const maxRe = (k: number) => Math.max(...polyRoots(trimPoly(pAddDesc(den, pScale(num, k)))).map(z => z[0]));
-  const ks = LOCUS_KS,
-    stable = ks.map(k => maxRe(k) < 0),
-    out: [number, number][] = [];
-  const edge = (a: number, b: number) => {
-    let lo = a,
-      hi = b,
-      sa = maxRe(a) < 0;
-    for (let i = 0; i < 50; i++) {
-      const m = Math.sqrt(lo * hi);
-      if (maxRe(m) < 0 === sa) lo = m;
-      else hi = m;
-    }
-    return Math.sqrt(lo * hi);
-  };
-  let start: number | null = stable[0] ? 0 : null;
-  for (let i = 1; i < ks.length; i++) {
-    if (stable[i] && !stable[i - 1]) start = edge(ks[i - 1], ks[i]);
-    if (!stable[i] && stable[i - 1]) {
-      out.push([start ?? 0, edge(ks[i - 1], ks[i])]);
-      start = null;
-    } // start is set while stable
-  }
-  if (start !== null) out.push([start, Infinity]);
-  return out;
-}
-// Multiply the controller gain by k
-export function applyLoopGain(k: number) {
-  const gain = CONTROLLERS[S.mode].gain;
-  if (gain.length) gain.forEach(p => (S[p] = +(S[p] * k).toPrecision(6)));
-  else {
-    S.ccNum = pScale(S.ccNum, k).map(v => +v.toPrecision(6));
-    S.ccNumStr = '[' + S.ccNum.join(' ') + ']';
-    S.ccTouched = true;
-    buildCtrlCustom();
-  }
-  (['Kp', 'Ki', 'Kd', 'Kc'] as NumKey[]).forEach(p => {
-    const el = $(`in-${p}`),
-      nm = $(`v-${p}`);
-    if (el) {
-      el.value = String(S[p]);
-      nm.value = fmtVal(p, S[p], CTRL[p]);
-    }
-  });
-  update();
-}
-export function computePZ(st: State = S) {
-  const { num, den, tf, c } = loopRational(st);
-  const chr = trimPoly(pAddDesc(den, num));
-  const allZero = c.num.every(v => v === 0);
-  return {
-    pp: polyRoots(tf.den),
-    pz: polyRoots(tf.num),
-    cp: polyRoots(c.den),
-    cz: allZero ? [] : polyRoots(c.num),
-    cl: polyRoots(chr),
-    pade: tf.L > 0,
-    L: tf.L,
-  };
-}
-export let lastPZ: PZResult | null = null,
-  pzView: PZView | null = null,
+// View of the map and the points drawn on it (for the tooltip and clicks)
+export let pzView: PZView | null = null,
   pzPts: { px: number; py: number; p: PZPoint }[] = [],
-  pzLocusPts: { px: number; py: number; k: number; z: Complex }[] = [],
-  lastLocus: LocusPoint[] | null = null,
-  lastRanges: [number, number][] | null = null;
+  pzLocusPts: { px: number; py: number; k: number; z: Complex }[] = [];
 export const LOCUS_COLOR = COLORS.locus;
 // Points used for the automatic view: visible poles/zeros, plus the main part of the root locus
 // (0.01 ≤ k ≤ 100, within 3 times the extent of the poles and zeros) so that the imaginary-axis crossing is visible
@@ -195,9 +36,6 @@ export function pzAutoPts(pz: PZResult): PZPoint[] {
         { z: [1, -1], k: 'view' },
       ];
 }
-// Root locus and stable ranges of k, computed when first needed after each update
-export const locus = (): LocusPoint[] => (lastLocus ??= rootLocus(LOCUS_KS));
-export const stableKRanges = (): [number, number][] => (lastRanges ??= stableRanges());
 export const PZC = { plant: COLORS.output, ctrl: COLORS.input, cl: COLORS.alert };
 export function pzVisible(pz: PZResult): PZPoint[] {
   const out: PZPoint[] = [];
@@ -663,10 +501,6 @@ export function pzInfo(pz: PZResult) {
 export function resetPZView() {
   pzView = null;
 }
-// The root locus is computed again when next needed (the pole specifications changed)
-export function resetLocus() {
-  lastLocus = null;
-}
 export function pzCurrentView(): PZView {
   if (!pzView) {
     const cv = $('cvPZ');
@@ -730,159 +564,4 @@ export function pzHover(mx: number, my: number): number | null {
     );
   } else $('pzTip').style.display = 'none';
   return l ? l.k : null;
-}
-
-// Interaction with the map: wheel to zoom, drag to pan, double-click or Fit to reset the view, tooltip on hover,
-// click on the root locus to apply its gain; buttons to zoom and save as PNG; check boxes of what is shown
-(() => {
-  const cv = $('cvPZ'),
-    tip = $('pzTip'),
-    hideTip = () => (tip.style.display = 'none'),
-    fit = () => {
-      pzView = null;
-      drawPZ(lastPZ);
-    };
-  let drag: { x: number; y: number; cx: number; cy: number } | null = null, // start of a drag (pointer and view centre)
-    moved = 0, // largest distance from the start [px]: below 4 px it is a click
-    hoverK: number | null = null; // gain of the root locus point under the pointer
-  cv.addEventListener(
-    'wheel',
-    e => {
-      e.preventDefault();
-      const r = cv.getBoundingClientRect();
-      pzZoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top);
-      hideTip();
-    },
-    { passive: false },
-  );
-  cv.addEventListener('pointerdown', e => {
-    if (e.button !== 0) return;
-    cv.setPointerCapture(e.pointerId);
-    const v = pzCurrentView();
-    drag = { x: e.clientX, y: e.clientY, cx: v.cx, cy: v.cy };
-    moved = 0;
-    cv.classList.add('panning');
-    hideTip();
-  });
-  cv.addEventListener('pointermove', e => {
-    if (drag) {
-      moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
-      if (moved < 4) return;
-      const v = pzCurrentView();
-      v.cx = drag.cx - (e.clientX - drag.x) / v.k;
-      v.cy = drag.cy + (e.clientY - drag.y) / v.k;
-      drawPZ(lastPZ);
-      return;
-    }
-    const r = cv.getBoundingClientRect();
-    hoverK = pzHover(e.clientX - r.left, e.clientY - r.top);
-  });
-  const end = (e: PointerEvent) => {
-    const click = drag && moved < 4;
-    drag = null;
-    cv.classList.remove('panning');
-    if (click && hoverK !== null && e.type === 'pointerup') {
-      const k = hoverK;
-      hoverK = null;
-      hideTip();
-      applyLoopGain(k);
-    }
-  };
-  cv.addEventListener('pointerup', end);
-  cv.addEventListener('pointercancel', end);
-  cv.addEventListener('pointerleave', hideTip);
-  cv.addEventListener('dblclick', fit);
-  const zoomCentre = (f: number) =>
-    pzZoomAt(f, cv.clientWidth / 2 + (PZM.l - PZM.r) / 2, cv.clientHeight / 2 + (PZM.t - PZM.b) / 2);
-  $('pzIn').onclick = () => zoomCentre(1.4);
-  $('pzOut').onclick = () => zoomCentre(1 / 1.4);
-  $('pzFit').onclick = fit;
-  $('pzPng').onclick = () => saveCanvasPNG(cv);
-  (['pzPlant', 'pzCtrl', 'pzCL', 'pzLocus', 'pzGrid'] as const).forEach(id => ($(id).onchange = () => drawPZ(lastPZ)));
-})();
-
-// Options of the Bode and Nyquist plots: redraw when a check box changes; the description line of the Bode
-// curve buttons shows the hovered or focused one, otherwise the curves that are shown
-(() => {
-  (['bodeL', 'bodeP', 'bodeC', 'bodeS', 'bodeT', 'bodeD', 'bodeR'] as const).forEach(
-    id =>
-      ($(id).onchange = () => {
-        if (shownPanels.has('bode') && lastFr) drawBode(lastFr, lastFrB || lastFr);
-      }),
-  );
-  document.querySelectorAll<HTMLElement>('#bodeOpts .ctg').forEach(l => {
-    l.dataset.desc = l.getAttribute('title') ?? '';
-    const show = () => {
-      $('bodeDesc').textContent = l.title;
-    };
-    const inp = must(l.querySelector('input'), 'check box of a Bode curve');
-    l.addEventListener('mouseenter', show);
-    inp.addEventListener('focus', show);
-    l.addEventListener('mouseleave', bodeDescDefault);
-    inp.addEventListener('blur', bodeDescDefault);
-    inp.addEventListener('change', bodeDescDefault);
-  });
-  // Frequency range of the Bode plot set by hand; the zoom of the Bode plots is reset to show it
-  const resetBodeViews = () =>
-    ['cvG', 'cvPh'].forEach(id => {
-      if (PLOT_VIEWS[id]) delete PLOT_VIEWS[id].x;
-    });
-  const commitWr = () => {
-    const lo = Math.max(WR_MIN, parseFloat($('wrLo').value)),
-      hi = Math.min(WR_MAX, parseFloat($('wrHi').value));
-    if (isFinite(lo) && isFinite(hi) && hi > lo) {
-      S.wr = { on: true, lo, hi, sig: rangeSig() };
-      resetBodeViews();
-    }
-    update(); // also shows the range again when the input was not valid
-  };
-  (['wrLo', 'wrHi'] as const).forEach(id => {
-    $(id).onchange = commitWr;
-    $(id).onkeydown = e => {
-      if (e.key === 'Enter') commitWr();
-    };
-  });
-  $('wrAuto').onclick = () => {
-    S.wr.on = false;
-    resetBodeViews();
-    update();
-  };
-  $('nyqMs').onchange = () => {
-    if (shownPanels.has('nyq') && lastFr) drawNyq(lastFr);
-  };
-})();
-
-// Results of the last update(), drawn by redraw()
-export let lastSim: SimResult | null = null,
-  lastFr: FreqResult | null = null,
-  lastFrB: FreqResult | null = null,
-  lastSweep: SweepRun[] | null = null;
-// Compute everything for the current settings and draw it
-export function update() {
-  syncControls();
-  lastSim = simulate();
-  // a range set by hand returns to the automatic one when the poles, zeros, dead time or simulation time change
-  if (S.wr.on && !bodeRange()) S.wr.on = false;
-  lastFr = freqResp();
-  lastFrB = bodeResp();
-  lastPZ = computePZ();
-  lastLocus = null;
-  lastRanges = null;
-  renderSpecs();
-  renderTune();
-  renderSweepUI();
-  lastSweep = sweepRuns();
-  renderSweepTable();
-  redraw();
-  scheduleFormulas();
-}
-export function redraw() {
-  if (!lastSim) return;
-  if (shownPanels.has('time')) drawTime(lastSim);
-  if (shownPanels.has('bode') && lastFr) drawBode(lastFr, lastFrB || lastFr);
-  if (shownPanels.has('nyq') && lastFr) drawNyq(lastFr);
-  if (shownPanels.has('pz') && lastPZ) {
-    drawPZ(lastPZ);
-    pzInfo(lastPZ);
-  }
 }

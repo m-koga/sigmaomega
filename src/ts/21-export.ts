@@ -2,13 +2,10 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Export of results (CSV, PNG) ================= */
 import { T } from './02-i18n.ts';
-import { PLOTS, paramSym } from './03-definitions.ts';
-import { numStr } from './04-parser.ts';
-import { S } from './05-state.ts';
-import { $, ctx2d } from './06-ui-build.ts';
-import { COLORS } from './09-drawing.ts';
-import { copyText, saveFile } from './12-scenarios.ts';
-import { lastFr, lastFrB, lastPZ, lastSim, lastSweep } from './16-pole-zero.ts';
+import { numStr } from './03-math.ts';
+import { paramSym } from './05-definitions.ts';
+import { S, lastFr, lastFrB, lastPZ, lastSim, lastSweep } from './06-state.ts';
+import { copyText, saveFile, toast } from './13-dom.ts';
 
 /** A cell of a CSV file */
 type CsvCell = string | number | null | undefined;
@@ -73,15 +70,6 @@ export function pzCSV(pz: PZResult): string {
   if (pz.pade) rows.push(['note: dead time is approximated by a 3rd-order Pade approximation', '', '', '', '']);
   return csvText(rows);
 }
-export let toastTimer: Timer | undefined;
-export function toast(msg: string, err?: boolean) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.toggle('err', !!err);
-  t.classList.add('on');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('on'), 5000);
-}
 export async function exportCSV(kind: string) {
   let text: string, name: string;
   if (kind === 'time') {
@@ -112,30 +100,6 @@ export async function exportCSV(kind: string) {
       !ok,
     );
   }
-}
-export const PNG_NAMES: Record<string, string> = Object.fromEntries(Object.entries(PLOTS).map(([k, v]) => [k, v.file]));
-// The plot as a PNG image (white background, at the screen's pixel density)
-export async function saveCanvasPNG(cv: HTMLCanvasElement) {
-  const c = document.createElement('canvas');
-  c.width = cv.width;
-  c.height = cv.height;
-  const g = ctx2d(c);
-  g.fillStyle = COLORS.white;
-  g.fillRect(0, 0, c.width, c.height);
-  g.drawImage(cv, 0, 0);
-  await savePNG(c, PNG_NAMES[cv.id] || 'plot');
-}
-// Save a canvas as the PNG file name.png, with a message saying where it went (or that it could not be saved)
-export async function savePNG(c: HTMLCanvasElement, base: string) {
-  const blob = await new Promise<Blob | null>(res => c.toBlob(res, 'image/png'));
-  if (!blob) {
-    toast(T('Could not save the file here.'), true);
-    return;
-  }
-  const name = base + '.png',
-    r = await saveFile(name, blob, 'image/png');
-  if (r === 'saved') toast(T('Saved as "{f}" (usually in the Downloads folder)', { f: name }));
-  else if (r === 'unavailable') toast(T('Could not save the file here.'), true);
 }
 document
   .querySelectorAll<HTMLElement>('[data-csv]')

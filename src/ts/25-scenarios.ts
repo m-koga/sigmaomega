@@ -3,18 +3,29 @@
 /* ================= Scenarios (save and load) ================= */
 import { APP_VERSION } from './01-changelog.ts';
 import { T } from './02-i18n.ts';
-import { CARD_GROUP, MODE_PARAMS, PLANTS, REF_TYPES, hardRange, sideCardOf } from './03-definitions.ts';
 import { parsePoly } from './04-parser.ts';
-import { S, defaults, ghosts } from './05-state.ts';
-import { $, buildCtrlCustom, buildPlant, buildStatic, errCode, renderTeX, setPrevPlant } from './06-ui-build.ts';
-import { bodeDescDefault, storedPanels, withoutTex } from './09-drawing.ts';
-import { SWEEP_MAX, resetSweepUI } from './10-sweep.ts';
-import { buildSpecs } from './14-specs.ts';
-import { PLOT_VIEWS } from './15-zoom.ts';
-import { resetPZView, update } from './16-pole-zero.ts';
-import { applyLayout, defaultLayout, ghostText, infoTabs, layout, saveLayout, setLayout } from './17-events-layout.ts';
-import { normTiles } from './18-tiles.ts';
-import { normRows } from './19-rows.ts';
+import { CARD_GROUP, MODE_PARAMS, PLANTS, REF_TYPES, hardRange, sideCardOf } from './05-definitions.ts';
+import { S, defaults, ghosts } from './06-state.ts';
+import { SWEEP_MAX } from './12-sweep.ts';
+import { $, copyText, saveFile } from './13-dom.ts';
+import {
+  PLOT_VIEWS,
+  defaultLayout,
+  infoTabs,
+  layout,
+  normRows,
+  normTiles,
+  saveLayout,
+  setLayout,
+  storedPanels,
+  withoutTex,
+} from './14-view.ts';
+import { bodeDescDefault } from './15-drawing.ts';
+import { resetPZView } from './16-pole-zero.ts';
+import { renderTeX, resetSweepUI } from './17-panels.ts';
+import { update } from './18-update.ts';
+import { buildCtrlCustom, buildPlant, buildSpecs, buildStatic, ghostText, setPrevPlant } from './19-controls.ts';
+import { applyLayout } from './24-layout.ts';
 
 export const SC_KEY = 'ctrlsim-scenarios-v1',
   SC_MAX = 50;
@@ -326,20 +337,6 @@ export function scMsg(text: string, err?: boolean) {
     m.textContent = '';
   }, 6000);
 }
-export async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (e) {}
-  try {
-    const ta = $('sc-text');
-    ta.value = text;
-    ta.focus();
-    ta.select();
-    if (document.execCommand('copy')) return true;
-  } catch (e) {}
-  return false;
-}
 export const esc = (s: unknown) =>
   String(s).replace(
     /[&<>"]/g,
@@ -526,62 +523,8 @@ export function scFileName(name: string | undefined): string {
     .slice(0, 80);
   return (b || 'scenario') + '.json';
 }
-// Inside the claude.ai artifact viewer, files are offered through the platform's downloads capability;
-// elsewhere (GitHub Pages, a local file) an ordinary download link is used
-/** downloads capability of the artifact viewer: undefined while it is requested, null if unavailable */
-export let scDownloads: { save(file: { filename: string; data: string | Blob }): Promise<unknown> } | null | undefined;
-try {
-  if (window.claude && typeof window.claude.use === 'function')
-    window.claude
-      .use('downloads')
-      .then(d => {
-        scDownloads = d;
-      })
-      .catch(() => {
-        scDownloads = null;
-      });
-} catch (e) {}
 export async function exportScenarioFile(d: Scenario) {
   return saveFile(scFileName(d.name), JSON.stringify(d, null, 2), 'application/json');
-}
-// Offer a file to the viewer: the artifact viewer's downloads capability, or an ordinary download link elsewhere.
-// Returns 'saved', 'declined' or 'unavailable'.
-export async function saveFile(
-  filename: string,
-  data: string | Blob,
-  mime?: string,
-): Promise<'saved' | 'declined' | 'unavailable'> {
-  if (window.claude && typeof window.claude.use === 'function') {
-    let dl = scDownloads;
-    if (dl === undefined) {
-      try {
-        dl = await window.claude.use('downloads');
-      } catch (e) {
-        dl = null;
-      }
-    }
-    if (!dl) return 'unavailable';
-    try {
-      await dl.save({ filename, data });
-      return 'saved';
-    } catch (e) {
-      return errCode(e) === 'declined' ? 'declined' : 'unavailable';
-    }
-  }
-  try {
-    const blob = data instanceof Blob ? data : new Blob([data], { type: mime || 'application/octet-stream' }),
-      url = URL.createObjectURL(blob),
-      a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
-    return 'saved';
-  } catch (e) {
-    return 'unavailable';
-  }
 }
 // A file holds one scenario, or a list of scenarios (these are added to the list in this browser)
 export function importScenarioFile(text: string): { count?: number; name?: string } {
@@ -611,3 +554,16 @@ export function loadScenarioFromURL() {
     fillScenarioForm(d);
   } catch (e) {}
 }
+$('reset').onclick = () => {
+  showTask('', '');
+  defaults();
+  S.ccTouched = false;
+  setPrevPlant('first');
+  buildPlant();
+  buildCtrlCustom();
+  buildSpecs();
+  buildStatic();
+  resetSweepUI();
+  renderTeX();
+  update();
+};

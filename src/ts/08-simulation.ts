@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Simulation ================= */
-import { PLANTS, ctrlRational, isTFMode, refValue, hasTerm } from './03-definitions.ts';
-import { S } from './05-state.ts';
-import { evalCP, evalT, freqRange, spWeights } from './08-frequency.ts';
+import { PLANTS, hasTerm } from './05-definitions.ts';
+import { S, ctrlRational, isTFMode, refValue } from './06-state.ts';
+import { evalCP, evalT, freqRange, spWeights } from './07-frequency.ts';
 
 export function mulberry32(a: number): () => number {
   return function () {

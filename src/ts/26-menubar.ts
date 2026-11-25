@@ -4,14 +4,14 @@
    The drop-down lists of the menu bar under the header (src/index.html, nav#menubar), in this order:
    - File, System setup, Analysis & design: the card shown in the settings panel (one at a time, setSideCard)
    - Plots to show: several panels at a time; the list stays open while they are chosen (its items, the .tab buttons,
-     are handled with the panels in 17-events-layout.ts)
+     are handled with the panels in 24-layout.ts)
    - Plot arrangement, Metrics display: one choice each, kept in the hidden selects #pcols and #mview
    Every list opens and closes the same way (dropdown below); the buttons only name their lists, the chosen items are
    checked in the open lists. */
-import { I18N_EL, i18nText } from './02-i18n.ts';
-import { CARD_GROUP, CARD_GROUPS, CARD_KEYS } from './03-definitions.ts';
-import { $, byId, qs } from './06-ui-build.ts';
-import { layout, saveLayout, setSideCard, showPlotsOnPhone, showSettings, sideCards } from './17-events-layout.ts';
+import { CARD_GROUP, CARD_GROUPS, CARD_KEYS } from './05-definitions.ts';
+import { $, I18N_EL, byId, i18nText, qs } from './13-dom.ts';
+import { layout, saveLayout } from './14-view.ts';
+import { setSideCard, showPlotsOnPhone, showSettings, sideCards } from './24-layout.ts';
 
 // One drop-down list: the button opens and closes it, a click elsewhere on the page or Escape closes it (Escape gives
 // the focus back to the button), the arrow keys move between the items. The click on the button goes on to the page,
