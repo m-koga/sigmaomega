@@ -32,6 +32,12 @@ All of `npm test`, `npm run test:ui`, `npm run check` and `npm run format:check`
 - **Rendering.** For a change that may alter plots or metrics, run `npm run pixcmp` against the previous build and explain any difference.
 - **License headers.** Every new source file starts with `SPDX-License-Identifier: Apache-2.0` and `Copyright 2026 Masanobu Koga` as two comment lines (`tests/license-headers.test.ts`).
 
+## Maintenance
+
+- **Dependencies.** Dependabot (`.github/dependabot.yml`) opens a pull request once a week when the development tools (npm) or the GitHub Actions have new versions; minor and patch updates come grouped. Merge it when the tests pass. MathJax stays on version 3 (the page loads it from the CDN), so a move to MathJax 4 is made by hand in `src/index.html` and `package.json` together.
+- **Coverage.** `npm run coverage` measures which code the unit and browser tests run (`coverage/uncovered.txt` lists the functions never run). Keep new code covered by a test.
+- **Releases** are made by the maintainer by pushing a version tag (see "Versions and change log" in README.md).
+
 ## License of contributions
 
 SigmaOmega is licensed under the Apache License 2.0 ([LICENSE](LICENSE)). Unless you state otherwise, a contribution you submit is licensed under the same terms (section 5 of the license).

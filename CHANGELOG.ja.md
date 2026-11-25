@@ -6,6 +6,12 @@
 
 > このファイルは `npm run docs` で `src/ts/01-changelog.ts` の更新履歴から生成されます。直接編集しないでください。
 
+## v1.73.6（2026-11-25）
+- 開発：カバレッジの集計にブラウザのテストが再び入るようにした（ページのスクリプトを詰めて以来 0% と数えていた）。テスト全体で行の 98.9%、1018 関数中 1009 関数を実行
+- 開発：公開用の置き換えから、変わっていない <title> の行を外すようにした（edit_version はこの要素に触れる置き換えを拒む）
+- 開発：GitHub Actions を Node.js 24 で動く版に更新（checkout、setup-node、upload/download-artifact を v6 に）。Dependabot が週に 1 回ツールとアクションの更新を提案する
+- リリース：版のタグからも GitHub Pages に配置されるようにした。github-pages の環境はタグからの配置を許さないため、リリースの後に同じワークフローを main でそのタグについて動かす
+
 ## v1.73.5（2026-11-25）
 - 配布：開発者が版のタグを push すると、index.html とサイト一式の zip を添えた GitHub のリリースを作り（説明は更新履歴から）、Pages の公開元が GitHub Actions なら GitHub Pages にサイトを配置する（.github/workflows/release.yml）
 - 引用：CITATION.cff を追加（npm run docs で最新の版番号と日付から生成）。GitHub の「Cite this repository」に表示され、Zenodo が DOI を付けるときにも読み取る

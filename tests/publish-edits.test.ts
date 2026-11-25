@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { build, buildScript, compact, scriptParts } from '../scripts/build.ts';
-import { MAX_EDITS, applyEdits, makeChecks, makeEdits } from '../scripts/publish-edits.ts';
+import { MAX_EDITS, applyEdits, makeChecks, makeEdits, trimTitle } from '../scripts/publish-edits.ts';
 
 const page = build().html;
 const lines = page.split('\n');
@@ -73,4 +73,26 @@ test('the checks after publishing read the changed lines of the new page', () =>
   assert.ok(!read(6020), 'not every added line is read');
   assert.ok(checks.length <= 6, `${checks.length} reads`);
   assert.deepEqual(makeChecks(page, page), []);
+});
+
+test('an unchanged <title> line is left out of the edits (edit_version refuses to touch it), a changed one stays', () => {
+  const page = (v: string, title = 'SigmaOmega') =>
+    `<!DOCTYPE html>\n<head>\n<meta charset="utf-8">\n<meta name="version" content="${v}">\n<title>${title}</title>\n<link rel="icon" href="x">\n</head>\n<body>\n</body>\n`;
+  const a = page('1.0.0'),
+    b = page('1.0.1');
+  const edits = makeEdits(a, b);
+  assert.equal(applyEdits(a, edits), b);
+  for (const e of edits) assert.ok(!e.old_text.includes('<title>'), e.old_text);
+  // the title itself changed: it must stay in the edit
+  const c = page('1.0.1', 'Renamed');
+  assert.ok(makeEdits(b, c).some(e => e.old_text.includes('<title>SigmaOmega</title>')));
+  // trimTitle on its own: the context before and after the title is cut at the title
+  assert.deepEqual(trimTitle({ old_text: 'a\n<title>t</title>\nb\nc\n', new_text: 'a\n<title>t</title>\nB\nc\n' }), {
+    old_text: 'b\nc\n',
+    new_text: 'B\nc\n',
+  });
+  assert.deepEqual(trimTitle({ old_text: 'b\n<title>t</title>\n', new_text: 'B\n<title>t</title>\n' }), {
+    old_text: 'b\n',
+    new_text: 'B\n',
+  });
 });

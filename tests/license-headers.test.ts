@@ -28,7 +28,7 @@ const HEADERS: [string[], string][] = [
     ts,
   ],
   [['src/style.css'], LINES.map(l => `/* ${l} */\n`).join('')],
-  [list('.github/workflows', '.yml'), LINES.map(l => `# ${l}\n`).join('')],
+  [[...list('.github/workflows', '.yml'), '.github/dependabot.yml'], LINES.map(l => `# ${l}\n`).join('')],
   [['ui/start.html'], '<!doctype html>\n' + LINES.map(l => `<!-- ${l} -->\n`).join('')],
 ];
 

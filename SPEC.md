@@ -323,4 +323,4 @@ The source is TypeScript in `src/` (21 files, about 8,900 lines), built into `in
 | Browser tests (`ui/`, Playwright, 11 files) | layout, plots, interaction, tiles, rows | Menus, panel arrangement and sizes, formula scaling, zoom and pan, smartphones |
 | | design, files, failures, details, i18n, help | Design support, scenarios, failure handling, rarely used operations, display in five languages, the user manual |
 
-Coverage is measured with `npm run coverage` (98% of lines and 720 of 724 functions as of version 1.46.16). Changes that should not alter the look of the page are checked by comparing screenshots before and after pixel by pixel.
+Coverage is measured with `npm run coverage` (98.9% of lines and 1009 of 1018 functions as of version 1.73.6). Changes that should not alter the look of the page are checked by comparing screenshots before and after pixel by pixel.

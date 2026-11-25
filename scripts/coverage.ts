@@ -31,7 +31,16 @@ fs.mkdirSync(path.join(OUT, 'unit'), { recursive: true });
 fs.mkdirSync(path.join(OUT, 'ui'), { recursive: true });
 let ok = run(process.execPath, [path.join(import.meta.dirname, 'build.ts')], {});
 ok = run(process.execPath, ['--test', 'tests/*.test.ts'], { NODE_V8_COVERAGE: path.join(OUT, 'unit') }) && ok;
-if (!unitOnly) ok = run('npx', ['playwright', 'test'], { COV_DIR: path.join(OUT, 'ui') }) && ok;
+if (!unitOnly) {
+  // the browser tests run on a page whose script keeps every character in place (the published page is compacted),
+  // so that the coverage can be mapped to the source files (ui/global-setup.ts builds it when COV_DIR is set);
+  // the normal page is built again afterwards
+  try {
+    ok = run('npx', ['playwright', 'test'], { COV_DIR: path.join(OUT, 'ui') }) && ok;
+  } finally {
+    run(process.execPath, [path.join(import.meta.dirname, 'build.ts')], {});
+  }
+}
 
 // ---- the page script and the place of each source file in it
 const { js } = buildScript(); // the unit tests run the same script without 99-init.ts (same offsets)

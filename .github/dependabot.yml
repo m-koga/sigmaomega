@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Masanobu Koga
+# Dependabot: a pull request once a week when the development tools (npm) or the GitHub Actions have new versions.
+# The tests run on each pull request; merge it when they pass. Minor and patch updates come grouped in one pull
+# request per ecosystem, major ones one by one.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      development-tools:
+        update-types: [minor, patch]
+    ignore:
+      # the page loads MathJax 3 from the CDN (src/index.html); the copy in node_modules (served to the browser tests
+      # instead) must stay on the same major version, so a move to MathJax 4 changes both by hand
+      - dependency-name: mathjax
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        update-types: [minor, patch]

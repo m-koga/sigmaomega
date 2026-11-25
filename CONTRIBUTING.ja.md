@@ -32,6 +32,12 @@ npm run pixcmp -- old.html   # 古いビルドと index.html の図をピクセ�
 - **描画。** 図や指標が変わりうる変更では、前のビルドと `npm run pixcmp` で比べ、違いがあれば理由を説明してください。
 - **ライセンスの表示。** 新しいソースファイルの先頭には、`SPDX-License-Identifier: Apache-2.0` と `Copyright 2026 Masanobu Koga` の 2 行をコメントで入れます（`tests/license-headers.test.ts`）。
 
+## 保守
+
+- **依存関係。** Dependabot（`.github/dependabot.yml`）が、開発用のツール（npm）や GitHub Actions に新しい版が出ると、週に 1 回プルリクエストを作ります。マイナーとパッチの更新はまとめて 1 つになります。テストが通ればマージしてください。MathJax は 3 のままにします（ページは CDN から読み込みます）。MathJax 4 へ移すときは、`src/index.html` と `package.json` を一緒に手で変えます。
+- **カバレッジ。** `npm run coverage` で、単体テストとブラウザのテストが実行したコードを測ります（一度も実行されなかった関数は `coverage/uncovered.txt`）。新しいコードもテストで実行されるようにしてください。
+- **リリース**は、開発者が版のタグを push して行います（README.ja.md の「版の管理と更新履歴」）。
+
 ## 貢献のライセンス
 
 SigmaOmega は Apache License 2.0（[LICENSE](LICENSE)）で公開しています。特に断りがなければ、送っていただいた貢献も同じ条件で提供されたものとします（ライセンスの第 5 条）。

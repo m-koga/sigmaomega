@@ -112,7 +112,9 @@ gh run list -L 1        # 開始したことだけ確かめる（完了は待た
   - スクリプトが too large と言ったとき（置き換えが 64 個、置き換え元か置き換え後が合計 64 KiB を超える。新しいスクリーンショットを入れた版は必ずこれにあたる）と、`edit_version` も権限で拒否されたときは、回避しない。push までで止め、「GitHub には vX.Y.Z を push 済み。アーティファクトの更新は所有者のアカウントで `index.html` を公開する必要がある」と報告する。別の新しいアーティファクトを勝手に作らない。
 - 公開用の `index.html` は、ビルドが型を消した跡の空白を詰めたもの（`scripts/build.ts` の `compact()`）。行は `src/ts` と同じ。単体テストとカバレッジは桁も保ったスクリプト（`buildScript()`）を使う。
 - タグはユーザーが手で作る。タグの push が拒否されても回避しない。開発者が `vX.Y.Z` のタグを push すると、`.github/workflows/release.yml` が GitHub のリリース（`index.html` とサイトの zip、説明は更新履歴から）を作り、Pages の公開元が GitHub Actions なら GitHub Pages にも配置する。タグの版が更新履歴の最新でないと失敗する。リリースの後は `gh run list -w Release -L 1` で結果を確かめ、失敗していれば原因を報告する。
-- `coverage/` を見たいときは `npm run coverage`（`coverage/uncovered-lines.txt` に実行されなかった行）。
+- `coverage/` を見たいときは `npm run coverage`（`coverage/uncovered-lines.txt` に実行されなかった行）。ブラウザのテストは `COV_DIR` があると `ui/global-setup.ts` が詰めないページで実行し、終わると通常の `index.html` に戻す。
+- `npm run edits` は、変わっていない `<title>` の行を置き換えの前後から外す（`edit_version` は題名の要素に触れる置き換えを拒むため）。手で直す必要はない。
+- Dependabot の週 1 回のプルリクエスト（npm と GitHub Actions）は、CI が通ればマージしてよいか開発者に確かめる。MathJax の 4 への更新は除外している（ページは CDN の 3 を読む）。
 
 ## 6. 報告
 

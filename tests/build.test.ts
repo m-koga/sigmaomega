@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
-import { build } from '../scripts/build.ts';
+import { build, buildScript } from '../scripts/build.ts';
 
 test('index.html is up to date with src/ (npm run build)', () => {
   const cur = fs.readFileSync(path.join(import.meta.dirname, '..', 'index.html'), 'utf8');
@@ -79,4 +79,13 @@ test('the copyright notice and the license (package.json, change log), in three 
   assert.match(license, /^\s+Apache License\n\s+Version 2\.0, January 2004\n/);
   assert.match(license, /END OF TERMS AND CONDITIONS/);
   assert.match(fs.readFileSync(path.join(root, 'NOTICE'), 'utf8'), /Copyright 2026 Masanobu Koga/);
+});
+
+test('the uncompacted page (coverage of the browser tests) holds the script with every character in place', () => {
+  const full = build({ compact: false }).html,
+    { js } = buildScript();
+  assert.ok(full.includes(js), 'scripts/coverage.ts finds the source files in the page by this script');
+  // the published page is the compact one, and differs from the full one only in its script
+  const small = build().html;
+  assert.ok(!small.includes(js) && small.length < full.length);
 });

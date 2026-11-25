@@ -105,8 +105,38 @@ export function makeEdits(oldText: string, newText: string): Edit[] {
   if (oldText === newText) return [];
   for (let c = 1; ; c *= 2) {
     const edits = editsFor(oldText, newText, c);
-    if (edits.length <= MAX_EDITS || c > 1 << 16) return edits;
+    if (edits.length <= MAX_EDITS || c > 1 << 16) return withoutTitle(oldText, newText, edits);
   }
+}
+
+// edit_version refuses an edit that touches the <title> element unless the artifact is renamed in the same call, so
+// an unchanged title line is trimmed off the context of an edit (with the lines between it and the end of the edit).
+// The trimmed edits are used only if they still give the new page.
+const TITLE = /^<title>.*<\/title>$/;
+export function trimTitle(e: Edit): Edit {
+  const a = e.old_text.split('\n'),
+    b = e.new_text.split('\n');
+  let head = 0; // common leading lines
+  while (head < a.length - 1 && head < b.length - 1 && a[head] === b[head]) head++;
+  let tail = 0; // common trailing lines (the last element is '' after the final newline)
+  while (tail < a.length - head - 1 && tail < b.length - head - 1 && a[a.length - 2 - tail] === b[b.length - 2 - tail])
+    tail++;
+  let from = 0,
+    to = 0; // lines to drop at the start and at the end
+  for (let i = 0; i < head; i++) if (TITLE.test(a[i])) from = i + 1;
+  for (let i = 0; i < tail; i++) if (TITLE.test(a[a.length - 2 - i])) to = i + 1;
+  if (!from && !to) return e;
+  const cut = (x: string[]) => x.slice(from, x.length - 1 - to).join('\n') + '\n';
+  return { old_text: cut(a), new_text: cut(b) };
+}
+function withoutTitle(oldText: string, newText: string, edits: Edit[]): Edit[] {
+  const trimmed = edits.map(trimTitle);
+  try {
+    if (applyEdits(oldText, trimmed) === newText) return trimmed;
+  } catch {
+    // an edit became ambiguous: keep the edits as they were
+  }
+  return edits;
 }
 
 /** A check after publishing: the lines [offset, offset + limit) of the published page (1-based, as read_artifact

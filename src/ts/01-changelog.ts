@@ -8,6 +8,22 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.73.6',
+    d: '2026-11-25',
+    en: [
+      'Development: the coverage report counts the browser tests again (they had counted as 0% since the page script was compacted); together the tests run 98.9% of the lines and 1009 of 1018 functions',
+      'Development: the edits for publishing leave an unchanged <title> line out, which edit_version refuses to touch',
+      'Development: GitHub Actions moved to the versions on Node.js 24 (checkout, setup-node, upload/download-artifact v6), and Dependabot proposes updates of the tools and the actions once a week',
+      'Release: a version tag now also reaches GitHub Pages: the release starts the workflow again on main for the tag, since the github-pages environment does not let a tag deploy',
+    ],
+    ja: [
+      '開発：カバレッジの集計にブラウザのテストが再び入るようにした（ページのスクリプトを詰めて以来 0% と数えていた）。テスト全体で行の 98.9%、1018 関数中 1009 関数を実行',
+      '開発：公開用の置き換えから、変わっていない <title> の行を外すようにした（edit_version はこの要素に触れる置き換えを拒む）',
+      '開発：GitHub Actions を Node.js 24 で動く版に更新（checkout、setup-node、upload/download-artifact を v6 に）。Dependabot が週に 1 回ツールとアクションの更新を提案する',
+      'リリース：版のタグからも GitHub Pages に配置されるようにした。github-pages の環境はタグからの配置を許さないため、リリースの後に同じワークフローを main でそのタグについて動かす',
+    ],
+  },
+  {
     v: '1.73.5',
     d: '2026-11-25',
     en: [

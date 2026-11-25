@@ -129,7 +129,7 @@ npm run coverage            # 単体テストとブラウザのテスト
 npm run coverage -- --unit  # 単体テストだけ（ブラウザ不要）
 ```
 
-テストを実行しながら `src/ts/*.ts` のどの部分が実行されたかを記録し、ファイルごとの表を表示します。表には、単体テスト・ブラウザのテスト・両方を合わせたときに実行されたコードの文字数の割合と、行・関数の割合が出ます。一度も実行されなかった関数は `coverage/uncovered.txt` に、一度も実行されなかった行は `coverage/uncovered-lines.txt` に一覧が出ます（数値は `coverage/summary.json`）。版 1.46.16 では、テスト全体でコードの文字数の約 97%、行の 98%、724 個中 720 個の関数が実行されます。残りの 4 つは、MathJax やファイルの読み込みに失敗したときの処理です。
+テストを実行しながら `src/ts/*.ts` のどの部分が実行されたかを記録し、ファイルごとの表を表示します。表には、単体テスト・ブラウザのテスト・両方を合わせたときに実行されたコードの文字数の割合と、行・関数の割合が出ます。一度も実行されなかった関数は `coverage/uncovered.txt` に、一度も実行されなかった行は `coverage/uncovered-lines.txt` に一覧が出ます（数値は `coverage/summary.json`）。版 1.73.6 では、テスト全体でコードの文字数の 98.0%、行の 98.9%、1018 個中 1009 個の関数が実行されます。ブラウザのテストは、スクリプトの文字を詰めずに残したページで実行します（`COV_DIR` が設定されていると `ui/global-setup.ts` がそのページを作ります。公開するページは詰めたもの）。終わったら `index.html` を作り直します。
 
 機能を追加・変更したら `npm test`（画面に関わる変更では `npm run test:ui` も）を実行し、すべて成功することを確かめてから公開します。
 GitHub に push すると、GitHub Actions（`.github/workflows/test.yml`）でも同じテストが自動で実行されます（版のタグを push するとリリースも始まります。`.github/workflows/release.yml`。「版の管理と更新履歴」を参照）。結果はリポジトリの「Actions」タブで確認できます。
@@ -243,7 +243,7 @@ layout（大きさ、図、折りたたみ） ──▶ applyLayout() (17) ─�
 - 新しい版は `CHANGELOG` 配列の先頭に追加し、`en` に英語、`ja` に日本語の項目を書きます。
 - 更新履歴のファイルは `npm run docs` で生成します：[CHANGELOG.md](CHANGELOG.md)（英語）、[CHANGELOG.ja.md](CHANGELOG.ja.md)（日本語）。引用情報の [CITATION.cff](CITATION.cff)（最新の版番号と日付）も同時に作ります。直接編集しないでください。
 - README は英語版（[README.md](README.md)）と日本語版（このファイル）があります。内容を変えたときは両方を更新してください。
-- **リリース。** 開発者が手で、最新の版のタグを push してリリースします：`git tag v1.73.5 && git push origin v1.73.5`。すると `.github/workflows/release.yml` が、タグが更新履歴の最新の版であることを確かめ、単体テストを実行し、`index.html` とサイト一式の zip を添えた GitHub のリリースを作ります。リリースの説明は更新履歴から英語と日本語で作ります（`node scripts/gen-docs.ts --notes`）。GitHub Pages の公開元が GitHub Actions に設定されていれば（Settings › Pages › Source: GitHub Actions）、サイト（`npm run pages`）を <https://m-koga.github.io/sigmaomega/> に配置します。設定されていなければ、この手順は飛ばします。ワークフローを手で実行すると（Actions › Release › Run workflow）、リリースを作らずに現在の `main` を Pages に配置します。
+- **リリース。** 開発者が手で、最新の版のタグを push してリリースします：`git tag v1.73.5 && git push origin v1.73.5`。すると `.github/workflows/release.yml` が、タグが更新履歴の最新の版であることを確かめ、単体テストを実行し、`index.html` とサイト一式の zip を添えた GitHub のリリースを作ります。リリースの説明は更新履歴から英語と日本語で作ります（`node scripts/gen-docs.ts --notes`）。GitHub Pages の公開元が GitHub Actions に設定されていれば（Settings › Pages › Source: GitHub Actions）、続けて同じワークフローを `main` でそのタグについて動かし、タグの版のサイト（`npm run pages`）を <https://m-koga.github.io/sigmaomega/> に配置します（`github-pages` の環境はタグからの配置を許さず、`main` からだけ許すため）。設定されていなければ、この手順は飛ばします。ワークフローを手で実行すると（Actions › Release › Run workflow）、リリースを作らずに現在の `main`、または *tag* に指定した版のタグを Pages に配置します。
 - **DOI。** リポジトリを公開した後、[Zenodo](https://zenodo.org/) と連携すると（GitHub でログインし、リポジトリをオンにする）、リリースごとに DOI が付きます。Zenodo は `CITATION.cff` を読み取ります。
 
 ## 使っているもの

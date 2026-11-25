@@ -3,16 +3,23 @@
 # Release, when the developer pushes a version tag (git tag vX.Y.Z && git push origin vX.Y.Z):
 #   build:   check that the tag is the newest version of the change log, run the unit tests, write the GitHub Pages
 #            site (npm run pages) and the release notes (from the change log)
-#   release: publish a GitHub release with index.html and the site as a zip file
-#   pages:   deploy the site to GitHub Pages, only when Pages is set to deploy from GitHub Actions
+#   release: publish a GitHub release with index.html and the site as a zip file, then start this workflow again on
+#            main for the tag (the github-pages environment lets only main deploy, not tags)
+#   pages:   deploy the site to GitHub Pages, in a run on main, only when Pages is set to deploy from GitHub Actions
 #            (Settings › Pages › Build and deployment › Source: GitHub Actions); otherwise this job is skipped
-# Run it by hand (Actions › Release › Run workflow) to deploy the site of the current main without a release.
+# Run it by hand (Actions › Release › Run workflow) to deploy the site of the current main, or of a tag given as
+# "tag", without a release.
 name: Release
 
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Deploy the site of this version tag (empty = the current main)
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -31,8 +38,10 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       pages: ${{ steps.pages.outputs.enabled }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -42,8 +51,10 @@ jobs:
         run: |
           v=$(sed -n 's/.*<meta name="version" content="\([^"]*\)".*/\1/p' index.html)
           echo "version=$v" >> "$GITHUB_OUTPUT"
-          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$v" ]; then
-            echo "::error::The tag $GITHUB_REF_NAME is not the newest version of the change log (v$v)"
+          tag="${{ inputs.tag }}"
+          if [ "$GITHUB_REF_TYPE" = tag ]; then tag="$GITHUB_REF_NAME"; fi
+          if [ -n "$tag" ] && [ "$tag" != "v$v" ]; then
+            echo "::error::The tag $tag is not the newest version of its change log (v$v)"
             exit 1
           fi
       - run: npm run check
@@ -55,7 +66,7 @@ jobs:
           mkdir dist
           cp index.html dist/
           (cd site && zip -qr "../dist/sigmaomega-site-v${{ steps.version.outputs.version }}.zip" .)
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release
           path: |
@@ -82,8 +93,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: release
       - name: GitHub release
@@ -99,10 +111,15 @@ jobs:
             gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag \
               --title "$title" --notes-file release-notes.md
           fi
+      - name: Deploy the site of this tag from main (GitHub Pages)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run release.yml --repo "$GITHUB_REPOSITORY" --ref main -f tag="$GITHUB_REF_NAME"
 
   pages:
     needs: build
-    if: needs.build.outputs.pages == 'true'
+    # a run for a tag cannot deploy (the environment allows main only); its release job starts a run on main instead
+    if: needs.build.outputs.pages == 'true' && github.ref_type != 'tag'
     runs-on: ubuntu-latest
     permissions:
       pages: write

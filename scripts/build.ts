@@ -17,6 +17,7 @@
 // The version number in <meta name="version"> is taken from the first entry of CHANGELOG.
 //   Usage: npm run build            (writes index.html)
 //          npm run build -- --check (fails if index.html is not up to date)
+//          node scripts/build.ts --full (index.html with the script uncompacted, for the coverage report)
 import fs from 'node:fs';
 import * as nodeModule from 'node:module';
 import * as ids from './gen-element-ids.ts'; // element type of every id, for $(id) (src/ts/element-ids.d.ts)
@@ -186,8 +187,10 @@ export function copyright(js: string) {
   return { author, notice: `Copyright © ${y0 === y1 ? y0 : `${y0}–${y1}`} ${author}`, license: lic };
 }
 
-function build() {
-  const { js, files, version } = buildScript({ compact: true });
+// The page. compact: false keeps every character of the script in place (for the coverage of the browser tests,
+// scripts/coverage.ts, which finds the source files in the page by their offsets)
+function build({ compact: small = true } = {}) {
+  const { js, files, version } = buildScript({ compact: small });
   let html = read('index.html');
   for (const ph of [
     '@@VERSION@@',
@@ -233,7 +236,8 @@ function build() {
 
 if (process.argv[1] === import.meta.filename) {
   // run as a program (not imported)
-  const { html, version, files } = build();
+  // --full: the script with every character in place (npm run coverage; index.html is built again afterwards)
+  const { html, version, files } = build({ compact: !process.argv.includes('--full') });
   if (process.argv.includes('--check')) {
     if (!ids.update({ check: true })) {
       console.error('src/ts/element-ids.d.ts is not up to date with the ids of the page. Run: npm run build');
