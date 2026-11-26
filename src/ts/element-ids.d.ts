@@ -58,6 +58,14 @@ interface ElementById {
   "input-params": HTMLDivElement;
   "langSel": HTMLSelectElement;
   "layoutDefault": HTMLButtonElement;
+  "loop-wrap": HTMLDivElement;
+  "loopD": HTMLInputElement;
+  "loopL": HTMLInputElement;
+  "loopNote": HTMLDivElement;
+  "loopOpts": HTMLDivElement;
+  "loopR": HTMLInputElement;
+  "loopS": HTMLInputElement;
+  "loopT": HTMLInputElement;
   "margins": HTMLDivElement;
   "menubar": HTMLElementTagNameMap['nav'];
   "metrics": HTMLDivElement;
@@ -75,6 +83,7 @@ interface ElementById {
   "nyqOpts": HTMLDivElement;
   "panel-bode": HTMLDivElement;
   "panel-diag": HTMLDivElement;
+  "panel-loop": HTMLDivElement;
   "panel-nyq": HTMLDivElement;
   "panel-pz": HTMLDivElement;
   "panel-tf": HTMLDivElement;
@@ -156,6 +165,7 @@ interface ElementById {
   "tdof": HTMLInputElement;
   "tdof-params": HTMLDivElement;
   "tex-C": HTMLDivElement;
+  "tex-loop": HTMLDivElement;
   "tex-P": HTMLDivElement;
   "tex-r": HTMLDivElement;
   "tf-wrap": HTMLDivElement;

@@ -39,6 +39,7 @@ window.MathJax = {
       <button class="tab" type="button" data-tab="diag" aria-pressed="false" data-i18n>Block diagram</button>
       <button class="tab on" type="button" data-tab="time" aria-pressed="true" data-i18n>Time response</button>
       <button class="tab" type="button" data-tab="tf" aria-pressed="false" data-i18n>Transfer functions</button>
+      <button class="tab" type="button" data-tab="loop" aria-pressed="false" data-i18n>Loop transfer functions</button>
       <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
       <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
       <button class="tab" type="button" data-tab="pz" aria-pressed="false" data-i18n>Pole-zero map</button>
@@ -229,6 +230,23 @@ window.MathJax = {
       <div id="tf-wrap">
         <div class="tex" id="tex-P"></div>
         <div class="tex" id="tex-C"></div>
+      </div>
+    </div>
+
+    <!-- Transfer functions of the loop: the ones chosen with the buttons, each as its definition and as a rational
+         function with the numbers substituted -->
+    <div class="card tabpanel" id="panel-loop">
+      <div class="h2row"><h2 data-i18n>Loop transfer functions</h2></div>
+      <div class="ctg-row loop-opts" id="loopOpts">
+        <label class="ctg" title="Open loop L(s) = C(s)P(s)" data-i18n-title><input type="checkbox" id="loopL" checked><span>L(s)</span></label>
+        <label class="ctg" title="Sensitivity S(s) = 1/(1 + L(s))" data-i18n-title><input type="checkbox" id="loopS"><span>S(s)</span></label>
+        <label class="ctg" title="Complementary sensitivity T(s) = L(s)/(1 + L(s))" data-i18n-title><input type="checkbox" id="loopT"><span>T(s)</span></label>
+        <label class="ctg" title="Reference to output Gyr(s) = Cr(s)P(s)/(1 + L(s))" data-i18n-title><input type="checkbox" id="loopR" checked><span>G<sub>yr</sub>(s)</span></label>
+        <label class="ctg" title="Disturbance to output Gyd(s) = P(s)/(1 + L(s))" data-i18n-title><input type="checkbox" id="loopD"><span>G<sub>yd</sub>(s)</span></label>
+      </div>
+      <div id="loop-wrap">
+        <div class="tex" id="tex-loop"></div>
+        <div class="note" id="loopNote"></div>
       </div>
     </div>
 

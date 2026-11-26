@@ -2,7 +2,7 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Contents of the settings panel, the block diagram and the formulas ================= */
 import { LANG, T } from './02-i18n.ts';
-import { cT, lastOf, nT, numStr } from './03-math.ts';
+import { cT, lastOf, nT, numStr, polyTeX } from './03-math.ts';
 import {
   COMP_MODES,
   CONTROLLERS,
@@ -18,6 +18,8 @@ import {
 } from './05-definitions.ts';
 import { S, ctrlRational, lastSweep } from './06-state.ts';
 import { spWeights } from './07-frequency.ts';
+import { loopTFs } from './09-loop.ts';
+import type { LoopTF, LoopTFKey } from './09-loop.ts';
 import { tuneErr, tuneGains, tuneRule } from './10-tuning.ts';
 import type { TuneResult } from './10-tuning.ts';
 import { evalSpecs, specIcon } from './11-specs.ts';
@@ -303,11 +305,17 @@ export function texFsShown(chosen: number, cur: number, wr: number): number {
   if (!isFinite(wr)) return chosen;
   return Math.max(TEX_FS_MIN, Math.min(chosen, Math.floor(cur * wr * 2) / 2));
 }
-// How many times wider the formulas may become and still fit the width of their boxes (the widest formula decides;
-// Infinity before they are drawn). 2 % is left for rounding
-export function texWidthRatio(): number {
+// Panels showing formulas: their area, the boxes of the formulas and the item of the layout with their size (px)
+export const FORMULA_PANELS = {
+  tf: { wrap: 'tf-wrap', boxes: ['tex-P', 'tex-C'], size: 'texFs' },
+  loop: { wrap: 'loop-wrap', boxes: ['tex-loop'], size: 'loopFs' },
+} as const;
+export type FormulaPanel = keyof typeof FORMULA_PANELS;
+// How many times wider the formulas of a panel may become and still fit the width of their boxes (the widest
+// formula decides; Infinity before they are drawn). 2 % is left for rounding
+export function texWidthRatio(panel: FormulaPanel = 'tf'): number {
   let r = Infinity;
-  ['tex-C', 'tex-P'].forEach(id => {
+  FORMULA_PANELS[panel].boxes.forEach(id => {
     const el = byId(id);
     el.querySelectorAll('mjx-container > svg').forEach(svg => {
       const w = svg.getBoundingClientRect().width;
@@ -316,13 +324,20 @@ export function texWidthRatio(): number {
   });
   return r;
 }
-// Show the formulas at the chosen size, or smaller so that they fit the width of the panel. Called after they are
-// drawn (renderTeX), when the layout is applied, when the size is chosen, and when the width of the panel changes
-export function fitTex() {
-  const box = $('tf-wrap'),
-    cur = parseFloat(getComputedStyle($('tex-P')).fontSize) || TEX_FS_DEFAULT,
-    f = texFsShown(layout.texFs || TEX_FS_DEFAULT, cur, texWidthRatio());
-  if (f === TEX_FS_DEFAULT && !layout.texFs) box.style.removeProperty('--texFs');
+// Show the formulas at the chosen size, or smaller so that they fit the width of the panel (both panels when none is
+// given). Called after they are drawn (renderTeX), when the layout is applied, when the size is chosen, and when
+// the width of the panel changes
+export function fitTex(panel?: FormulaPanel) {
+  if (!panel) {
+    (Object.keys(FORMULA_PANELS) as FormulaPanel[]).forEach(fitTex);
+    return;
+  }
+  const d = FORMULA_PANELS[panel],
+    box = byId(d.wrap),
+    chosen = layout[d.size],
+    cur = parseFloat(getComputedStyle(byId(d.boxes[0])).fontSize) || TEX_FS_DEFAULT,
+    f = texFsShown(chosen || TEX_FS_DEFAULT, cur, texWidthRatio(panel));
+  if (f === TEX_FS_DEFAULT && !chosen) box.style.removeProperty('--texFs');
   else box.style.setProperty('--texFs', f + 'px');
 }
 export let texTimer: Timer | undefined;
@@ -364,6 +379,52 @@ export function ctrlTeXLines(): string[] {
 export function ctrlTeX(): string {
   return ctrlTeXLines().join('\n');
 }
+/* ---- Transfer functions of the loop: each as its definition and as a rational function with the numbers ---- */
+// Order of the formulas, their check boxes, left-hand sides and definitions
+export const LOOP_TFS: [LoopTFKey, string, string][] = [
+  ['L', 'L(s)', 'C(s)P(s)'],
+  ['S', 'S(s)', '\\dfrac{1}{1+L(s)}'],
+  ['T', 'T(s)', '\\dfrac{L(s)}{1+L(s)}'],
+  ['R', 'G_{yr}(s)', ''],
+  ['D', 'G_{yd}(s)', '\\dfrac{P(s)}{1+L(s)}'],
+];
+// A polynomial times the dead time: e^{-Ls} alone, after a single term, or after a sum in parentheses
+function delayed(p: Poly, L: number): string {
+  const e = `e^{-${nT(L)}s}`,
+    terms = p.filter(v => Math.abs(v) >= 1e-14).length,
+    t = polyTeX(p);
+  if (t === '1') return e;
+  if (t === '-1') return '-' + e;
+  return terms > 1 ? `\\left(${t}\\right)${e}` : t + e;
+}
+// Right-hand side of a transfer function of the loop: N(s) e^{-Ls}/(D0(s) + D1(s) e^{-Ls})
+export function loopTFTeX(g: LoopTF): string {
+  const num = g.delay ? delayed(g.num, g.L) : polyTeX(g.num);
+  let den = polyTeX(g.den0);
+  if (g.den1.length) {
+    const d1 = delayed(g.den1, g.L);
+    den += d1.startsWith('-') ? d1 : '+' + d1;
+  }
+  return den === '1' ? num : `\\dfrac{${num}}{${den}}`;
+}
+// Check box of each transfer function of the loop
+export const loopBox = (k: LoopTFKey) => byId(`loop${k}`) as HTMLInputElement;
+// Formulas of the chosen transfer functions of the loop: name = definition = rational function; the names have the
+// width of the widest (G_yr(s)), so that the first equals signs line up
+export function loopTeXLines(): string[] {
+  const g = loopTFs(),
+    two = twoDofShown();
+  return LOOP_TFS.filter(([k]) => loopBox(k).checked).map(([k, name, def]) => {
+    const d = k === 'R' ? `\\dfrac{${two ? 'C_r(s)' : 'C(s)'}P(s)}{1+L(s)}` : def;
+    return `\\rlap{${name}}\\hphantom{G_{yr}(s)}=${d}=${loopTFTeX(g[k])}`;
+  });
+}
+// Note under the formulas: what to do when none is chosen, otherwise that they are not reduced
+export function loopNote() {
+  byId('loopNote').textContent = LOOP_TFS.some(([k]) => loopBox(k).checked)
+    ? T('The rational functions are not reduced: common factors of the numerator and the denominator are kept.')
+    : T('Choose the transfer functions to show with the buttons above.');
+}
 // Each formula as display math (one block each)
 const displayTeX = (lines: string[]) => lines.map(l => '\\[' + l + '\\]').join('');
 // When numbers change, redraw only the formulas (replace after conversion to avoid flicker)
@@ -376,7 +437,9 @@ export function renderFormulas() {
   const jobs: [HTMLElement, string[]][] = [
     [$('tex-P'), [plantTeX()]],
     [$('tex-C'), ctrlTeXLines()],
+    [byId('tex-loop'), loopTeXLines()],
   ];
+  loopNote();
   if (window.MathJax && MathJax.tex2svgPromise) {
     jobs.forEach(([el, lines]) => {
       const tex = lines.join('\n');
@@ -385,7 +448,7 @@ export function renderFormulas() {
         .then((nodes: Node[]) => {
           el.replaceChildren(...nodes);
           el.dataset.tex = tex;
-          fitTex(); // a longer formula may need a smaller size to fit the width
+          fitTex(el.id === 'tex-loop' ? 'loop' : 'tf'); // a longer formula may need a smaller size to fit the width
         })
         .catch(() => {});
     });
@@ -395,6 +458,8 @@ export function renderFormulas() {
 export function renderTeX() {
   $('tex-P').innerHTML = '\\[' + plantTeX() + '\\]';
   $('tex-C').innerHTML = displayTeX(ctrlTeXLines());
+  byId('tex-loop').innerHTML = displayTeX(loopTeXLines());
+  loopNote();
   if ($('tex-r')) $('tex-r').innerHTML = '\\(' + REF_TYPES[S.refType].tex + '\\)';
   if (window.MathJax && MathJax.typesetPromise) {
     MathJax.typesetClear && MathJax.typesetClear();
@@ -402,6 +467,7 @@ export function renderTeX() {
       .then(() => {
         $('tex-P').dataset.tex = plantTeX();
         $('tex-C').dataset.tex = ctrlTeX();
+        byId('tex-loop').dataset.tex = loopTeXLines().join('\n');
         fitTex(); // a longer formula may need a smaller size to fit the width
       })
       .catch(() => {});

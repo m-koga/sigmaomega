@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.76.0 (2026-11-26)
+- New panel "Loop transfer functions" (in "Plots to show", hidden at first): its buttons choose which of L(s), S(s), T(s), G_yr(s) and G_yd(s) are shown, each as its definition and as a rational function with the numbers substituted, for example L(s) = C(s)P(s) = (22s² + 41s + 20)/(s³ + 21s² + 20s). The dead time is kept as e^(−Ls), the denominator is monic, and common factors are not cancelled; G_yr(s) uses C_r(s) with set-point weights. The bottom edge of the panel scales the formulas like that of the transfer functions panel, with a size of its own; the choice is saved with the layout of a scenario
+
 ## v1.75.1 (2026-11-26)
 - Exercise 1 (PID control of a third-order plant): the overshoot specification is now at most 12 % (was 10 %), so that CHR (set-point, 0 % overshoot), whose overshoot is about 11 %, meets every specification as the exercise intends; the task text, the user manual and its screenshot were updated
 - The vertical range of the output plot now includes the specification lines that are shown (the overshoot limit, the settling band, the error limits), so a limit just above the response is no longer cut off

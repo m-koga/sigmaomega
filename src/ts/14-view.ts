@@ -38,8 +38,9 @@ export const COLORS = {
   rightHalfPlane: 'rgba(198,40,40,0.06)', // unstable half of the pole-zero map
   outsideRegion: 'rgba(60,60,60,.07)', // outside the design region of the pole specifications
 };
-// Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s) (no plots)
-export const PANELS = ['diag', 'time', 'tf', 'bode', 'nyq', 'pz'] as const;
+// Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s), loop: the
+// transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (the last two show formulas, no plots)
+export const PANELS = ['diag', 'time', 'tf', 'loop', 'bode', 'nyq', 'pz'] as const;
 // Panels shown when nothing is stored
 export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
 // Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
@@ -272,6 +273,7 @@ export function defaultLayout(): Layout {
     sideW: null,
     h: {},
     texFs: null,
+    loopFs: null,
     ms: null,
     msb: null,
     ts: null,
@@ -311,6 +313,7 @@ try {
       sideW: s.sideW || null,
       h: s.h || {},
       texFs: s.texFs || null,
+      loopFs: s.loopFs || null,
       ms: s.ms || null,
       msb: 'msb' in s ? s.msb || null : s.ms || null, // layouts saved before msb existed: the same as ms
       ts: s.ts || null,

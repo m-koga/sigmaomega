@@ -127,6 +127,7 @@ export const HELP: HelpSection[] = [
 <tr><td>Block diagram</td><td>The current loop; the saturation, the disturbance and the noise are drawn only when they are used</td></tr>
 <tr><td>Time response</td><td><i>r</i>, <i>y</i> and <i>u</i>, with the response metrics under it: rise time (10 → 90 %), overshoot, settling time (±2 %), steady-state error, and the peak deviation and recovery time after a disturbance; for a sine reference the amplitude ratio and the phase difference</td></tr>
 <tr><td>Transfer functions</td><td><i>P</i>(<i>s</i>) and <i>C</i>(<i>s</i>) (and <i>C</i><sub>r</sub>(<i>s</i>)) as formulas</td></tr>
+<tr><td>Loop transfer functions</td><td>The ones chosen with the buttons of the panel among <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) and <i>G</i><sub>yd</sub>(<i>s</i>), each as its definition and as a rational function with the numbers (the dead time kept as e<sup>−<i>Ls</i></sup>; common factors not cancelled)</td></tr>
 <tr><td>Bode plot</td><td>Gain and phase of <i>L</i>, <i>P</i>, <i>C</i>, <i>S</i>, <i>T</i>, <i>G</i><sub>yd</sub> and <i>G</i><sub>yr</sub> (buttons under the plot, tab <b>Curves</b>), with the gain and phase margins, Ms, Mt, the bandwidth and the peak disturbance gain</td></tr>
 <tr><td>Nyquist plot</td><td><i>L</i>(<i>j</i>ω) around the point −1, optionally with the circle of radius 1/Ms</td></tr>
 <tr><td>Pole-zero map</td><td>Closed-loop poles, the poles and zeros of the plant and the controller, the root locus, a grid of ζ and ω<sub>n</sub>, the stability, the range of <i>k</i> for stability and the list of poles</td></tr>
@@ -143,6 +144,7 @@ export const HELP: HelpSection[] = [
 <tr><td>ブロック線図</td><td>今の制御系の構成。飽和・外乱・ノイズは使っているときだけ描きます</td></tr>
 <tr><td>時間応答</td><td><i>r</i>、<i>y</i>、<i>u</i> と、その下の応答指標：立ち上がり時間（10 → 90 %）、オーバーシュート、整定時間（±2 %）、定常偏差、外乱による最大変動と回復時間。正弦波の目標値では振幅比と位相差</td></tr>
 <tr><td>伝達関数</td><td><i>P</i>(<i>s</i>)、<i>C</i>(<i>s</i>)（と <i>C</i><sub>r</sub>(<i>s</i>)）の式</td></tr>
+<tr><td>ループの伝達関数</td><td><i>L</i>(<i>s</i>)、<i>S</i>(<i>s</i>)、<i>T</i>(<i>s</i>)、<i>G</i><sub>yr</sub>(<i>s</i>)、<i>G</i><sub>yd</sub>(<i>s</i>) のうち区画のボタンで選んだもの。それぞれ定義と、数値を入れた有理式（むだ時間は e<sup>−<i>Ls</i></sup> のまま。共通因子は約分しない）</td></tr>
 <tr><td>ボード線図</td><td><i>L</i>、<i>P</i>、<i>C</i>、<i>S</i>、<i>T</i>、<i>G</i><sub>yd</sub>、<i>G</i><sub>yr</sub> のゲインと位相（図の下のタブ <b>曲線</b> のボタンで切り替え）。ゲイン余裕、位相余裕、Ms、Mt、帯域幅、外乱ゲインの最大値</td></tr>
 <tr><td>ナイキスト線図</td><td>点 −1 のまわりの <i>L</i>(<i>j</i>ω)。半径 1/Ms の円も表示できます</td></tr>
 <tr><td>極・零点配置</td><td>閉ループ極、制御対象と制御器の極・零点、根軌跡、ζ と ω<sub>n</sub> の格子、安定性、安定な <i>k</i> の範囲、極の一覧</td></tr>

@@ -1433,6 +1433,54 @@
 "ko": "전달함수 P(s)·C(s)",
 "th": "ฟังก์ชันถ่ายโอน P(s), C(s)"
 },
+"Loop transfer functions": {
+"ja": "ループの伝達関数",
+"zh": "回路传递函数",
+"ko": "루프 전달함수",
+"th": "ฟังก์ชันถ่ายโอนของลูป"
+},
+"Open loop L(s) = C(s)P(s)": {
+"ja": "開ループ L(s) = C(s)P(s)",
+"zh": "开环 L(s) = C(s)P(s)",
+"ko": "개루프 L(s) = C(s)P(s)",
+"th": "วงเปิด L(s) = C(s)P(s)"
+},
+"Sensitivity S(s) = 1/(1 + L(s))": {
+"ja": "感度関数 S(s) = 1/(1 + L(s))",
+"zh": "灵敏度函数 S(s) = 1/(1 + L(s))",
+"ko": "감도 함수 S(s) = 1/(1 + L(s))",
+"th": "ฟังก์ชันความไว S(s) = 1/(1 + L(s))"
+},
+"Complementary sensitivity T(s) = L(s)/(1 + L(s))": {
+"ja": "相補感度関数 T(s) = L(s)/(1 + L(s))",
+"zh": "补灵敏度函数 T(s) = L(s)/(1 + L(s))",
+"ko": "상보 감도 함수 T(s) = L(s)/(1 + L(s))",
+"th": "ฟังก์ชันความไวเติมเต็ม T(s) = L(s)/(1 + L(s))"
+},
+"Reference to output Gyr(s) = Cr(s)P(s)/(1 + L(s))": {
+"ja": "目標値から出力 Gyr(s) = Cr(s)P(s)/(1 + L(s))",
+"zh": "目标值到输出 Gyr(s) = Cr(s)P(s)/(1 + L(s))",
+"ko": "목표값에서 출력 Gyr(s) = Cr(s)P(s)/(1 + L(s))",
+"th": "จากค่าอ้างอิงถึงเอาต์พุต Gyr(s) = Cr(s)P(s)/(1 + L(s))"
+},
+"Disturbance to output Gyd(s) = P(s)/(1 + L(s))": {
+"ja": "外乱から出力 Gyd(s) = P(s)/(1 + L(s))",
+"zh": "扰动到输出 Gyd(s) = P(s)/(1 + L(s))",
+"ko": "외란에서 출력 Gyd(s) = P(s)/(1 + L(s))",
+"th": "จากสัญญาณรบกวนถึงเอาต์พุต Gyd(s) = P(s)/(1 + L(s))"
+},
+"The rational functions are not reduced: common factors of the numerator and the denominator are kept.": {
+"ja": "有理式は約分していません（分子と分母の共通因子はそのまま残しています）。",
+"zh": "有理式未约分：分子与分母的公因式保留不变。",
+"ko": "유리식은 약분하지 않았습니다. 분자와 분모의 공통 인수는 그대로 남아 있습니다.",
+"th": "ไม่ได้ตัดทอนฟังก์ชันตรรกยะ: ตัวประกอบร่วมของเศษและส่วนยังคงอยู่"
+},
+"Choose the transfer functions to show with the buttons above.": {
+"ja": "上のボタンで、表示する伝達関数を選んでください。",
+"zh": "请用上方的按钮选择要显示的传递函数。",
+"ko": "위의 버튼으로 표시할 전달함수를 선택하십시오.",
+"th": "เลือกฟังก์ชันถ่ายโอนที่จะแสดงด้วยปุ่มด้านบน"
+},
 "Output y(t) plot": {
 "ja": "出力 y(t) のグラフ",
 "zh": "输出 y(t) 曲线",

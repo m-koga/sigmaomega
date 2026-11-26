@@ -22,7 +22,17 @@ import {
   splitFullRows,
   tilesFromPreset,
 } from './14-view.ts';
-import { diagMaxH, fitTex, texFsForHeight, texWidthRatio } from './17-panels.ts';
+import {
+  FORMULA_PANELS,
+  LOOP_TFS,
+  diagMaxH,
+  fitTex,
+  loopBox,
+  renderFormulas,
+  texFsForHeight,
+  texWidthRatio,
+} from './17-panels.ts';
+import type { FormulaPanel } from './17-panels.ts';
 import { redraw, scheduleRedraw } from './18-update.ts';
 import { arrangeRows, dropAtRows, moveRowTile, stepRowTile } from './22-rows.ts';
 import type { RowDrop } from './22-rows.ts';
@@ -350,29 +360,35 @@ function setPlotHeights(plots: PanelPlot[], h0: number[], f: number) {
   scheduleRedraw();
 }
 // ...when the width of the formulas' boxes changes (the window, the columns, the panel shown again)
-if (typeof ResizeObserver !== 'undefined') {
-  let lastW = -1;
-  new ResizeObserver(() => {
-    const w = $('tex-C').clientWidth;
-    if (w === lastW) return; // a new size of the formulas changes only their height
-    lastW = w;
-    fitTex();
-  }).observe($('tex-C'));
-}
-// Bottom edge of the transfer functions panel: the formulas are scaled to fit the height (their size, layout.texFs)
-function tfGrip(g: HTMLElement) {
-  const box = $('tf-wrap');
+if (typeof ResizeObserver !== 'undefined')
+  (Object.keys(FORMULA_PANELS) as FormulaPanel[]).forEach(panel => {
+    let lastW = -1;
+    const el = byId(FORMULA_PANELS[panel].boxes[0]);
+    new ResizeObserver(() => {
+      const w = el.clientWidth;
+      if (w === lastW) return; // a new size of the formulas changes only their height
+      lastW = w;
+      fitTex(panel);
+    }).observe(el);
+  });
+// The transfer functions of the loop chosen with the buttons of their panel
+LOOP_TFS.forEach(([k]) => (loopBox(k).onchange = renderFormulas));
+// Bottom edge of a panel of formulas: the formulas are scaled to fit the height (their size, layout.texFs or
+// layout.loopFs)
+function tfGrip(g: HTMLElement, panel: FormulaPanel) {
+  const d = FORMULA_PANELS[panel],
+    box = byId(d.wrap);
   let f0 = 14,
     h0 = 0,
     wr = Infinity;
   const measure = () => {
-    f0 = parseFloat(getComputedStyle($('tex-P')).fontSize) || 14;
+    f0 = parseFloat(getComputedStyle(byId(d.boxes[0])).fontSize) || 14;
     h0 = box.getBoundingClientRect().height;
-    wr = texWidthRatio();
+    wr = texWidthRatio(panel);
   };
   const setFs = (f: number | null) => {
-    layout.texFs = f;
-    fitTex();
+    layout[d.size] = f;
+    fitTex(panel);
   };
   dragger(
     g,
@@ -403,9 +419,9 @@ PANELS.forEach(k => {
   g.setAttribute('role', 'separator');
   g.setAttribute('aria-orientation', 'horizontal');
   panelOf(k).append(g);
-  if (k === 'tf') {
+  if (k === 'tf' || k === 'loop') {
     i18nTitle(g, 'Drag to change the height of this area (the formulas are scaled to fit; double-click: original)');
-    tfGrip(g);
+    tfGrip(g, k);
     return;
   }
   i18nTitle(g, 'Drag to change the height of this area (all its plots in the same ratio; double-click: original)');

@@ -31,7 +31,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Menu | Items | Choosing an item |
 | --- | --- | --- |
 | File | Save and load, Compare & reset | Shows that one card in the settings panel |
-| Plots to show | Block diagram, Time response, Transfer functions, Bode plot, Nyquist plot, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
+| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Bode plot, Nyquist plot, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
 | System setup | Plant P(s), Controller C(s), Reference/disturbance/noise, Actuator saturation | Shows that card in the settings panel |
 | Analysis & design | Design specifications, Auto-tuning (tuning rules), Parameter sweep | Shows that card in the settings panel |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
@@ -47,7 +47,7 @@ A drop-down opens and closes with its button, and closes on a click outside the 
 
 ### 2.3 Plot panels
 
-There are six panels: block diagram, time response, transfer functions, Bode plot, Nyquist plot and pole-zero map. At first the block diagram (full width at the top) and the time response and transfer functions (side by side below it) are shown. The ⠿ handle in each panel's title moves the panel, and its bottom edge changes its height (section 7). The plot buttons (+, −, Fit, PNG) appear only while the mouse is over the plot, while it has keyboard focus, or while it is zoomed. The × at the right end of each panel's title hides the panel, like its item in "Plots to show" (which shows it again); it is not available for the last panel shown.
+There are seven panels: block diagram, time response, transfer functions, loop transfer functions, Bode plot, Nyquist plot and pole-zero map. At first the block diagram (full width at the top) and the time response and transfer functions (side by side below it) are shown. The ⠿ handle in each panel's title moves the panel, and its bottom edge changes its height (section 7). The plot buttons (+, −, Fit, PNG) appear only while the mouse is over the plot, while it has keyboard focus, or while it is zoomed. The × at the right end of each panel's title hides the panel, like its item in "Plots to show" (which shows it again); it is not available for the last panel shown.
 
 ### 2.4 Narrow screens and smartphones
 
@@ -107,6 +107,7 @@ Every change of a setting recomputes all shown plots and metrics. In every plot 
 | --- | --- | --- |
 | Block diagram | The current structure (one or two degrees of freedom; saturation, disturbance and noise only when used) | — |
 | Transfer functions | P(s) and C(s) (and C_r(s) with two degrees of freedom) in one column, aligned at "=" | — |
+| Loop transfer functions | The ones chosen with the buttons of the panel among L(s), S(s), T(s), G_yr(s) and G_yd(s) (at first L(s) and G_yr(s)), each as "name = definition = rational function with the numbers", aligned at the first "="; the dead time is kept as e^(−Ls), the denominator made monic, common factors not cancelled | — |
 | Time response | r, y, u and the held responses for comparison (gray, up to 4) | Rise time (10% → 90%), overshoot, settling time (±2%), steady-state error, peak deviation and recovery time after a disturbance; for a sine reference, amplitude ratio and phase difference |
 | Bode plot | L, P, C, S, T, G_yd = P/(1+L) and G_yr = C_r P/(1+L), switched with buttons; the legend is shown even for one curve; the frequency range can be set by hand (section 9) | Gain margin, phase margin, peak sensitivity Ms, Mt, closed-loop bandwidth, peak disturbance gain |
 | Nyquist plot | L(jω), the point −1, a circle of radius 1/Ms | Stability margins |
@@ -222,13 +223,19 @@ Common operations:
 - Changing the panel height at its bottom edge scales the formulas to fit the height, stopping at the panel width.
 - When the window narrows or a formula grows longer, the formulas shrink automatically, and return to their size when there is room again.
 
-### 7.2 Block diagram panel
+### 7.2 Loop transfer functions panel
+
+- The buttons at the top choose the formulas; with none chosen, a note says so. The choice is saved with the layout of a scenario.
+- The bottom edge scales the formulas as in the transfer functions panel (7.1), with a size of its own (stored with the layout); they also shrink to fit the width.
+- G_yr(s) is defined with C_r(s) when set-point weights (or PI-D) make the controller act on the reference differently, otherwise with C(s).
+
+### 7.3 Block diagram panel
 
 - Its width and height can be changed, and the diagram never exceeds the panel width. The height handle stops where the diagram fills the width.
 - Like the plots, it has the buttons +, −, Fit and PNG (shown while the mouse is over it, while one of them has keyboard focus, or while zoomed). Zooming changes only the part of the drawing shown, not the size of the panel: the wheel zooms at the pointer (up to 8 times), a drag pans, a double-click or Fit shows the whole drawing again, and so does a new drawing (another structure or language). PNG saves the part shown, at twice its size on the screen, as block_diagram.png.
 - In the free and rows arrangements, plots can be placed to its left and right like any other panel.
 
-### 7.3 Accessibility
+### 7.4 Accessibility
 
 All menus, handles and moves can be operated with the keyboard. Plot buttons also appear when the plot has keyboard focus.
 
@@ -282,7 +289,7 @@ The work for one change has upper limits: at most 4000 recorded points × 100 ti
 | Failure handling | When browser storage is full, broken or unavailable, when files cannot be saved, or when copying fails, the page keeps working and shows the reason and an alternative |
 | Input checking | Numbers are range-checked and the corrected value is shown. Transfer functions and scenario text, files and links are rejected with a reason when wrong |
 | Reproducibility | The same settings give the same results, noise included |
-| Operability | Mouse, touch and keyboard (section 7.3) |
+| Operability | Mouse, touch and keyboard (section 7.4) |
 
 ## 11. Development and quality assurance
 

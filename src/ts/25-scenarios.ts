@@ -217,6 +217,11 @@ export const VIEW_CHECKS = [
   'bodeT',
   'bodeD',
   'bodeR',
+  'loopL',
+  'loopS',
+  'loopT',
+  'loopR',
+  'loopD',
   'nyqMs',
   'pzPlant',
   'pzCtrl',
@@ -257,6 +262,7 @@ export function scLayout(src: any): Layout {
   };
   L.sideW = num(src.sideW, 150, 2000);
   L.texFs = num(src.texFs, 4, 80);
+  L.loopFs = num(src.loopFs, 4, 80);
   L.ms = num(src.ms, 0.3, 5);
   L.msb = num(src.msb, 0.3, 5);
   L.ts = num(src.ts, 0.3, 5);

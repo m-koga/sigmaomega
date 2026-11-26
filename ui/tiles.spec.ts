@@ -5,17 +5,21 @@
 import { test, expect, boxOf, pickView, togglePanel, showAllPanels } from './fixtures.ts';
 import type { Page } from '@playwright/test';
 
-// The arrangement of the four plots (the block diagram and the transfer functions, hidden in these tests, are left
-// out)
+// The arrangement of the four plots (the block diagram and the two panels of formulas, hidden in these tests, are
+// left out)
 const tiles = (page: Page) =>
   page.evaluate(
-    () => layout.tiles?.cols.map(c => c.panels.filter(k => k !== 'tf' && k !== 'diag')).filter(c => c.length) ?? null,
+    () =>
+      layout.tiles?.cols
+        .map(c => c.panels.filter(k => k !== 'tf' && k !== 'loop' && k !== 'diag'))
+        .filter(c => c.length) ?? null,
   );
-// All four plots shown; the block diagram and the transfer functions hidden
+// All four plots shown; the block diagram and the two panels of formulas hidden
 const showAll = async (page: Page) => {
   await page.setViewportSize({ width: 1700, height: 1000 });
   await showAllPanels(page);
   await togglePanel(page, 'tf');
+  await togglePanel(page, 'loop');
   await togglePanel(page, 'diag');
 };
 // Drags the handle of panel k to the point (x, y) given relative to the panels area (fractions of its size)
@@ -151,7 +155,7 @@ test('a hidden panel comes back in its place; the preset layouts keep the free a
   // a preset layout shows the grid; choosing "Free" again brings the arrangement back
   await pickView(page, '#pcols', '1');
   await expect(page.locator('#panels > .pcol')).toHaveCount(0);
-  await expect(page.locator('#panels > .tabpanel')).toHaveCount(6); // the hidden block diagram and transfer functions too
+  await expect(page.locator('#panels > .tabpanel')).toHaveCount(7); // the hidden block diagram and panels of formulas too
   await pickView(page, '#pcols', 'free');
   expect(await tiles(page)).toEqual([['time', 'pz', 'nyq'], ['bode']]);
   await expect(page.locator('#panels > .pcol')).toHaveCount(2);

@@ -134,7 +134,9 @@ interface Layout {
   sideW: number | null;
   /** heights of plots and areas, by element id */
   h: Record<string, number>;
+  /** size (px) of the formulas of the transfer functions panel and of the loop transfer functions panel */
   texFs: number | null;
+  loopFs: number | null;
   ms: number | null;
   msb: number | null;
   ts: number | null;

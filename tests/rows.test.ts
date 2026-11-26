@@ -25,11 +25,12 @@ test('stored rows: every panel once, missing panels added, widths checked, garba
       { panels: ['bode'], w: 'no' },
     ],
   })!;
-  // the block diagram (missing) in a row of its own on top; nyq and pz (missing) together in a new row at the bottom
-  assert.deepEqual(rows(t), [['diag'], ['time', 'tf'], ['bode'], ['nyq', 'pz']]);
+  // the block diagram (missing) in a row of its own on top; loop, nyq and pz (missing) together in a new row at
+  // the bottom
+  assert.deepEqual(rows(t), [['diag'], ['time', 'tf'], ['bode'], ['loop', 'nyq', 'pz']]);
   // widths kept with their panels; invalid ones become 1
   assert.deepEqual(plain(t.rows[1].w), [2, 1]);
-  assert.deepEqual(plain(t.rows[3].w), [1, 1]);
+  assert.deepEqual(plain(t.rows[3].w), [1, 1, 1]);
   assert.equal(a.normRows(null), null);
   assert.equal(a.normRows({ rows: [{ panels: ['bogus'] }] }), null);
 });
@@ -40,21 +41,31 @@ test('rows from the preset layouts: the block diagram alone on top, then n panel
     ['time', 'tf'],
     ['bode', 'nyq'],
     ['pz'],
+    ['loop'],
   ]);
   // the hidden panels together in rows at the bottom (at most four to a row)
-  assert.deepEqual(rows(a.rowsFromPreset('1', ['time', 'bode'])), [['time'], ['bode'], ['diag', 'tf', 'nyq', 'pz']]);
+  assert.deepEqual(rows(a.rowsFromPreset('1', ['time', 'bode'])), [
+    ['time'],
+    ['bode'],
+    ['diag', 'tf', 'loop', 'nyq'],
+    ['pz'],
+  ]);
   assert.deepEqual(rows(a.rowsFromPreset('row', ['diag', 'time', 'bode', 'nyq'])), [
     ['diag'],
     ['time', 'bode', 'nyq'],
-    ['tf', 'pz'],
+    ['tf', 'loop', 'pz'],
   ]);
-  assert.deepEqual(rows(a.rowsFromPreset('2', ['time'])), [['time'], ['diag', 'tf', 'bode', 'nyq'], ['pz']]);
+  assert.deepEqual(rows(a.rowsFromPreset('2', ['time'])), [['time'], ['diag', 'tf', 'loop', 'bode'], ['nyq', 'pz']]);
   // the panels shown at first: the block diagram, the time response beside the transfer functions, and the other
-  // plots, hidden, in a row of three: shown all, the rows hold one, two and three panels
-  assert.deepEqual(rows(a.rowsFromPreset('2', a.DEFAULT_PANELS)), [['diag'], ['time', 'tf'], ['bode', 'nyq', 'pz']]);
+  // panels, hidden, in a row of four: shown all, the rows hold one, two and four panels
+  assert.deepEqual(rows(a.rowsFromPreset('2', a.DEFAULT_PANELS)), [
+    ['diag'],
+    ['time', 'tf'],
+    ['loop', 'bode', 'nyq', 'pz'],
+  ]);
   // every panel once, widths 1
   const t = a.rowsFromPreset('2', ['time', 'nyq']);
-  assert.deepEqual(plain(t.rows.flatMap(r => r.panels)).sort(), [...ALL].sort());
+  assert.deepEqual(plain(t.rows.flatMap(r => r.panels)).sort(), [...a.PANELS].sort());
   assert.ok(t.rows.every(r => r.w.length === r.panels.length && r.w.every(w => w === 1)));
 });
 
@@ -147,7 +158,7 @@ test('the arrow keys move a panel one step in the rows', () => {
 test('scenario layouts keep a valid arrangement in rows and the layout "rows"', () => {
   const L = a.scLayout({ pcols: 'rows', rows: { rows: [{ panels: ['pz', 'time'], w: [1, 3] }] } });
   assert.equal(L.pcols, 'rows');
-  assert.deepEqual(rows(L.rows!), [['diag'], ['pz', 'time'], ['tf', 'bode', 'nyq']]);
+  assert.deepEqual(rows(L.rows!), [['diag'], ['pz', 'time'], ['tf', 'loop', 'bode', 'nyq']]);
   assert.equal(a.scLayout({ rows: { rows: 'broken' } }).rows, null);
   assert.equal(a.scLayout(null).rows, null);
 });

@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.76.0',
+    d: '2026-11-26',
+    en: [
+      'New panel "Loop transfer functions" (in "Plots to show", hidden at first): its buttons choose which of L(s), S(s), T(s), G_yr(s) and G_yd(s) are shown, each as its definition and as a rational function with the numbers substituted, for example L(s) = C(s)P(s) = (22s² + 41s + 20)/(s³ + 21s² + 20s). The dead time is kept as e^(−Ls), the denominator is monic, and common factors are not cancelled; G_yr(s) uses C_r(s) with set-point weights. The bottom edge of the panel scales the formulas like that of the transfer functions panel, with a size of its own; the choice is saved with the layout of a scenario',
+    ],
+    ja: [
+      '新しい区画「ループの伝達関数」（「表示する図」の中。最初は非表示）：区画のボタンで L(s)・S(s)・T(s)・G_yr(s)・G_yd(s) のうち表示するものを選び、それぞれ定義と数値を入れた有理式で表示する（例：L(s) = C(s)P(s) = (22s² + 41s + 20)/(s³ + 21s² + 20s)）。むだ時間は e^(−Ls) のまま、分母の最高次の係数を 1 にし、共通因子は約分しない。目標値の重みがあるとき G_yr(s) は C_r(s) で定義する。区画の下端で、伝達関数の区画と同じように式を拡大縮小できる（大きさは別に記憶）。選んだ式は例題のレイアウトと一緒に保存する',
+    ],
+  },
+  {
     v: '1.75.1',
     d: '2026-11-26',
     en: [

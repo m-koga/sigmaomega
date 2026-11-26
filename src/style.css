@@ -288,8 +288,8 @@ button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
 .disabled{opacity:.35;pointer-events:none}
 .tex{min-height:0;overflow-x:auto;overflow-y:hidden;font-size:var(--texFs,14px)}
 /* each formula at the left (MathJax centres display formulas and gives them margins) */
-#tf-wrap .tex{display:flex;flex-direction:column;align-items:flex-start;gap:var(--texGap)}
-#tf-wrap mjx-container[display='true']{text-align:left !important;margin:0 !important}
+#tf-wrap .tex,#loop-wrap .tex{display:flex;flex-direction:column;align-items:flex-start;gap:var(--texGap)}
+#tf-wrap mjx-container[display='true'],#loop-wrap mjx-container[display='true']{text-align:left !important;margin:0 !important}
 .main{min-width:0}
 #diagBox > svg{width:calc(100% * var(--dgw,1));height:auto;display:block;margin:0 auto}
 /* The plot selection bar stays at the top while the plots scroll */
@@ -422,7 +422,7 @@ body.pdrag,body.pdrag *{cursor:grabbing !important;user-select:none}
 /* Transfer functions panel: P(s) above C(s) (and C_r(s)) in one column at every width, so that their equals signs
    line up; the same space between all formulas, in proportion to their size */
 .main{container-type:inline-size}
-#tf-wrap{--texGap:calc(var(--texFs,14px) * 1.1);display:grid;grid-template-columns:1fr;gap:var(--texGap);padding:calc(var(--texGap) / 2) 0}
+#tf-wrap,#loop-wrap{--texGap:calc(var(--texFs,14px) * 1.1);display:grid;grid-template-columns:1fr;gap:var(--texGap);padding:calc(var(--texGap) / 2) 0}
 .dg-left{min-width:0}
 /* On a wide right column the diagram keeps the size it had beside the formulas (63 % of the width); the handle
    makes it larger */
@@ -447,3 +447,8 @@ body.pdrag,body.pdrag *{cursor:grabbing !important;user-select:none}
 .hint code{font-family:"JetBrains Mono",monospace;background:var(--bg);padding:0 3px;border-radius:3px}
 details summary{cursor:pointer;color:var(--muted);font-size:13px}
 details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
+
+/* Buttons choosing the transfer functions of the loop, and the note under their formulas */
+.loop-opts{margin:2px 0 6px}
+.loop-opts .ctg{--c:#33363d}
+#loopNote{margin-top:4px}

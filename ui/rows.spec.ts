@@ -8,10 +8,12 @@ const rows = (page: Page) => page.evaluate(() => layout.rows?.rows.map(r => r.pa
 // The tops of the shown panels, rounded: panels in one row share their top
 const tops = (page: Page, ks: string[]) =>
   Promise.all(ks.map(async k => Math.round((await boxOf(page, `#panel-${k}`)).y)));
+// Rows with every panel shown but the loop transfer functions (hidden at first, they share the third row)
 const start = async (page: Page) => {
   await page.setViewportSize({ width: 1700, height: 1000 });
   await pickView(page, '#pcols', 'rows');
   await showAllPanels(page);
+  await togglePanel(page, 'loop');
 };
 
 test('rows: one, two and three panels side by side, kept after a reload', async ({ page }) => {
