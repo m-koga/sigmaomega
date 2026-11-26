@@ -267,6 +267,8 @@ The time response is computed by exact discretization of the plant; the frequenc
 
 The numerical accuracy of these methods, the way it was evaluated and the results are in [ACCURACY.md](ACCURACY.md) (`npm run accuracy` prints the tables; `tests/accuracy.test.ts` checks the bounds). Tests also check that the time response matches the analytic solutions of first- and second-order closed loops, and that the frequency response matches simulations with sine inputs (section 11).
 
+The work for one change has upper limits: at most 4000 recorded points × 100 time steps, 2400 frequencies, 642 gain values for the root locus (only while the pole-zero map is shown) and 8 sweep values. The times measured in Chrome, at normal speed and with the processor slowed down 4 times, are in [PERFORMANCE.md](PERFORMANCE.md) (`npm run performance`; `tests/performance.test.ts` checks that the heaviest computations stay fast).
+
 ## 10. Non-functional requirements
 
 | Item | Requirement |

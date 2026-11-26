@@ -378,6 +378,29 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.8 s, the phase marg
 <p>評価の方法とすべての結果は、GitHub の <a href="https://github.com/m-koga/sigmaomega/blob/main/ACCURACY.ja.md" target="_blank" rel="noopener">ACCURACY.ja.md</a> にあります。</p>`],
   },
   {
+    id: 'performance',
+    en: ['Time efficiency', `
+<p>Everything is computed in your browser, again after every change. Measured in Chrome on an ordinary computer, and with the processor slowed down 4 times (like a phone):</p>
+<ul>
+<li><b>Opening the page</b>: the plots are ready after about 0.25 s (0.8 s on the slower processor) and the formulas a little later, once the page has been downloaded (about 0.4 MB, and 0.7 MB for the formulas on the first visit).</li>
+<li><b>Changing a value</b>: everything is computed and drawn again in 4–19 ms with the panels shown at a first visit, and in 22–43 ms with every panel (0.1–0.2 s on the slower processor): it feels immediate.</li>
+<li><b>Dragging a slider</b>: the plots follow about 20–50 times a second (6–11 on the slower processor), each time with the complete result.</li>
+<li><b>Parameter sweep</b>: eight full computations per change, 0.06–0.2 s (up to about 1 s on the slower processor).</li>
+</ul>
+<p>The work for one change has an upper limit (at most 400,000 time steps, 2400 frequencies and 8 sweep values), so the page never stalls for long. On a slow device, hide the panels you do not need (the pole-zero map with its root locus adds the most) and switch the sweep off while you drag sliders.</p>
+<p>How it was measured and all the results are in <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> on GitHub.</p>`],
+    ja: ['時間効率', `
+<p>計算はすべてブラウザの中で、変更のたびに行います。一般的な計算機の Chrome で計測した結果と、処理速度を 4 分の 1 にした場合（スマートフォン程度）の結果は次のとおりです。</p>
+<ul>
+<li><b>ページを開く</b>：ページのダウンロード（約 0.4 MB。初めて開くときは式の表示用に 0.7 MB が加わる）の後、約 0.25 秒（処理速度 4 分の 1 では 0.8 秒）で図が表示され、少し遅れて式が表示されます。</li>
+<li><b>値を変える</b>：すべての計算と描画のやり直しは、最初に表示される図だけなら 4〜19 ms、すべての図を表示して 22〜43 ms です（処理速度 4 分の 1 では 0.1〜0.2 秒）。すぐに反応したと感じられる速さです。</li>
+<li><b>スライダーをドラッグする</b>：図が 1 秒に 約 20〜50 回（処理速度 4 分の 1 では 6〜11 回）、そのつど完全な結果で追従します。</li>
+<li><b>パラメータの掃引</b>：1 回の変更で 8 回分の計算をすべて行い、0.06〜0.2 秒かかります（処理速度 4 分の 1 では最大 約 1 秒）。</li>
+</ul>
+<p>1 回の変更で行う計算の量には上限があるため（時間刻みは最大 40 万、周波数は最大 2400 点、掃引は最大 8 個の値）、ページが長く止まることはありません。遅い機器では、使わない図を隠し（根軌跡付きの極・零点配置が最も重い）、スライダーを動かす間は掃引を切ってください。</p>
+<p>計測の方法とすべての結果は、GitHub の <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.ja.md" target="_blank" rel="noopener">PERFORMANCE.ja.md</a> にあります。</p>`],
+  },
+  {
     id: 'faq',
     en: ['When something does not work', `
 <dl>

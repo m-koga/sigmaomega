@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.75.0',
+    d: '2026-11-26',
+    en: [
+      'Faster: with the pole-zero map shown, a change takes 2 to 60 times less time (start-up settings 223 → 26 ms, an eighth-order plant 2.6 s → 43 ms on the test computer). The roots were found by an iteration that stopped at an absolute step of 1e-13, which large roots (the root locus at high gain) and repeated roots never reach, so it always ran 2000 times; it now stops at a step relative to the root, or when the polynomial is as small as its rounding error allows, and the stable gain ranges reuse the roots of the root locus. The results are unchanged (accuracy tests pass, every plot pixel-identical)',
+      'New document PERFORMANCE.md (English and Japanese) and a section "Time efficiency" of the user manual: how long the page takes to open, to respond to a change and to follow a slider, in Chrome at normal speed and with the processor slowed down 4 times, judged against the RAIL and INP guidelines, with the upper limits of the work for one change; npm run performance measures it, and tests/performance.test.ts keeps the heaviest computations fast',
+    ],
+    ja: [
+      '高速化：極・零点配置を表示しているときの変更が 2〜60 倍速くなった（計測に使った計算機で、起動時の設定 223 → 26 ms、8 次の制御対象 2.6 秒 → 43 ms）。根を求める反復は更新量の絶対値 1e-13 で止めていたが、大きな根（高いゲインでの根軌跡）や重根ではそこまで届かず、毎回 2000 回反復していた。根の大きさに対する更新量か、多項式の値が丸め誤差の大きさまで小さくなったところで止めるようにし、安定なゲインの範囲は根軌跡で求めた根を使い回すようにした。結果は変わらない（数値精度のテストに合格、すべての図がピクセル単位で一致）',
+      '新しい文書 PERFORMANCE.md（英語・日本語）と利用者マニュアルの章「時間効率」：ページを開く時間、変更への反応の時間、スライダーへの追従を、Chrome の通常の速さと処理速度 4 分の 1 で計測し、RAIL と INP の目安で評価した結果と、1 回の変更の計算量の上限。npm run performance で計測し、tests/performance.test.ts で最も重い計算が速いままであることを確かめる',
+    ],
+  },
+  {
     v: '1.74.0',
     d: '2026-11-26',
     en: [

@@ -19,6 +19,7 @@ npm run format     # TypeScript のファイルを整形（CI は npm run format
 npm run docs       # ビルドし、CHANGELOG.md・CHANGELOG.ja.md を作り直す
 npm run pixcmp -- old.html   # 古いビルドと index.html の図をピクセル単位で比べる
 npm run accuracy   # 結果を厳密解と比べる（ACCURACY.md の表）
+npm run performance  # Chrome で時間を計測する（PERFORMANCE.md の表）
 ```
 
 `npm test`、`npm run test:ui`、`npm run check`、`npm run format:check` がすべて通る必要があります。プルリクエストごとに GitHub Actions でも実行されます。テストとソースファイルの一覧は README.ja.md にあります。
@@ -32,6 +33,7 @@ npm run accuracy   # 結果を厳密解と比べる（ACCURACY.md の表）
 - **マニュアルの数値**は `tests/tutorial.test.ts` が確かめます。計算を変えて数値が変わったら、テストと一緒にマニュアルも直します。マニュアルのスクリーンショットは `npm run shots` で撮り直します。
 - **描画。** 図や指標が変わりうる変更では、前のビルドと `npm run pixcmp` で比べ、違いがあれば理由を説明してください。
 - **数値精度。** 計算を変えたときも `tests/accuracy.test.ts` が通る必要があります。結果が変わったら `npm run accuracy` を実行し、`ACCURACY.md`・`ACCURACY.ja.md` の表を更新します。
+- **時間効率。** 計算や描画を変えたときも `tests/performance.test.ts` が通る必要があります。時間が目立って変わったら `npm run performance` を実行し、`PERFORMANCE.md` と `PERFORMANCE.ja.md` の表を更新してください。
 - **ライセンスの表示。** 新しいソースファイルの先頭には、`SPDX-License-Identifier: Apache-2.0` と `Copyright 2026 Masanobu Koga` の 2 行をコメントで入れます（`tests/license-headers.test.ts`）。
 
 ## 保守

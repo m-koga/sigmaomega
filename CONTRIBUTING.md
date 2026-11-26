@@ -19,6 +19,7 @@ npm run format     # format the TypeScript files (CI checks npm run format:check
 npm run docs       # build and regenerate CHANGELOG.md / CHANGELOG.ja.md
 npm run pixcmp -- old.html   # compare the plots of an older build with index.html pixel by pixel
 npm run accuracy   # compare the results with exact solutions (the tables of ACCURACY.md)
+npm run performance  # measure the times in Chrome (the tables of PERFORMANCE.md)
 ```
 
 All of `npm test`, `npm run test:ui`, `npm run check` and `npm run format:check` must pass; GitHub Actions runs them on every pull request. README.md lists every test file and every source file.
@@ -32,6 +33,7 @@ All of `npm test`, `npm run test:ui`, `npm run check` and `npm run format:check`
 - **Numbers in the manual** are checked by `tests/tutorial.test.ts`; if a change of the computation alters them, correct the manual together with the test. Screenshots of the manual are retaken with `npm run shots`.
 - **Rendering.** For a change that may alter plots or metrics, run `npm run pixcmp` against the previous build and explain any difference.
 - **Numerical accuracy.** A change of the computation must keep `tests/accuracy.test.ts` passing. Run `npm run accuracy` and update the tables in `ACCURACY.md` and `ACCURACY.ja.md` when the results change.
+- **Time efficiency.** A change of the computation or the drawing must keep `tests/performance.test.ts` passing. When the times change noticeably, run `npm run performance` and update the tables in `PERFORMANCE.md` and `PERFORMANCE.ja.md`.
 - **License headers.** Every new source file starts with `SPDX-License-Identifier: Apache-2.0` and `Copyright 2026 Masanobu Koga` as two comment lines (`tests/license-headers.test.ts`).
 
 ## Maintenance

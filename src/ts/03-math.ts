@@ -30,7 +30,11 @@ export function trimPoly(desc: Poly): Poly {
   while (i < desc.length - 1 && Math.abs(desc[i]) < 1e-14) i++;
   return desc.slice(i);
 }
-// Roots by the Durand–Kerner method (coefficients in descending powers)
+// Roots by the Durand–Kerner method (coefficients in descending powers). The iteration stops when every step is
+// below 1e-13 relative to the size of its root, or when the polynomial at every root is as small as its rounding
+// error allows (sum of |a_j||r|^j times a few ulps): then no step can make the roots more accurate. (An absolute
+// limit on the step could not be reached by large roots, and repeated roots move by more than their rounding error,
+// so both used to run the full 2000 iterations.)
 export function polyRoots(desc: Poly, init?: Complex[]): Complex[] {
   desc = trimPoly(desc);
   const n = desc.length - 1;
@@ -48,17 +52,27 @@ export function polyRoots(desc: Poly, init?: Complex[]): Complex[] {
     }
   }
   for (let it = 0; it < 2000; it++) {
-    let delta = 0;
+    let delta = 0,
+      atNoise = true;
     r = r.map((ri, i): Complex => {
       let den: Complex = [1, 0];
       r.forEach((rj, j) => {
         if (i !== j) den = cmul(den, [ri[0] - rj[0], ri[1] - rj[1]]);
       });
-      const d = cdiv(polyval(a, ri), den);
-      delta = Math.max(delta, Math.hypot(d[0], d[1]));
+      const p = polyval(a, ri),
+        size = Math.sqrt(ri[0] * ri[0] + ri[1] * ri[1]);
+      if (atNoise) {
+        let bound = 0;
+        for (const c of a) bound = bound * size + Math.abs(c);
+        bound *= 16 * Number.EPSILON;
+        if (p[0] * p[0] + p[1] * p[1] > bound * bound) atNoise = false;
+      }
+      const d = cdiv(p, den),
+        step = Math.sqrt(d[0] * d[0] + d[1] * d[1]) / (1 + size);
+      if (step > delta) delta = step;
       return [ri[0] - d[0], ri[1] - d[1]];
     });
-    if (delta < 1e-13) break;
+    if (delta < 1e-13 || atNoise) break;
   }
   return r.map(([x, y]): Complex => [Math.abs(x) < 1e-9 ? 0 : x, Math.abs(y) < 1e-4 * (1 + Math.abs(x)) ? 0 : y]);
 }

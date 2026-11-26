@@ -50,6 +50,8 @@ The full specification (screens, functions, computation methods, non-functional 
 
 The numerical accuracy (how it was evaluated against exact solutions and independent references, and the results) is in [ACCURACY.md](ACCURACY.md) ([日本語](ACCURACY.ja.md)); the user manual summarizes it in its section "Numerical accuracy".
 
+The time efficiency (how long the page takes to open, to respond to a change and to follow a slider, measured in Chrome at normal speed and with the processor slowed down 4 times, with the upper limits of the work done) is in [PERFORMANCE.md](PERFORMANCE.md) ([日本語](PERFORMANCE.ja.md)); the user manual summarizes it in its section "Time efficiency".
+
 ## Automated tests
 
 Requires Node.js 22.18 or later. Run `npm install` once (it installs TypeScript for the type check, and Playwright for the browser tests).
@@ -90,6 +92,7 @@ They check the following (`tests/` folder).
 | `modules.test.ts` | The layers of `src/ts`: a file imports only from files with a lower number (so there are no cycles), and the computing files 01–12 do not touch the page |
 | `license-headers.test.ts` | Every source file starts with the SPDX license identifier and the copyright line |
 | `tutorial.test.ts` | The numbers quoted in the user manual's chapter "Trying the exercises": each step of the four exercises (manual tuning, tuning rules, the sweep of K_I, set-point weights, stabilizing an unstable plant) gives the values the manual states |
+| `performance.test.ts` | Time efficiency (PERFORMANCE.md): the root locus and the stable gain ranges, the root finding with large poles, the simulation with the most time steps and a sweep of 8 values stay far below the time they took before they were made faster |
 | `accuracy.test.ts` | Numerical accuracy (ACCURACY.md): the time response against the exact closed loop and against a continuous reference with the exact dead time, the response metrics, the margins and Ms against a dense frequency scan, the discretization, the roots and the Padé approximation, and the sine metrics stay within the stated bounds |
 | `version.test.ts` | Consistency of version numbers, matching English and Japanese change log items, CHANGELOG.md and CHANGELOG.ja.md being up to date |
 
@@ -161,6 +164,7 @@ The page is edited in `src/` and built into the single file `index.html`, which 
 | `tsconfig.json` | Settings of the type check of `src/ts` |
 | `tsconfig.node.json` | Settings of the type check of the build scripts and the tests (`scripts/`, `tests/`, `ui/`, `playwright.config.ts`) |
 | `CONTRIBUTING.md`, `CONTRIBUTING.ja.md` | How to set up, build, test and contribute, and the rules for changes |
+| `PERFORMANCE.md`, `PERFORMANCE.ja.md`, `scripts/performance.ts` | Time efficiency: the measurements and their results, and the script that makes them in a browser (`npm run performance`) |
 | `ACCURACY.md`, `ACCURACY.ja.md`, `scripts/accuracy.ts` | Numerical accuracy: the evaluation and its results, and the script that computes them (`npm run accuracy`) |
 | `CLAUDE.md`, `.claude/` | For the maintainer only: the procedure for the AI coding assistant he works with (Claude Code; the skill is in Japanese), see `.claude/README.md`. Not needed to use or contribute |
 | `LICENSE`, `NOTICE` | The Apache License 2.0, and the copyright and attribution notice to be passed on with copies |
@@ -175,6 +179,7 @@ npm test         # build, type-check, then run the automated tests
 npm run docs     # build, then generate CHANGELOG.md and CHANGELOG.ja.md
 npm run pixcmp -- old.html   # compare the plots and metrics of an older build with index.html pixel by pixel
 npm run accuracy # compare the results with exact solutions and print the tables of ACCURACY.md (about 30 s)
+npm run performance # measure the times in Chrome and print the tables of PERFORMANCE.md (about 8 minutes)
 npm run edits -- 1.62.1      # text replacements from the published version 1.62.1 to index.html (/tmp/publish-edits.json),
                              # and the lines to read back after publishing (/tmp/publish-edits-checks.json)
 npm run icon     # make the PNG icons (src/icon-180.png, -192, -512, -maskable-512) from src/icon.svg again (then npm run build)

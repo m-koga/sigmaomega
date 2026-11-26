@@ -75,29 +75,35 @@ export const LOCUS_KS = (() => {
   a.push(1);
   return a.sort((x, y) => x - y);
 })();
-// Ranges of k (within 1e-4 … 1e4) for which all closed-loop poles are in the left half-plane
-export function stableRanges(st: State = S): [number, number][] {
+// Ranges of k (within 1e-4 … 1e4) for which all closed-loop poles are in the left half-plane. pts: the root locus
+// over LOCUS_KS (computed when not given); each boundary is then found by bisection, each step starting from the
+// poles of the nearer known point, so that few iterations are needed
+export function stableRanges(st: State = S, pts: LocusPoint[] = rootLocus(LOCUS_KS, st)): [number, number][] {
   const { num, den } = loopRational(st);
-  const maxRe = (k: number) => Math.max(...polyRoots(trimPoly(pAddDesc(den, pScale(num, k)))).map(z => z[0]));
-  const ks = LOCUS_KS,
-    stable = ks.map(k => maxRe(k) < 0),
+  const poles = (k: number, init: Complex[]) => polyRoots(trimPoly(pAddDesc(den, pScale(num, k))), init);
+  const isStable = (r: Complex[]) => r.every(z => z[0] < 0);
+  const stable = pts.map(p => isStable(p.r)),
     out: [number, number][] = [];
-  const edge = (a: number, b: number) => {
-    let lo = a,
-      hi = b,
-      sa = maxRe(a) < 0;
-    for (let i = 0; i < 50; i++) {
-      const m = Math.sqrt(lo * hi);
-      if (maxRe(m) < 0 === sa) lo = m;
-      else hi = m;
+  const edge = (i: number) => {
+    let lo = pts[i - 1].k,
+      hi = pts[i].k,
+      rLo = pts[i - 1].r;
+    const sa = stable[i - 1];
+    for (let n = 0; n < 50; n++) {
+      const m = Math.sqrt(lo * hi),
+        r = poles(m, rLo);
+      if (isStable(r) === sa) {
+        lo = m;
+        rLo = r;
+      } else hi = m;
     }
     return Math.sqrt(lo * hi);
   };
   let start: number | null = stable[0] ? 0 : null;
-  for (let i = 1; i < ks.length; i++) {
-    if (stable[i] && !stable[i - 1]) start = edge(ks[i - 1], ks[i]);
+  for (let i = 1; i < pts.length; i++) {
+    if (stable[i] && !stable[i - 1]) start = edge(i);
     if (!stable[i] && stable[i - 1]) {
-      out.push([start ?? 0, edge(ks[i - 1], ks[i])]);
+      out.push([start ?? 0, edge(i)]);
       start = null;
     } // start is set while stable
   }
@@ -122,7 +128,7 @@ export let lastLocus: LocusPoint[] | null = null,
   lastRanges: [number, number][] | null = null;
 // Root locus and stable ranges of k, computed when first needed after each update
 export const locus = (): LocusPoint[] => (lastLocus ??= rootLocus(LOCUS_KS));
-export const stableKRanges = (): [number, number][] => (lastRanges ??= stableRanges());
+export const stableKRanges = (): [number, number][] => (lastRanges ??= stableRanges(S, locus()));
 // The root locus is computed again when next needed (the pole specifications changed)
 export function resetLocus() {
   lastLocus = null;

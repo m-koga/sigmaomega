@@ -41,6 +41,7 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
   - `INFO_AREAS`：`14-view.ts`（図の下のタブ付き区画）
   - `tests/kinds.test.ts` が全項目を確かめる。
 - 計算関数は設定を最後の引数 `st: State = S` で受け取る（グローバルを暗黙に読まない）。
+- 数値精度は `ACCURACY.md`（`npm run accuracy`、`tests/accuracy.test.ts`）、時間効率は `PERFORMANCE.md`（`npm run performance`、約 8 分、`tests/performance.test.ts`）。計算や描画を変えて結果や時間が変わったら、日英の表を更新する。
 - レイアウト（`layout`）は設定と別。ブラウザに保存し、例題にも入る（読み込みの検証は `25-scenarios.ts` の `scLayout`）。新しい項目は、既定値を `14-view.ts` の `defaultLayout()`（1 か所）に足し、保存するなら 14 の読み込みと 25 の `scLayout` の検証にも足す。
 
 ## 2. 書き方の決まり
