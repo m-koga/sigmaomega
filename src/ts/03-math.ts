@@ -84,7 +84,8 @@ export function numStr(a: number, tex?: boolean): string {
   }
   return s;
 }
-export function polyTeX(desc: Poly): string {
+// Polynomial in descending powers as TeX, in the variable v (s by default)
+export function polyTeX(desc: Poly, v = 's'): string {
   const n = desc.length - 1;
   let out = '';
   desc.forEach((c, i) => {
@@ -93,7 +94,7 @@ export function polyTeX(desc: Poly): string {
     const neg = c < 0,
       a = Math.abs(c);
     const cs = Math.abs(a - 1) < 1e-12 && p > 0 ? '' : numStr(a, true);
-    const sv = p === 0 ? '' : p === 1 ? 's' : `s^{${p}}`;
+    const sv = p === 0 ? '' : p === 1 ? v : `${v}^{${p}}`;
     out += out === '' ? (neg ? '-' : '') : neg ? ' - ' : ' + ';
     out += cs + sv;
   });

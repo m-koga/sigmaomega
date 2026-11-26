@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.79.0',
+    d: '2026-11-26',
+    en: [
+      'New panel "Routh–Hurwitz test" (in "Plots to show", hidden at first): the characteristic equation 1 + L(s) = 0 and its Routh table for the current setting, with the first column in bold, negative entries in red, the number of sign changes and the verdict (ε for a zero first entry, the auxiliary polynomial for a row of zeros); below, with the controller multiplied by a gain factor k, the first column as functions of k (ratios of Hurwitz determinants) and the range of k (and of K_P with P control) where all are positive, compared with the range from the root locus',
+    ],
+    ja: [
+      '新しい区画「ラウス・フルビッツの安定判別」（「表示する図」の中。最初は非表示）：特性方程式 1 + L(s) = 0 と現在の設定でのラウス表を、第 1 列を太字、負の値を赤で示し、符号の変化の回数と判定を表示する（第 1 列の 0 は ε、すべて 0 の行は補助多項式）。その下に、制御器をゲイン倍率 k 倍したときの第 1 列を k の式（フルビッツ行列式の比）で示し、すべてが正となる k の範囲（P 制御では K_P の範囲も）を根軌跡による範囲と比べて示す',
+    ],
+  },
+  {
     v: '1.78.0',
     d: '2026-11-26',
     en: [

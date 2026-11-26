@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.79.0 (2026-11-26)
+- New panel "Routh–Hurwitz test" (in "Plots to show", hidden at first): the characteristic equation 1 + L(s) = 0 and its Routh table for the current setting, with the first column in bold, negative entries in red, the number of sign changes and the verdict (ε for a zero first entry, the auxiliary polynomial for a row of zeros); below, with the controller multiplied by a gain factor k, the first column as functions of k (ratios of Hurwitz determinants) and the range of k (and of K_P with P control) where all are positive, compared with the range from the root locus
+
 ## v1.78.0 (2026-11-26)
 - The panel "Poles" is now "Poles and zeros": its table lists the zeros of each chosen transfer function beside its poles (the roots of the numerators as written in the loop transfer functions panel: for example the zeros of S(s) are the poles of P(s) and C(s); the dead time has no zeros); the columns of ζ, ωn, ωd and the time constant are removed
 

@@ -460,3 +460,14 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 .poles-box td.uns{color:#c62828;font-weight:700}
 #polesNote{margin-top:6px}
 .poles-box tr.grp td:first-child{font-weight:700}
+/* Routh–Hurwitz stability test: the table of the current setting (first column emphasized) and the analysis in k */
+.routh-box{height:420px;overflow:auto}
+.routh-box h4{margin:10px 0 4px;font-size:13px}
+.routh-box h4:first-child{margin-top:2px}
+.routh-box table.pzt td.fc{font-weight:700}
+.routh-box table.pzt td.neg{color:#c62828}
+.routh-box table.pzt th.pw{text-align:left;font-family:"JetBrains Mono",monospace;color:inherit}
+.routh-box .verdict{margin:6px 0;font-weight:600}
+.routh-box .verdict.bad{color:#c62828}
+.routh-box .verdict.ok{color:#2e7d32}
+.routh-box mjx-container[display='true']{text-align:left !important;margin:4px 0 !important}

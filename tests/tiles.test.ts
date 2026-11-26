@@ -25,8 +25,8 @@ test('stored arrangements: every panel once, missing panels added, garbage ignor
   // missing: the block diagram on top of the first column; tf, loop, poles and pz each to the column with the
   // fewest panels
   assert.deepEqual(cols(t), [
-    ['diag', 'nyq', 'time', 'poles'],
-    ['bode', 'tf', 'loop', 'pz'],
+    ['diag', 'nyq', 'time', 'poles', 'pz'],
+    ['bode', 'tf', 'loop', 'routh'],
   ]);
   assert.deepEqual(plain(t.cols.map(c => c.w)), [2, 1]); // a width that is not positive becomes 1
   const many = a.normTiles({ cols: ['time', 'bode', 'nyq', 'pz', 'time'].map(k => ({ w: 1, panels: [k] })) });
@@ -36,29 +36,29 @@ test('stored arrangements: every panel once, missing panels added, garbage ignor
 test('preset layouts: the shown panels row by row; hidden panels in the column with the fewest', () => {
   // the block diagram (across the whole width in the preset) on top of the first column, the others row by row
   assert.deepEqual(cols(a.tilesFromPreset('2', ['diag', 'time', 'tf', 'bode', 'nyq', 'pz'])), [
-    ['diag', 'time', 'bode', 'pz'],
+    ['diag', 'time', 'bode', 'pz', 'routh'],
     ['tf', 'nyq', 'loop', 'poles'],
   ]);
   assert.deepEqual(cols(a.tilesFromPreset('2', ['time', 'tf', 'bode', 'nyq', 'pz'])), [
-    ['time', 'bode', 'pz', 'loop'],
+    ['time', 'bode', 'pz', 'loop', 'routh'],
     ['tf', 'nyq', 'diag', 'poles'],
   ]);
   assert.deepEqual(cols(a.tilesFromPreset('1', ['bode', 'time'])), [
-    ['time', 'bode', 'diag', 'tf', 'loop', 'poles', 'nyq', 'pz'],
+    ['time', 'bode', 'diag', 'tf', 'loop', 'poles', 'routh', 'nyq', 'pz'],
   ]);
   assert.deepEqual(cols(a.tilesFromPreset('row', ['time', 'nyq', 'pz'])), [
     ['time', 'diag', 'poles'],
-    ['nyq', 'tf', 'bode'],
-    ['pz', 'loop'],
+    ['nyq', 'tf', 'routh'],
+    ['pz', 'loop', 'bode'],
   ]);
   assert.deepEqual(cols(a.tilesFromPreset('2', ['time'])), [
-    ['time', 'diag', 'tf', 'loop', 'poles', 'bode', 'nyq', 'pz'],
+    ['time', 'diag', 'tf', 'loop', 'poles', 'routh', 'bode', 'nyq', 'pz'],
   ]);
   // the panels shown at first: the block diagram above the time response on the left, the transfer functions on
   // the right (the hidden panels shared between the columns)
   assert.deepEqual(cols(a.tilesFromPreset('2', a.DEFAULT_PANELS)), [
-    ['diag', 'time', 'poles', 'nyq'],
-    ['tf', 'loop', 'bode', 'pz'],
+    ['diag', 'time', 'poles', 'bode', 'pz'],
+    ['tf', 'loop', 'routh', 'nyq'],
   ]);
 });
 
@@ -148,8 +148,8 @@ test('scenario layouts keep a valid free arrangement and drop a broken one', () 
   assert.equal(L.pcols, 'free');
   assert.ok(L.tiles);
   assert.deepEqual(cols(L.tiles), [
-    ['diag', 'pz', 'loop', 'bode'],
-    ['time', 'tf', 'poles', 'nyq'],
+    ['diag', 'pz', 'loop', 'routh', 'nyq'],
+    ['time', 'tf', 'poles', 'bode'],
   ]); // missing panels fill the column with the fewest (the block diagram on top of the first)
   assert.equal(a.scLayout({ pcols: 'free', tiles: 'broken' }).tiles, null);
   assert.equal(a.scLayout({ pcols: 'grid9' }).pcols, null);

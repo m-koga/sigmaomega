@@ -87,6 +87,7 @@ interface ElementById {
   "panel-nyq": HTMLDivElement;
   "panel-poles": HTMLDivElement;
   "panel-pz": HTMLDivElement;
+  "panel-routh": HTMLDivElement;
   "panel-tf": HTMLDivElement;
   "panel-time": HTMLDivElement;
   "panelBtn": HTMLButtonElement;
@@ -133,6 +134,7 @@ interface ElementById {
   "ref-params": HTMLDivElement;
   "refType": HTMLSelectElement;
   "reset": HTMLButtonElement;
+  "routhBox": HTMLDivElement;
   "sat": HTMLInputElement;
   "sat-params": HTMLDivElement;
   "sc-copy": HTMLButtonElement;

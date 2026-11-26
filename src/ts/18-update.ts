@@ -11,6 +11,7 @@ import { drawBode, drawNyq, drawTime } from './15-drawing.ts';
 import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
   renderPoles,
+  scheduleRouth,
   renderSpecs,
   renderSweepTable,
   renderSweepUI,
@@ -41,6 +42,7 @@ export function update() {
   setResults({ fr: freqResp(), frB: bodeResp(), pz: computePZ() });
   resetLoopCache();
   renderPoles();
+  scheduleRouth();
   renderSpecs();
   renderTune();
   renderSweepUI();
