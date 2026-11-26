@@ -11,7 +11,7 @@ const tiles = (page: Page) =>
   page.evaluate(
     () =>
       layout.tiles?.cols
-        .map(c => c.panels.filter(k => !['tf', 'loop', 'poles', 'routh', 'diag'].includes(k)))
+        .map(c => c.panels.filter(k => !['tf', 'loop', 'poles', 'routh', 'sse', 'diag'].includes(k)))
         .filter(c => c.length) ?? null,
   );
 // All four plots shown; the block diagram and the panels without plots hidden
@@ -22,6 +22,7 @@ const showAll = async (page: Page) => {
   await togglePanel(page, 'loop');
   await togglePanel(page, 'poles');
   await togglePanel(page, 'routh');
+  await togglePanel(page, 'sse');
   await togglePanel(page, 'diag');
 };
 // Drags the handle of panel k to the point (x, y) given relative to the panels area (fractions of its size)
@@ -157,7 +158,7 @@ test('a hidden panel comes back in its place; the preset layouts keep the free a
   // a preset layout shows the grid; choosing "Free" again brings the arrangement back
   await pickView(page, '#pcols', '1');
   await expect(page.locator('#panels > .pcol')).toHaveCount(0);
-  await expect(page.locator('#panels > .tabpanel')).toHaveCount(9); // the hidden block diagram and panels without plots too
+  await expect(page.locator('#panels > .tabpanel')).toHaveCount(10); // the hidden block diagram and panels without plots too
   await pickView(page, '#pcols', 'free');
   expect(await tiles(page)).toEqual([['time', 'pz', 'nyq'], ['bode']]);
   await expect(page.locator('#panels > .pcol')).toHaveCount(2);

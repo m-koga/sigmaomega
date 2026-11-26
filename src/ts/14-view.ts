@@ -40,8 +40,8 @@ export const COLORS = {
 };
 // Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s), loop: the
 // transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (these two show formulas), poles: the poles of
-// P(s), C(s) and of the transfer functions of the loop (a table), routh: the Routh–Hurwitz stability test
-export const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'routh', 'bode', 'nyq', 'pz'] as const;
+// P(s), C(s) and of the transfer functions of the loop (a table), routh: the Routh–Hurwitz stability test, sse: the system type and the steady-state errors
+export const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'pz'] as const;
 // Panels shown when nothing is stored
 export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
 // Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
@@ -159,7 +159,7 @@ export function splitFullRows(t: RowTiles, shown: Set<string>): RowTiles {
 }
 // Panels without plots that go after the plots when hidden panels are gathered in rows (the plots then come back
 // side by side)
-const TEXT_PANELS = ['tf', 'loop', 'poles', 'routh'];
+const TEXT_PANELS = ['tf', 'loop', 'poles', 'routh', 'sse'];
 // The arrangement in rows that looks like a preset layout: the block diagram in a row of its own on top, the other
 // shown panels n to a row (1 column: one, 2 columns: two, 1 row: all, at most MAX_COLS); the hidden panels together
 // in rows at the bottom, the plots first, so that they come back side by side

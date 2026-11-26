@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.80.0 (2026-11-27)
+- New panel "Steady-state error" (in "Plots to show", hidden at first): the system type of L(s) and the position, velocity and acceleration error constants K_p, K_v, K_a; the steady-state errors to a step, ramp and parabola of the reference (per unit input and for the current setting, with the textbook formulas) and to a step disturbance at the plant input, beside the error at the end of the simulation. With set-point weights the errors come from 1 − G_yr(s), and the values of the textbook formulas are shown in small type
+
 ## v1.79.0 (2026-11-26)
 - New panel "Routh–Hurwitz test" (in "Plots to show", hidden at first): the characteristic equation 1 + L(s) = 0 and its Routh table for the current setting, with the first column in bold, negative entries in red, the number of sign changes and the verdict (ε for a zero first entry, the auxiliary polynomial for a row of zeros); below, with the controller multiplied by a gain factor k, the first column as functions of k (ratios of Hurwitz determinants) and the range of k (and of K_P with P control) where all are positive, compared with the range from the root locus
 

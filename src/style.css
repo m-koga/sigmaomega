@@ -470,4 +470,8 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 .routh-box .verdict{margin:6px 0;font-weight:600}
 .routh-box .verdict.bad{color:#c62828}
 .routh-box .verdict.ok{color:#2e7d32}
+.routh-box table.pzt th.rn{text-align:left;font-weight:400;color:inherit}
+.routh-box table.pzt small{color:#888}
+.routh-box table.pzt th.rn mjx-container{display:inline-block;margin:3px 0 !important}
+.routh-box table.pzt tr.cur td,.routh-box table.pzt tr.cur th{background:rgba(25,118,210,.08)}
 .routh-box mjx-container[display='true']{text-align:left !important;margin:4px 0 !important}

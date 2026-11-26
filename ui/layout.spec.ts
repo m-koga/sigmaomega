@@ -418,12 +418,12 @@ test('the plots to show are chosen in a drop-down list that stays open while cho
   // a click outside closes it; "All" shows every panel
   await page.click('#panelBtn');
   await page.click('#panelsAll');
-  await expect(page.locator('#panels > .tabpanel:visible')).toHaveCount(9);
+  await expect(page.locator('#panels > .tabpanel:visible')).toHaveCount(10);
   await page.click('#cvY');
   await expect(list).toBeHidden();
   // the last panel shown cannot be hidden
   await page.click('#panelBtn');
-  for (const k of ['diag', 'tf', 'loop', 'poles', 'routh', 'bode', 'nyq', 'pz'])
+  for (const k of ['diag', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'pz'])
     await page.click(`#panelList .tab[data-tab=${k}]`);
   await page.click('#panelList .tab[data-tab=time]');
   await expect(page.locator('#panel-time')).toBeVisible();
@@ -615,7 +615,7 @@ test('the × of a panel hides it, like its item in "Plots to show"; not the last
   const shown = () => page.evaluate(() => [...shownPanels].sort());
   const close = (k: string) => page.locator(`#panel-${k} .pclose`);
   // every panel has one, at the right end of its title
-  await expect(page.locator('.pclose')).toHaveCount(9);
+  await expect(page.locator('.pclose')).toHaveCount(10);
   expect(await shown()).toEqual(['diag', 'tf', 'time']);
   const t = await boxOf(page, '#panel-tf h2'),
     c = await boxOf(page, '#panel-tf .pclose');

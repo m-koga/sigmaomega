@@ -42,6 +42,7 @@ window.MathJax = {
       <button class="tab" type="button" data-tab="loop" aria-pressed="false" data-i18n>Loop transfer functions</button>
       <button class="tab" type="button" data-tab="poles" aria-pressed="false" data-i18n>Poles and zeros</button>
       <button class="tab" type="button" data-tab="routh" aria-pressed="false" data-i18n>Routh–Hurwitz test</button>
+      <button class="tab" type="button" data-tab="sse" aria-pressed="false" data-i18n>Steady-state error</button>
       <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
       <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
       <button class="tab" type="button" data-tab="pz" aria-pressed="false" data-i18n>Pole-zero map</button>
@@ -276,6 +277,14 @@ window.MathJax = {
       <div class="h2row"><h2 data-i18n>Routh–Hurwitz stability test</h2></div>
       <div class="routh-box" id="routhBox"></div>
       <div class="hgrip" data-target="routhBox" data-min="120" data-max="2000"></div>
+    </div>
+
+    <!-- System type and steady-state error: the error constants of L(s), the errors to a step, ramp and parabola of the
+         reference and to a step disturbance, beside the simulation -->
+    <div class="card tabpanel" id="panel-sse">
+      <div class="h2row"><h2 data-i18n>System type and steady-state error</h2></div>
+      <div class="routh-box" id="sseBox"></div>
+      <div class="hgrip" data-target="sseBox" data-min="120" data-max="2000"></div>
     </div>
 
     <div class="card tabpanel" id="panel-bode">

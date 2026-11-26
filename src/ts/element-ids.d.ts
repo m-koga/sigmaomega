@@ -88,6 +88,7 @@ interface ElementById {
   "panel-poles": HTMLDivElement;
   "panel-pz": HTMLDivElement;
   "panel-routh": HTMLDivElement;
+  "panel-sse": HTMLDivElement;
   "panel-tf": HTMLDivElement;
   "panel-time": HTMLDivElement;
   "panelBtn": HTMLButtonElement;
@@ -165,6 +166,7 @@ interface ElementById {
   "spec-show": HTMLInputElement;
   "specRows": HTMLDivElement;
   "specSum": HTMLDivElement;
+  "sseBox": HTMLDivElement;
   "sw-def": HTMLButtonElement;
   "sw-form": HTMLDivElement;
   "sw-on": HTMLInputElement;

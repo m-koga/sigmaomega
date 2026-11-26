@@ -10,8 +10,8 @@ const rows = (page: Page) =>
 // The tops of the shown panels, rounded: panels in one row share their top
 const tops = (page: Page, ks: string[]) =>
   Promise.all(ks.map(async k => Math.round((await boxOf(page, `#panel-${k}`)).y)));
-// Rows with every panel shown but the loop transfer functions, the poles and the Routh–Hurwitz test (hidden at
-// first, they go to the rows at the bottom)
+// Rows with every panel shown but the loop transfer functions, the poles, the Routh–Hurwitz test and the
+// steady-state error (hidden at first, they go to the rows at the bottom)
 const start = async (page: Page) => {
   await page.setViewportSize({ width: 1700, height: 1000 });
   await pickView(page, '#pcols', 'rows');
@@ -19,6 +19,7 @@ const start = async (page: Page) => {
   await togglePanel(page, 'loop');
   await togglePanel(page, 'poles');
   await togglePanel(page, 'routh');
+  await togglePanel(page, 'sse');
 };
 
 test('rows: one, two and three panels side by side, kept after a reload', async ({ page }) => {

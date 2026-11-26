@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.80.0',
+    d: '2026-11-27',
+    en: [
+      'New panel "Steady-state error" (in "Plots to show", hidden at first): the system type of L(s) and the position, velocity and acceleration error constants K_p, K_v, K_a; the steady-state errors to a step, ramp and parabola of the reference (per unit input and for the current setting, with the textbook formulas) and to a step disturbance at the plant input, beside the error at the end of the simulation. With set-point weights the errors come from 1 − G_yr(s), and the values of the textbook formulas are shown in small type',
+    ],
+    ja: [
+      '新しい区画「定常偏差」（「表示する図」の中。最初は非表示）：L(s) の型と、位置・速度・加速度偏差定数 K_p・K_v・K_a。目標値のステップ・ランプ・放物線入力（単位入力と現在の設定。教科書の式も示す）と、制御対象の入力に加わるステップ外乱に対する定常偏差を、シミュレーションの終わりの偏差と並べて示す。目標値の重みがあるときは 1 − G_yr(s) から求め、教科書の式による値を小さな字で示す',
+    ],
+  },
+  {
     v: '1.79.0',
     d: '2026-11-26',
     en: [

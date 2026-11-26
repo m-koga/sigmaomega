@@ -12,6 +12,7 @@ import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
   renderPoles,
   scheduleRouth,
+  scheduleSSE,
   renderSpecs,
   renderSweepTable,
   renderSweepUI,
@@ -43,6 +44,7 @@ export function update() {
   resetLoopCache();
   renderPoles();
   scheduleRouth();
+  scheduleSSE();
   renderSpecs();
   renderTune();
   renderSweepUI();
