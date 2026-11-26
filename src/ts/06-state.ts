@@ -100,6 +100,8 @@ export function refValue(t: number, st: State = S): number {
       return tau % st.rPer < st.rPer / 2 ? R : 0;
     case 'sine':
       return R * Math.sin((2 * Math.PI * tau) / st.rPer);
+    case 'impulse':
+      return 0; // the impulse itself is applied by the simulation (08-simulation.ts)
     default:
       return R;
   }

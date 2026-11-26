@@ -234,6 +234,12 @@ export const REF_TYPES: Record<string, RefType> = {
     p: ['rT0', 'rPer'],
     tex: 'r(t)=\\begin{cases}r_0&(0\\le\\tau<T_p/2)\\\\0&(T_p/2\\le\\tau<T_p)\\end{cases},\\ \\tau=(t-t_0)\\bmod T_p',
   },
+  impulse: {
+    name: 'Impulse',
+    R: 'area \\(A\\)',
+    p: ['rT0'],
+    tex: 'r(t)=A\\,\\delta(t-t_0)',
+  },
   sine: {
     name: 'Sine wave',
     R: 'amplitude \\(A\\)',

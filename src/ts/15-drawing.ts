@@ -6,8 +6,8 @@ import { numStr } from './03-math.ts';
 import { PLOTS } from './05-definitions.ts';
 import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
 import { distMetrics, twoDof } from './07-frequency.ts';
-import { metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
-import { nyqCount } from './09-loop.ts';
+import { impulseMetrics, metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
+import { loopTFs, nyqCount } from './09-loop.ts';
 import { evalSpecs, specIcon, specOn } from './11-specs.ts';
 import { sweepSeries } from './12-sweep.ts';
 import { $, ctx2d, savePNG } from './13-dom.ts';
@@ -350,6 +350,7 @@ export function stretch(r: { lo: number; hi: number }, a: readonly number[], kee
 export function drawTime(sim: SimResult) {
   const tmax = S.Tsim;
   const vl: PlotLine[] = S.dOn && S.td < tmax ? [{ v: S.td, color: COLORS.alert, label: T('Disturbance') }] : [];
+  if (S.refType === 'impulse' && S.rT0 < tmax) vl.push({ v: S.rT0, color: COLORS.reference, label: T('Impulse') });
   plot($('cvY'), {
     series: [
       ...ghosts.map((gh, i) => ({
@@ -503,6 +504,19 @@ export function timeMetrics(sim: SimResult): Metric[] {
   } else if (ty === 'ramp' || ty === 'parab') {
     const name = ty === 'ramp' ? T('Steady-state velocity error') : T('Steady-state acceleration error');
     cards = [[name + T(' (e at the end)') + pre, f(eEnd, 4)], [T('Max |e|') + pre, f(emaxAll, 4)], iae, umax];
+  } else if (ty === 'impulse') {
+    const im = impulseMetrics(sim),
+      g = loopTFs().R,
+      d0 = (g.den0[g.den0.length - 1] ?? 0) + (g.den1[g.den1.length - 1] ?? 0),
+      theory = Math.abs(d0) > 1e-12 ? (S.R * (g.num[g.num.length - 1] ?? 0)) / d0 : null;
+    cards = [
+      [T('Peak of y'), im ? f(im.peak, 4) : '—'],
+      [T('Time of the peak (from t₀)'), im ? f(im.tPeak, 2, ' s') : '—'],
+      [T('Area ∫ y dt') + pre, im ? f(im.area, 4) : '—'],
+      [twoDof() ? T('Theory A·Gyr(0)') : T('Theory A·T(0)'), theory === null ? '—' : f(theory, 4)],
+      [T('y at the end') + pre, im ? f(im.yEnd, 4) : '—'],
+      [T('Max |u| (without the impulse)'), umax[1]],
+    ];
   } else if (ty === 'sine') {
     const sm = sineMetrics(sim),
       ok = sm && !sm.short,

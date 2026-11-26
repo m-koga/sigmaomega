@@ -148,6 +148,7 @@ test('every reference type follows its definition (and the simulation records it
     pulse: t => (t < 2 ? 2 : 0),
     square: t => (t % 4 < 2 ? 2 : 0),
     sine: t => 2 * Math.sin((2 * Math.PI * t) / 4),
+    impulse: () => 0, // the impulse itself is applied by the simulation, not part of the recorded reference
   };
   assert.deepEqual(Object.keys(want).sort(), Object.keys(a.REF_TYPES).sort());
   for (const [ty, f] of Object.entries(want)) {
@@ -158,6 +159,39 @@ test('every reference type follows its definition (and the simulation records it
     const sim = a.simulate(),
       i = sim.T.findIndex(t => t >= 4.2);
     assert.ok(near(sim.R[i], a.refValue(sim.T[i]), 1e-12), `${ty}: recorded reference`);
+  }
+});
+
+test('impulse reference: the response is the derivative of the step response, with the area A·T(0)', () => {
+  for (const set of [
+    { plant: 'first', mode: 'P', Kp: 2 },
+    { plant: 'second', zeta: 0.3, wn: 2, mode: 'PI', Kp: 1, Ki: 1 },
+    { plant: 'third', mode: 'PID', Kp: 2, Ki: 0.5, Kd: 1 },
+    { plant: 'third', mode: 'lead' },
+    { plant: 'first', mode: 'PID', Kp: 2, Ki: 1, Kd: 0.3, tdof: true, bw: 0.5 },
+  ] as Record<string, unknown>[]) {
+    const a = fresh(),
+      b = fresh();
+    Object.assign(a.S, set, { refType: 'impulse', R: 1, rT0: 1, Tsim: 30 });
+    Object.assign(b.S, set, { refType: 'step', R: 1, rT0: 1, Tsim: 30 });
+    const si = a.simulate(),
+      ss = b.simulate();
+    let err = 0,
+      mx = 0;
+    // away from the jump at t0, by the central difference of the step response
+    for (let i = 1; i < ss.T.length - 1; i++) {
+      if (ss.T[i] < 1.2) continue;
+      const d = (ss.Y[i + 1] - ss.Y[i - 1]) / (ss.T[i + 1] - ss.T[i - 1]);
+      err = Math.max(err, Math.abs(si.Y[i] - d));
+      mx = Math.max(mx, Math.abs(d));
+    }
+    assert.ok(err < 0.02 * mx, `${JSON.stringify(set)}: ${err} / ${mx}`);
+    // the recorded reference is zero, the area of y is the DC gain of Gyr
+    assert.ok(si.R.every((v: number) => v === 0));
+    const g = a.loopTFs().R,
+      dc = g.num[g.num.length - 1] / g.den0[g.den0.length - 1],
+      im = a.impulseMetrics(si)!;
+    assert.ok(Math.abs(im.area - dc) < 0.01, `${JSON.stringify(set)}: area ${im.area} / ${dc}`);
   }
 });
 

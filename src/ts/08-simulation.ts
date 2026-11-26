@@ -258,6 +258,9 @@ export function simulate(st: State = S) {
   // the response counts as diverged beyond 1000 times the size of the reference and the disturbance
   let rAbs = 0;
   for (let i = 0; i <= NS; i += 4) rAbs = Math.max(rAbs, Math.abs(refValue(i * dt, st)));
+  // an impulse A δ(t − t0): a pulse of area A over the substep that contains t0 (r and u are recorded without it)
+  const imp = st.refType === 'impulse';
+  if (imp) rAbs = Math.max(rAbs, Math.abs(st.R));
   const lim = 1e3 * (rAbs + Math.abs(st.dOn ? st.d : 0) + 1);
   outer: for (let i = 0; i <= NS; i++) {
     const nz = noise(); // held over each recorded step
@@ -265,21 +268,23 @@ export function simulate(st: State = S) {
       const t = i * dt + q * h;
       const y = ssOut(ps, x, 0);
       const ym = y + nz;
-      const r = refValue(t, st);
+      const r0 = refValue(t, st),
+        r = imp && t <= st.rT0 && st.rT0 < t + h ? r0 + st.R / h : r0;
       const ur = ctrl.out(r, ym);
       const u = st.sat ? Math.max(-st.umax, Math.min(st.umax, ur)) : ur;
       if (q === 0) {
+        const uRec = r === r0 ? u : ctrl.out(r0, ym); // u without the impulse
         T.push(t);
-        R.push(r);
+        R.push(r0);
         Y.push(y);
-        U.push(u);
+        U.push(st.sat ? Math.max(-st.umax, Math.min(st.umax, uRec)) : uRec);
         if (!isFinite(y) || !isFinite(u) || Math.abs(y) > lim) {
           diverged = true;
           break outer;
         }
         if (i === NS) break outer;
       }
-      iae += Math.abs(r - y) * h;
+      iae += Math.abs(r0 - y) * h;
       ctrl.step(r, ym, ur, u);
       const up = delay(u) + (st.dOn && t >= st.td ? st.d : 0);
       x = ssStepD(ps, x, up);
@@ -295,6 +300,20 @@ export function metricWindow(sim: SimResult, st: State = S): { tEnd: number; las
   let i0 = 0;
   while (i0 < last && sim.T[i0] < st.rT0) i0++;
   return { tEnd, last, i0 };
+}
+// Impulse: the peak of y (with its sign) and its time from t0, the area ∫ y dt (trapezoidal rule) and y at the end,
+// up to the disturbance (or the end)
+export function impulseMetrics(sim: SimResult, st: State = S) {
+  if (sim.diverged) return null;
+  const { last, i0 } = metricWindow(sim, st);
+  if (last - i0 < 10) return null;
+  let k = i0,
+    area = 0;
+  for (let i = i0; i <= last; i++) {
+    if (Math.abs(sim.Y[i]) > Math.abs(sim.Y[k])) k = i;
+    if (i > i0) area += ((sim.Y[i] + sim.Y[i - 1]) / 2) * (sim.T[i] - sim.T[i - 1]);
+  }
+  return { peak: sim.Y[k], tPeak: sim.T[k] - st.rT0, area, yEnd: sim.Y[last] };
 }
 // Step and trapezoid: metrics relative to the final value of r (times measured from t0)
 export function stepMetrics(sim: SimResult, st: State = S) {

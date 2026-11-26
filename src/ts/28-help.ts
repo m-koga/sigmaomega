@@ -97,7 +97,7 @@ export const HELP: HelpSection[] = [
 <li><b>Anti-windup</b> (conditional integration) for the PID types when the actuator saturates.</li>
 </ul>
 <h4>Reference, disturbance and noise</h4>
-<p>The reference can be a step, ramp, parabola, trapezoid, single pulse, square wave or sine wave, with its start time, size and period. A step disturbance can be added at the plant input at a chosen time, and measurement noise with a standard deviation σ<sub>n</sub> (the same settings always give the same noise).</p>
+<p>The reference can be a step, ramp, parabola, trapezoid, single pulse, square wave, sine wave or impulse, with its start time, size and period. A step disturbance can be added at the plant input at a chosen time, and measurement noise with a standard deviation σ<sub>n</sub> (the same settings always give the same noise).</p>
 <h4>Actuator saturation and simulation time</h4>
 <p>The saturation limits |<i>u</i>| ≤ <i>u</i><sub>max</sub>. The simulation time is set under the time response (tab <b>Simulation time</b>), from 0.01 to 10000 s.</p>`],
     ja: ['制御系を設定する', `
@@ -114,7 +114,7 @@ export const HELP: HelpSection[] = [
 <li>PID 系では、操作量が飽和したときの <b>アンチワインドアップ</b>（条件付き積分）を選べます。</li>
 </ul>
 <h4>目標値・外乱・ノイズ</h4>
-<p>目標値はステップ、ランプ、放物線、台形、パルス（単発）、矩形波、正弦波から選び、開始時刻・大きさ・周期などを設定します。制御対象の入力に、指定した時刻からステップ外乱を加えられます。測定ノイズは標準偏差 σ<sub>n</sub> で指定します（同じ設定なら毎回同じ波形になります）。</p>
+<p>目標値はステップ、ランプ、放物線、台形、パルス（単発）、矩形波、正弦波、インパルスから選び、開始時刻・大きさ・周期などを設定します。制御対象の入力に、指定した時刻からステップ外乱を加えられます。測定ノイズは標準偏差 σ<sub>n</sub> で指定します（同じ設定なら毎回同じ波形になります）。</p>
 <h4>操作量の飽和とシミュレーション時間</h4>
 <p>飽和は |<i>u</i>| ≤ <i>u</i><sub>max</sub> で操作量を制限します。シミュレーション時間は時間応答の下のタブ <b>シミュレーション時間</b> で 0.01〜10000 s の範囲で設定します。</p>`],
   },

@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.83.0 (2026-11-27)
+- New reference type "Impulse" A δ(t − t0): applied in the simulation as a pulse of area A over one substep (the recorded r and u leave the impulse out; a vertical line marks t0). Its metrics: the peak of y and its time, the area ∫ y dt beside its theory A·T(0) (A·Gyr(0) with set-point weights), y at the end and the largest |u| without the impulse
+
 ## v1.82.0 (2026-11-27)
 - Nyquist plot: the Nyquist stability criterion. The new tab "Nyquist criterion" shows P (open-loop poles in the right half-plane), N (clockwise encirclements of −1) and Z = N + P (closed-loop poles in the right half-plane) with the verdict, and lists the crossings of the real axis to the left of −1 one by one (upward +1, downward −1) so that N can be counted by hand. The count follows the Nyquist contour, passing poles on the imaginary axis (integrators) by small half circles, and uses the exact dead time; when L(jω) passes through −1 it says so (marginally stable). The new option "Crossings of the real axis to the left of −1" marks them on the plot (▲ +1, ▼ −1)
 

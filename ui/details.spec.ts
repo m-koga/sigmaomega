@@ -32,6 +32,20 @@ test('sliders and the reference type change the settings', async ({ page }) => {
   await expect(page.locator('#in-rPer')).toBeAttached(); // the period of the sine wave can be set
 });
 
+test('impulse reference: its metrics, the area of y equal to the theory A·T(0)', async ({ page }) => {
+  await page.evaluate(() => {
+    Object.assign(S, { plant: 'first', K: 1, T: 1, mode: 'P', Kp: 2, R: 1, rT0: 1, Tsim: 20 });
+    buildPlant();
+  });
+  await openCard(page, 'input');
+  await page.selectOption('#refType', 'impulse');
+  await expect(page.locator('#tex-r')).toContainText('δ');
+  const val = (i: number) => page.locator('#metrics .m').nth(i).locator('.v');
+  // area ∫ y dt = A·T(0) = 2/3 for P control of 1/(s + 1) with K_P = 2
+  await expect(val(2)).toHaveText('0.6667');
+  await expect(val(3)).toHaveText('0.6667');
+});
+
 test('a parameter sweep is drawn in the Bode, Nyquist and pole-zero plots', async ({ page }) => {
   await openCard(page, 'sweep');
   await page.check('#sw-on');

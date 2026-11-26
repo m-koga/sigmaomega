@@ -222,6 +222,7 @@ interface AppApi {
   i18nText: typeof import('../src/ts/13-dom.ts').i18nText;
   i18nTitle: typeof import('../src/ts/13-dom.ts').i18nTitle;
   importScenarioFile: typeof import('../src/ts/25-scenarios.ts').importScenarioFile;
+  impulseMetrics: typeof import('../src/ts/08-simulation.ts').impulseMetrics;
   inRegion: typeof import('../src/ts/11-specs.ts').inRegion;
   infoTabs: typeof import('../src/ts/14-view.ts').infoTabs;
   inputRange: typeof import('../src/ts/15-drawing.ts').inputRange;
@@ -686,6 +687,7 @@ declare var hurwitzK: AppApi['hurwitzK'];
 declare var i18nText: AppApi['i18nText'];
 declare var i18nTitle: AppApi['i18nTitle'];
 declare var importScenarioFile: AppApi['importScenarioFile'];
+declare var impulseMetrics: AppApi['impulseMetrics'];
 declare var inRegion: AppApi['inRegion'];
 declare var infoTabs: AppApi['infoTabs'];
 declare var inputRange: AppApi['inputRange'];
