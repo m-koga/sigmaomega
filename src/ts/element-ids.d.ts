@@ -129,6 +129,8 @@ interface ElementById {
   "pzPlant": HTMLInputElement;
   "pzPng": HTMLButtonElement;
   "pzRange": HTMLDivElement;
+  "pzRules": HTMLInputElement;
+  "pzRulesBox": HTMLDivElement;
   "pzTable": HTMLDivElement;
   "pzTip": HTMLDivElement;
   "pzTools": HTMLDivElement;

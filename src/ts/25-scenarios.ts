@@ -234,6 +234,7 @@ export const VIEW_CHECKS = [
   'pzCtrl',
   'pzCL',
   'pzLocus',
+  'pzRules',
   'pzGrid',
 ] as const;
 export function viewOptions(): Record<string, boolean> {

@@ -114,7 +114,7 @@ Every change of a setting recomputes all shown plots and metrics. In every plot 
 | Time response | r, y, u and the held responses for comparison (gray, up to 4) | Rise time (10% → 90%), overshoot, settling time (±2%), steady-state error, peak deviation and recovery time after a disturbance; for a sine reference, amplitude ratio and phase difference |
 | Bode plot | L, P, C, S, T, G_yd = P/(1+L) and G_yr = C_r P/(1+L), switched with buttons; the legend is shown even for one curve; the frequency range can be set by hand (section 9) | Gain margin, phase margin, peak sensitivity Ms, Mt, closed-loop bandwidth, peak disturbance gain |
 | Nyquist plot | L(jω), the point −1, a circle of radius 1/Ms | Stability margins |
-| Pole-zero map | Closed-loop poles, zeros, root locus (loop gain scaled by k), ζ and ωn grid, design region | Stability, range of k for stability, list of poles (ζ, ωn) |
+| Pole-zero map | Closed-loop poles, zeros, root locus (loop gain scaled by k), construction rules of the root locus (option, off at first: real-axis segments as a band, asymptotes dashed from their centroid, breakaway and break-in points □, imaginary-axis crossings ◇, departure and arrival angles as arrows with their values), ζ and ωn grid, design region | Stability, range of k for stability, the construction rules (tab “Locus rules”: n and m, real-axis segments, asymptote angles and centroid, breakaway and break-in points with k, imaginary-axis crossings with k, departure and arrival angles; for the 0° locus when the leading coefficients of N and D have opposite signs; with a dead time from the Padé approximation; this tab makes the area taller only while shown), list of poles (ζ, ωn) |
 
 ### 4.1 Using the root locus
 

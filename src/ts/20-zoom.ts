@@ -182,7 +182,9 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
   $('pzOut').onclick = () => zoomCentre(1 / 1.4);
   $('pzFit').onclick = fit;
   $('pzPng').onclick = () => saveCanvasPNG(cv);
-  (['pzPlant', 'pzCtrl', 'pzCL', 'pzLocus', 'pzGrid'] as const).forEach(id => ($(id).onchange = () => drawPZ(lastPZ)));
+  (['pzPlant', 'pzCtrl', 'pzCL', 'pzLocus', 'pzRules', 'pzGrid'] as const).forEach(
+    id => ($(id).onchange = () => drawPZ(lastPZ)),
+  );
 })();
 // Options of the Bode and Nyquist plots: redraw when a check box changes; the description line of the Bode
 // curve buttons shows the hovered or focused one, otherwise the curves that are shown

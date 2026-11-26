@@ -29,6 +29,8 @@ export const COLORS = {
   negativeFreq: '#9aa0aa', // ω < 0 of the Nyquist plot
   zeroDb: '#888', // 0 dB line
   locus: '#7b4fa3', // root locus
+  locusAxis: 'rgba(123,79,163,.25)', // real-axis segments of the root locus
+  locusRules: '#00838f', // asymptotes, breakaway points, imaginary-axis crossings, departure and arrival angles
   dampingGrid: 'rgba(123,79,163,.35)', // ζ–ωn grid lines
   dampingLabel: 'rgba(123,79,163,.8)', // ζ–ωn grid labels
   // limits and specifications
@@ -261,6 +263,7 @@ export const INFO_AREAS: Record<string, { label: string; tabs: [string, string][
       ['pzopts', 'Display'],
       ['pzbanner', 'Stability'],
       ['pzrange', 'Gain ranges'],
+      ['pzrules', 'Locus rules'],
       ['pztable', 'Pole list'],
       ['pznote', 'Note'],
       ['pzhelp', 'How to use'],

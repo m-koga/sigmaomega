@@ -43,6 +43,7 @@ export const ZOOM_AREAS: Record<string, string> = {
   pzhelp: 'pzHelp',
   pzbanner: 'pzBanner',
   pzrange: 'pzRange',
+  pzrules: 'pzRulesBox',
   pztable: 'pzTable',
   pznote: 'pzNote',
 };

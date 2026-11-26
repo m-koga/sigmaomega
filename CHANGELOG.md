@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.81.0 (2026-11-27)
+- Pole-zero map: construction rules of the root locus. The new option "Construction rules of the root locus" (off at first) draws the real-axis segments, the asymptotes from their centroid, the breakaway and break-in points, the imaginary-axis crossings and the departure and arrival angles with their values; the new tab "Locus rules" lists each rule with how it is found and its value (k at the breakaway points and crossings), for checking a locus sketched by hand. The 0° locus (leading coefficients of opposite signs, as with the Padé approximation of a dead time), repeated poles and cancelled pole-zero pairs are handled
+
 ## v1.80.0 (2026-11-27)
 - New panel "Steady-state error" (in "Plots to show", hidden at first): the system type of L(s) and the position, velocity and acceleration error constants K_p, K_v, K_a; the steady-state errors to a step, ramp and parabola of the reference (per unit input and for the current setting, with the textbook formulas) and to a step disturbance at the plant input, beside the error at the end of the simulation. With set-point weights the errors come from 1 − G_yr(s), and the values of the textbook formulas are shown in small type
 

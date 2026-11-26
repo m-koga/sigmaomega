@@ -4,17 +4,19 @@
 import { LANG, T, TXT_PZ1, TXT_PZ2, TXT_PZ3, UIFONT } from './02-i18n.ts';
 import { numStr } from './03-math.ts';
 import { S, lastPZ, lastSweep } from './06-state.ts';
-import { locus, stableKRanges } from './09-loop.ts';
+import { locus, rules, stableKRanges } from './09-loop.ts';
+import type { LocusRules } from './09-loop.ts';
 import { poleRegion, specKRanges } from './11-specs.ts';
 import { SWEEP_COLORS, sweepName } from './12-sweep.ts';
-import { $, ctx2d } from './13-dom.ts';
+import { $, byId, ctx2d } from './13-dom.ts';
 import { COLORS } from './14-view.ts';
 import { niceTicks, strokeLine } from './15-drawing.ts';
 
 // View of the map and the points drawn on it (for the tooltip and clicks)
 export let pzView: PZView | null = null,
   pzPts: { px: number; py: number; p: PZPoint }[] = [],
-  pzLocusPts: { px: number; py: number; k: number; z: Complex }[] = [];
+  pzLocusPts: { px: number; py: number; k: number; z: Complex }[] = [],
+  pzLegendKeys: string[] = []; // the kinds of items in the legend as last drawn
 export const LOCUS_COLOR = COLORS.locus;
 // Points used for the automatic view: visible poles/zeros, plus the main part of the root locus
 // (0.01 ≤ k ≤ 100, within 3 times the extent of the poles and zeros) so that the imaginary-axis crossing is visible
@@ -28,6 +30,11 @@ export function pzAutoPts(pz: PZResult): PZPoint[] {
         if (Math.hypot(z[0], z[1]) <= R) pts.push({ z, k: 'rl' });
       });
     });
+  }
+  const r = $('pzRules').checked ? rules() : null;
+  if (r) {
+    r.breakaway.forEach(b => pts.push({ z: b.s, k: 'rl' }));
+    r.crossings.forEach(c => pts.push({ z: [0, c.w], k: 'rl' }));
   }
   return pts.length
     ? pts
@@ -140,11 +147,14 @@ export function drawPZ(pz: PZResult | null) {
   if (reg && S.spec.show) drawDesignRegion(f, reg);
   pzLocusPts = [];
   if ($('pzLocus').checked) drawRootLocus(f);
+  const rl = $('pzRules').checked ? rules() : null;
+  if (rl) drawLocusRules(f, rl);
   const pts = pzVisible(pz);
   drawPZPoints(f, pts);
   g.restore();
   drawPZAxes(f);
-  drawPZLegend(f, pts);
+  drawPZLegend(f, pts, rl);
+  if (rl) drawRuleAngles(f, rl);
 }
 
 // Size the canvas, clear it and set up the view (the automatic one unless zoomed or panned)
@@ -288,10 +298,121 @@ export function drawRootLocus(f: PZFrame) {
   }
 }
 
+// Construction rules of the root locus under the poles and zeros: the real-axis segments (a wide band), the
+// asymptotes (dashed, from the centroid), the breakaway and break-in points (squares) and the imaginary-axis
+// crossings (diamonds)
+export function drawLocusRules(f: PZFrame, r: LocusRules) {
+  const { g, X, Y, xmin, xmax } = f,
+    far = 4 * (f.pw + f.ph);
+  g.save();
+  g.lineCap = 'butt';
+  g.strokeStyle = COLORS.locusAxis;
+  g.lineWidth = 7;
+  r.segments.forEach(([a, b]) => {
+    const x1 = X(Math.max(a, xmin - 1)),
+      x2 = X(Math.min(b, xmax + 1));
+    if (x2 > x1) strokeLine(g, x1, Y(0), x2, Y(0));
+  });
+  g.strokeStyle = g.fillStyle = COLORS.locusRules;
+  if (r.centroid !== null) {
+    const cx = X(r.centroid),
+      cy = Y(0);
+    g.lineWidth = 1.3;
+    g.setLineDash([7, 5]);
+    r.asymAngles.forEach(a => {
+      const t = (a * Math.PI) / 180;
+      strokeLine(g, cx, cy, cx + far * Math.cos(t), cy - far * Math.sin(t));
+    });
+    g.setLineDash([]);
+    g.beginPath();
+    g.arc(cx, cy, 3.5, 0, 2 * Math.PI);
+    g.fill();
+  }
+  g.lineWidth = 2;
+  r.breakaway.forEach(b => {
+    [1, -1].forEach(sg => {
+      if (sg < 0 && b.s[1] === 0) return;
+      g.strokeRect(X(b.s[0]) - 5, Y(sg * b.s[1]) - 5, 10, 10);
+    });
+  });
+  r.crossings.forEach(c => {
+    [1, -1].forEach(sg => {
+      if (sg < 0 && c.w === 0) return;
+      pzDiamond(g, X(0), Y(sg * c.w), 6.5);
+      g.stroke();
+    });
+  });
+  g.restore();
+}
+// Diamond (◇) path centred at (px, py); size: half the width [px]
+export function pzDiamond(g: CanvasRenderingContext2D, px: number, py: number, size: number) {
+  g.beginPath();
+  g.moveTo(px, py - size);
+  g.lineTo(px + size, py);
+  g.lineTo(px, py + size);
+  g.lineTo(px - size, py);
+  g.closePath();
+}
+// Departure angles (arrows leaving the poles) and arrival angles (arrows into the zeros), with their values in
+// degrees; a complex pole or zero and its conjugate (mirrored)
+export function drawRuleAngles(f: PZFrame, r: LocusRules) {
+  const { g, X, Y, m, pw, ph } = f,
+    len = 34;
+  g.save();
+  g.beginPath();
+  g.rect(m.l, m.t, pw, ph);
+  g.clip();
+  g.strokeStyle = g.fillStyle = COLORS.locusRules;
+  g.lineWidth = 1.6;
+  g.font = '11px "JetBrains Mono", monospace';
+  g.textAlign = 'center';
+  const arrow = (x0: number, y0: number, x1: number, y1: number) => {
+    strokeLine(g, x0, y0, x1, y1);
+    const t = Math.atan2(y1 - y0, x1 - x0);
+    g.beginPath();
+    g.moveTo(x1, y1);
+    g.lineTo(x1 - 7 * Math.cos(t - 0.45), y1 - 7 * Math.sin(t - 0.45));
+    g.lineTo(x1 - 7 * Math.cos(t + 0.45), y1 - 7 * Math.sin(t + 0.45));
+    g.closePath();
+    g.fill();
+  };
+  const draw = (list: LocusRules['departures'], out: boolean) =>
+    list.forEach(({ at, angles }) =>
+      [1, -1].forEach(sg => {
+        if (sg < 0 && at[1] === 0) return;
+        const px = X(at[0]),
+          py = Y(sg * at[1]);
+        angles.forEach(a0 => {
+          const a = sg * a0,
+            t = (a * Math.PI) / 180,
+            ex = px + len * Math.cos(t),
+            ey = py - len * Math.sin(t),
+            sx = px + 8 * Math.cos(t),
+            sy = py - 8 * Math.sin(t);
+          if (out) arrow(sx, sy, ex, ey);
+          else arrow(ex, ey, sx, sy);
+          const lx = px + (len + 16) * Math.cos(t),
+            ly = py - (len + 16) * Math.sin(t) + 4,
+            label = `${numStr(a)}°`;
+          g.lineWidth = 3;
+          g.strokeStyle = COLORS.white;
+          g.strokeText(label, lx, ly);
+          g.fillText(label, lx, ly);
+          g.lineWidth = 1.6;
+          g.strokeStyle = COLORS.locusRules;
+        });
+      }),
+    );
+  draw(r.departures, true);
+  draw(r.arrivals, false);
+  g.restore();
+}
+
 // Colour of a kind of point: plant, controller, closed loop, root locus, or sweep run i ('sw' + i)
 export function pzColor(k: string): string {
   if (k.startsWith('sw')) return SWEEP_COLORS[+k.slice(2)];
   if (k === 'rl') return LOCUS_COLOR;
+  if (['ra', 'as', 'ba', 'ix', 'an'].includes(k)) return COLORS.locusRules;
   return k[0] === 'p' ? PZC.plant : k === 'cl' ? PZC.cl : PZC.ctrl;
 }
 
@@ -376,7 +497,7 @@ export function drawPZAxes(f: PZFrame) {
 }
 
 // Legend: the kinds of points that are shown, the root locus, and the sweep runs
-export function drawPZLegend(f: PZFrame, pts: PZPoint[]) {
+export function drawPZLegend(f: PZFrame, pts: PZPoint[], rl: LocusRules | null = null) {
   const present = new Set(pts.map(q => q.k));
   const leg: [string, string][] = [];
   const add = (k: string, label: string) => {
@@ -392,7 +513,15 @@ export function drawPZLegend(f: PZFrame, pts: PZPoint[]) {
   }
   if ($('pzCL').checked) add('cl', 'Closed-loop pole');
   if ($('pzLocus').checked && pzLocusPts.length) leg.push(['rl', T('Root locus')]);
+  if (rl) {
+    if (rl.segments.length) leg.push(['ra', T('Root locus on the real axis')]);
+    if (rl.asymAngles.length) leg.push(['as', T('Asymptotes and their centroid')]);
+    if (rl.breakaway.length) leg.push(['ba', T('Breakaway or break-in point')]);
+    if (rl.crossings.length) leg.push(['ix', T('Imaginary-axis crossing')]);
+    if (rl.departures.length || rl.arrivals.length) leg.push(['an', T('Departure or arrival angle')]);
+  }
   if (pzSweepPts().length && lastSweep) lastSweep.forEach((r, i) => leg.push(['sw' + i, T(sweepName(S.sweep.p, r.v))]));
+  pzLegendKeys = leg.map(l => l[0]);
   if (!leg.length) return;
   const { g, m } = f,
     bx = m.l + 10,
@@ -407,7 +536,29 @@ export function drawPZLegend(f: PZFrame, pts: PZPoint[]) {
     g.strokeStyle = g.fillStyle = pzColor(k);
     g.lineWidth = 2;
     if (k === 'rl') strokeLine(g, px - 7, py, px + 7, py);
-    else if (k === 'pp' || k === 'cp') pzCross(g, px, py, 5);
+    else if (k === 'ra') {
+      g.strokeStyle = COLORS.locusAxis;
+      g.lineWidth = 7;
+      strokeLine(g, px - 7, py, px + 7, py);
+    } else if (k === 'as') {
+      g.lineWidth = 1.3;
+      g.setLineDash([4, 3]);
+      strokeLine(g, px - 8, py, px + 8, py);
+      g.setLineDash([]);
+    } else if (k === 'ba') g.strokeRect(px - 4.5, py - 4.5, 9, 9);
+    else if (k === 'ix') {
+      pzDiamond(g, px, py, 5.5);
+      g.stroke();
+    } else if (k === 'an') {
+      g.lineWidth = 1.6;
+      strokeLine(g, px - 7, py, px + 5, py);
+      g.beginPath();
+      g.moveTo(px + 8, py);
+      g.lineTo(px + 2, py - 3.5);
+      g.lineTo(px + 2, py + 3.5);
+      g.closePath();
+      g.fill();
+    } else if (k === 'pp' || k === 'cp') pzCross(g, px, py, 5);
     else if (k === 'pz' || k === 'cz') {
       g.beginPath();
       g.arc(px, py, 5, 0, 2 * Math.PI);
@@ -491,10 +642,106 @@ export function pzInfo(pz: PZResult) {
         r: `<b>${rr.length ? rr.join(', ') : T('none')}</b>`,
       });
   }
+  renderRules(rules());
   $('pzNote').innerHTML = T(TXT_PZ1) + (pz.pade ? T(TXT_PZ2, { L: numStr(pz.L) }) : '') + (S.sat ? T(TXT_PZ3) : '');
   if (window.MathJax && MathJax.typesetPromise) {
     MathJax.typesetPromise([$('pzNote')]).catch(() => {});
   }
+}
+// The construction rules of the root locus as a table: each rule with its formula and its values
+const cStr = (z: Complex) =>
+  z[1] === 0 ? numStr(z[0]) : `${numStr(z[0])} ${z[1] < 0 ? '−' : '+'} ${numStr(Math.abs(z[1]))}j`;
+const inf = (x: number) => (x === -Infinity ? '−∞' : x === Infinity ? '∞' : numStr(x));
+const degs = (as: number[]) => as.map(a => `${numStr(a)}°`).join(', ');
+export function renderRules(r: LocusRules | null) {
+  const box = byId('pzRulesBox');
+  if (!r) {
+    box.innerHTML = `<p class="note">${T('No root locus: the controller gain is zero.')}</p>`;
+    return;
+  }
+  const none = T('none'),
+    q = r.n - r.m,
+    at = (z: Complex, mult: number) => cStr(z) + (mult > 1 ? ` (×${mult})` : ''),
+    angleRows = (list: LocusRules['departures']) =>
+      list.length
+        ? list
+            .map(
+              d =>
+                `${at(d.at, d.mult)}: ${degs(d.angles)}` +
+                (d.at[1] > 0 ? ` ${T('(conjugate: {a})', { a: degs(d.angles.map(a => -a)) })}` : ''),
+            )
+            .join('<br>')
+        : none;
+  const rows: [string, string, string][] = [
+    [
+      T('Poles and zeros of L(s)'),
+      T('n poles, m zeros: n branches start at the poles (k = 0); m end at the zeros, n − m go to infinity (k → ∞)'),
+      `n = ${r.n}, m = ${r.m}, n − m = ${q}`,
+    ],
+    [
+      T('Real axis'),
+      r.sign > 0
+        ? T('on the locus where the number of real poles and zeros to the right is odd')
+        : T('on the locus where the number of real poles and zeros to the right is even'),
+      r.segments.length
+        ? r.segments
+            .map(([a, b]) => `${isFinite(a) ? '[' : '('}${inf(a)}, ${inf(b)}${isFinite(b) ? ']' : ')'}`)
+            .join(', ')
+        : none,
+    ],
+    [
+      T('Asymptotes'),
+      (r.sign > 0 ? 'θ = (2q + 1)·180° / (n − m)' : 'θ = q·360° / (n − m)') + ',  σ = (Σp − Σz) / (n − m)',
+      q > 0 ? `θ = ${degs(r.asymAngles)};  σ = ${numStr(r.centroid ?? 0)}` : none,
+    ],
+    [
+      T('Breakaway and break-in points'),
+      `dk/ds = 0 ⇔ N(s)D′(s) − N′(s)D(s) = 0, k = −D(s)/N(s) > 0`,
+      r.breakaway.length
+        ? r.breakaway
+            .map(
+              b =>
+                `${cStr(b.s)}${b.s[1] !== 0 ? ` ${T('(and its conjugate)')}` : ''} (k = ${numStr(b.k)}, ${b.kind === 'breakaway' ? T('breakaway') : T('break-in')})`,
+            )
+            .join('<br>')
+        : none,
+    ],
+    [
+      T('Imaginary-axis crossings'),
+      `D(jω) + k N(jω) = 0`,
+      r.crossings.length
+        ? r.crossings.map(c => `${c.w === 0 ? 's = 0' : `s = ±j${numStr(c.w)}`} (k = ${numStr(c.k)})`).join('<br>')
+        : none,
+    ],
+    [
+      T('Departure angles from poles'),
+      (r.sign > 0 ? 'rθ = 180°' : 'rθ = 0°') + ' + Σ∠(p − zᵢ) − Σ∠(p − pᵢ)',
+      angleRows(r.departures),
+    ],
+    [
+      T('Arrival angles at zeros'),
+      (r.sign > 0 ? 'rφ = 180°' : 'rφ = 0°') + ' + Σ∠(z − pᵢ) − Σ∠(z − zᵢ)',
+      angleRows(r.arrivals),
+    ],
+  ];
+  const notes = [
+    T(
+      'L(s) = N(s)/D(s) is the loop transfer function with the controller multiplied by k; r: the multiplicity of the pole or zero. Angles are measured from the positive real axis.',
+    ),
+    r.sign < 0
+      ? T(
+          'The leading coefficients of N(s) and D(s) have opposite signs, so for k > 0 the angle condition is 0° (the complementary root locus).',
+        )
+      : '',
+    r.approx ? T('With a dead time, the rules are for its third-order Padé approximation, like the root locus.') : '',
+  ]
+    .filter(Boolean)
+    .map(t => `<p class="note">${t}</p>`)
+    .join('');
+  box.innerHTML =
+    `<div class="pzwrap-tbl"><table class="pzt rules"><thead><tr><th>${T('Rule')}</th><th>${T('Value')}</th></tr></thead><tbody>` +
+    rows.map(([a, b, c]) => `<tr><td>${a}<span class="how">${b}</span></td><td>${c}</td></tr>`).join('') +
+    `</tbody></table></div>${notes}`;
 }
 // View of the pole-zero map; the automatic view is fixed when the user first zooms or pans
 // Back to the automatic view of the map

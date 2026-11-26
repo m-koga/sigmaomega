@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.81.0',
+    d: '2026-11-27',
+    en: [
+      'Pole-zero map: construction rules of the root locus. The new option "Construction rules of the root locus" (off at first) draws the real-axis segments, the asymptotes from their centroid, the breakaway and break-in points, the imaginary-axis crossings and the departure and arrival angles with their values; the new tab "Locus rules" lists each rule with how it is found and its value (k at the breakaway points and crossings), for checking a locus sketched by hand. The 0° locus (leading coefficients of opposite signs, as with the Padé approximation of a dead time), repeated poles and cancelled pole-zero pairs are handled',
+    ],
+    ja: [
+      '極・零点配置：根軌跡の作図規則。新しい表示項目「根軌跡の作図規則」（最初は非表示）で、実軸上の根軌跡、漸近線とその交点、分岐点・合流点、虚軸との交点、出発角・到着角（値付き）を描く。新しいタブ「作図規則」に、各規則の求め方と値（分岐点・虚軸との交点では k も）を一覧で示す。手で描いた根軌跡の確認に使える。0° の根軌跡（むだ時間の Padé 近似のように最高次の係数の符号が逆のとき）、重根、約分される極と零点の組にも対応',
+    ],
+  },
+  {
     v: '1.80.0',
     d: '2026-11-27',
     en: [

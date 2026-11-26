@@ -394,6 +394,8 @@ canvas{width:100%;display:block}
 .tsecs{display:grid}
 .tsec{grid-area:1 / 1;min-width:0}
 .tsec.off{visibility:hidden}
+/* the long table of the root locus rules does not make the area taller while another tab is shown */
+.tsec.tall.off{display:none}
 .pgrip{position:absolute;left:16px;right:16px;bottom:-10px;height:10px;cursor:row-resize;touch-action:none;z-index:3;outline:none}
 .pgrip::after{content:'';position:absolute;left:0;right:0;top:4px;height:2px;border-radius:1px}
 .pgrip:hover::after,.pgrip:focus-visible::after,.pgrip.drag::after{background:var(--accent)}
@@ -462,6 +464,9 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 .poles-box tr.grp td:first-child{font-weight:700}
 /* Routh–Hurwitz stability test: the table of the current setting (first column emphasized) and the analysis in k */
 .routh-box{height:420px;overflow:auto}
+table.pzt.rules th,table.pzt.rules td{text-align:left;vertical-align:top;white-space:normal}
+table.pzt.rules td:first-child{font-family:inherit;width:45%}
+table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"JetBrains Mono",monospace;font-size:.88em}
 .routh-box h4{margin:10px 0 4px;font-size:13px}
 .routh-box h4:first-child{margin-top:2px}
 .routh-box table.pzt td.fc{font-weight:700}

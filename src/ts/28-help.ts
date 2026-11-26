@@ -133,7 +133,7 @@ export const HELP: HelpSection[] = [
 <tr><td>Steady-state error</td><td>The system type of <i>L</i>(<i>s</i>) (its poles at the origin) and the position, velocity and acceleration error constants <i>K</i><sub>p</sub>, <i>K</i><sub>v</sub>, <i>K</i><sub>a</sub>; the steady-state errors to a step, ramp and parabola of the reference (per unit input and for the current setting) and to a step disturbance at the plant input, beside the error at the end of the simulation. With set-point weights the errors come from 1 − <i>G</i><sub>yr</sub>(<i>s</i>), and the values of the textbook formulas are shown in small type. The values hold only when the closed loop is stable</td></tr>
 <tr><td>Bode plot</td><td>Gain and phase of <i>L</i>, <i>P</i>, <i>C</i>, <i>S</i>, <i>T</i>, <i>G</i><sub>yd</sub> and <i>G</i><sub>yr</sub> (buttons under the plot, tab <b>Curves</b>), with the gain and phase margins, Ms, Mt, the bandwidth and the peak disturbance gain</td></tr>
 <tr><td>Nyquist plot</td><td><i>L</i>(<i>j</i>ω) around the point −1, optionally with the circle of radius 1/Ms</td></tr>
-<tr><td>Pole-zero map</td><td>Closed-loop poles, the poles and zeros of the plant and the controller, the root locus, a grid of ζ and ω<sub>n</sub>, the stability, the range of <i>k</i> for stability and the list of poles</td></tr>
+<tr><td>Pole-zero map</td><td>Closed-loop poles, the poles and zeros of the plant and the controller, the root locus, a grid of ζ and ω<sub>n</sub>, the stability, the range of <i>k</i> for stability and the list of poles. The option “Construction rules of the root locus” draws the real-axis segments, the asymptotes and their centroid, the breakaway and break-in points, the imaginary-axis crossings and the departure and arrival angles, and the tab “Locus rules” lists them with how each is found and its value (for checking a locus sketched by hand)</td></tr>
 </table>
 <h4>Frequency range of the Bode plot</h4>
 <p>The range is chosen automatically from the poles, zeros, dead time and simulation time. Type other limits in <b>Frequency range</b> under the plot to set it by hand; <b>Auto</b> brings back the automatic range, which also returns by itself when the poles, zeros, dead time or simulation time change. The margins are always found in the automatic range.</p>
@@ -153,7 +153,7 @@ export const HELP: HelpSection[] = [
 <tr><td>定常偏差</td><td><i>L</i>(<i>s</i>) の型（原点の極の数）と、位置・速度・加速度偏差定数 <i>K</i><sub>p</sub>、<i>K</i><sub>v</sub>、<i>K</i><sub>a</sub>。目標値のステップ・ランプ・放物線入力（単位入力と現在の設定）と、制御対象の入力に加わるステップ外乱に対する定常偏差を、シミュレーションの終わりの偏差と並べて示す。目標値の重みがあるときは 1 − <i>G</i><sub>yr</sub>(<i>s</i>) から求め、教科書の式による値を小さな字で示す。値は閉ループが安定なときだけ成り立つ</td></tr>
 <tr><td>ボード線図</td><td><i>L</i>、<i>P</i>、<i>C</i>、<i>S</i>、<i>T</i>、<i>G</i><sub>yd</sub>、<i>G</i><sub>yr</sub> のゲインと位相（図の下のタブ <b>曲線</b> のボタンで切り替え）。ゲイン余裕、位相余裕、Ms、Mt、帯域幅、外乱ゲインの最大値</td></tr>
 <tr><td>ナイキスト線図</td><td>点 −1 のまわりの <i>L</i>(<i>j</i>ω)。半径 1/Ms の円も表示できます</td></tr>
-<tr><td>極・零点配置</td><td>閉ループ極、制御対象と制御器の極・零点、根軌跡、ζ と ω<sub>n</sub> の格子、安定性、安定な <i>k</i> の範囲、極の一覧</td></tr>
+<tr><td>極・零点配置</td><td>閉ループ極、制御対象と制御器の極・零点、根軌跡、ζ と ω<sub>n</sub> の格子、安定性、安定な <i>k</i> の範囲、極の一覧。「根軌跡の作図規則」を選ぶと、実軸上の根軌跡、漸近線とその交点、分岐点・合流点、虚軸との交点、出発角・到着角を描き、タブ「作図規則」に求め方と値を一覧で示す（手で描いた根軌跡の確認に使える）</td></tr>
 </table>
 <h4>ボード線図の周波数範囲</h4>
 <p>範囲は極・零点・むだ時間・シミュレーション時間から自動で決まります。図の下の <b>周波数範囲</b> に値を入れると手動で設定でき、<b>自動</b> で自動の範囲に戻ります。極・零点・むだ時間・シミュレーション時間が変わったときも自動の範囲に戻ります。安定余裕は常に自動の範囲で求めます。</p>

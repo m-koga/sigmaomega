@@ -377,14 +377,16 @@ test('every area under a plot has its tabs; each tab shows its section, remember
   expect(areas.map(([a]) => a)).toEqual(['tinfo', 'binfo', 'ninfo', 'pinfo']);
   for (const [a, keys] of areas as [string, string[]][]) {
     await expect(page.locator(`#${a} .ptab`)).toHaveCount(keys.length);
-    // the first tab is shown at first; the area keeps the height of its tallest section
+    // the first tab is shown at first; the area keeps the height of its tallest section (except a long section, the
+    // root locus rules, which makes it taller only while shown)
     await expect(page.locator(`#${a} .ptab`).first()).toHaveAttribute('aria-selected', 'true');
     const h = (await boxOf(page, `#${a}`)).height;
     for (const k of keys) {
       await page.click(`#${a} [data-itab=${k}]`);
       await expect(page.locator(`#${a} .tsec[data-sec=${k}]`)).toBeVisible();
       for (const o of keys.filter(o => o !== k)) await expect(page.locator(`#${a} .tsec[data-sec=${o}]`)).toBeHidden();
-      expect((await boxOf(page, `#${a}`)).height).toBe(h);
+      if (k === 'pzrules') expect((await boxOf(page, `#${a}`)).height).toBeGreaterThan(h);
+      else expect((await boxOf(page, `#${a}`)).height).toBe(h);
     }
   }
   // the last tab of each area is remembered after a reload

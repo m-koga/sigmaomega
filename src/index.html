@@ -365,6 +365,7 @@ window.MathJax = {
         <label class="chk"><input type="checkbox" id="pzCtrl"><span data-i18n>Controller poles (×) and zeros (○)</span></label>
         <label class="chk"><input type="checkbox" id="pzCL" checked><span data-i18n>Closed-loop poles (●)</span></label>
         <label class="chk"><input type="checkbox" id="pzLocus" checked><span data-i18n>Root locus (loop gain k from 0 to ∞)</span></label>
+        <label class="chk"><input type="checkbox" id="pzRules"><span data-i18n>Construction rules of the root locus (asymptotes, breakaway points, imaginary-axis crossings, departure and arrival angles)</span></label>
         <label class="chk"><input type="checkbox" id="pzGrid"><span data-i18n>ζ and ωn grid</span></label>
       </div>
       </div>
@@ -376,6 +377,9 @@ window.MathJax = {
       </div>
       <div class="tsec" data-sec="pzrange">
       <div class="note zoomable" id="pzRange"></div>
+      </div>
+      <div class="tsec tall" data-sec="pzrules">
+      <div class="zoomable" id="pzRulesBox"></div>
       </div>
       <div class="tsec" data-sec="pztable">
       <div class="zoomable" id="pzTable"></div>
