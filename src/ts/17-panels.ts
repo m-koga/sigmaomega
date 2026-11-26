@@ -474,7 +474,7 @@ export function renderTeX() {
   }
 }
 window.renderTeX = renderTeX;
-/* ---- Poles of P(s), C(s) and of the transfer functions of the loop: a table of the ones chosen ---- */
+/* ---- Poles and zeros of P(s), C(s) and of the transfer functions of the loop: a table of the ones chosen ---- */
 // Order of the transfer functions and their names in the table
 export const POLE_TFS: [PoleKey, string][] = [
   ['P', 'P(s)'],
@@ -486,22 +486,29 @@ export const POLE_TFS: [PoleKey, string][] = [
   ['D', 'G<sub>yd</sub>(s)'],
 ];
 export const polesBox = (k: PoleKey) => byId(`poles${k}`) as HTMLInputElement;
-// One row per pole (a conjugate pair on one row), the poles sorted from the right; a pole in the right half-plane
-// (Re > 0) in red
-function poleRows(name: string, poles: Complex[]): string {
-  const rows = poles
+// The roots as text, a conjugate pair as one entry, sorted from the right; a root in the right half-plane (Re > 0) is
+// marked when red is asked for
+function rootCells(zs: Complex[], red: boolean): string[] {
+  return zs
     .filter(z => z[1] >= 0)
     .sort((a, b) => b[0] - a[0] || b[1] - a[1])
     .map(([x, y]) => {
-      const wn = Math.hypot(x, y),
-        zeta = wn > 1e-12 ? numStr(-x / wn) : '—',
-        val = y === 0 ? numStr(x) : `${numStr(x)} ± ${numStr(y)}j`,
-        tau = Math.abs(x) > 1e-12 ? numStr(1 / Math.abs(x)) : '∞',
-        uns = x > 1e-6 ? ' class="uns"' : '';
-      return `<td${uns}>${val}</td><td>${zeta}</td><td>${numStr(wn)}</td><td>${y === 0 ? '—' : numStr(y)}</td><td>${tau}</td>`;
+      const val = y === 0 ? numStr(x) : `${numStr(x)} ± ${numStr(y)}j`;
+      return `<td${red && x > 1e-6 ? ' class="uns"' : ''}>${val}</td>`;
     });
-  if (!rows.length) rows.push(`<td>${T('none')}</td><td></td><td></td><td></td><td></td>`);
-  return rows.map((r, i) => `<tr${i ? '' : ' class="grp"'}><td>${i ? '' : name}</td>${r}</tr>`).join('');
+}
+// Rows of one transfer function: its name, then its poles and zeros side by side (as many rows as the longer list;
+// "none" when it has none); poles in the right half-plane in red
+function poleRows(name: string, poles: Complex[], zeros: Complex[]): string {
+  const ps = rootCells(poles, true),
+    zs = rootCells(zeros, false),
+    none = `<td>${T('none')}</td>`,
+    n = Math.max(ps.length, zs.length, 1);
+  return Array.from(
+    { length: n },
+    (_, i) =>
+      `<tr${i ? '' : ' class="grp"'}><td>${i ? '' : name}</td>${ps[i] ?? (i ? '<td></td>' : none)}${zs[i] ?? (i ? '<td></td>' : none)}</tr>`,
+  ).join('');
 }
 // The table of the chosen transfer functions, and the note under it
 export function renderPoles() {
@@ -510,7 +517,7 @@ export function renderPoles() {
   const all = loopPoles(S, pz),
     chosen = POLE_TFS.filter(([k]) => polesBox(k).checked);
   byId('polesBox').innerHTML = chosen.length
-    ? `<table class="pzt"><thead><tr><th>${T('Transfer function')}</th><th>${T('Pole')}</th><th>${T('Damping ratio ζ')}</th><th>${T('Natural frequency ωn [rad/s]')}</th><th>${T('Damped frequency ωd [rad/s]')}</th><th>${T('Time constant 1/|Re| [s]')}</th></tr></thead><tbody>${chosen.map(([k, name]) => poleRows(name, all[k].poles)).join('')}</tbody></table>`
+    ? `<table class="pzt"><thead><tr><th>${T('Transfer function')}</th><th>${T('Poles')}</th><th>${T('Zeros')}</th></tr></thead><tbody>${chosen.map(([k, name]) => poleRows(name, all[k].poles, all[k].zeros)).join('')}</tbody></table>`
     : '';
   const notes: string[] = [];
   if (!chosen.length) notes.push(T('Choose the transfer functions to show with the buttons above.'));

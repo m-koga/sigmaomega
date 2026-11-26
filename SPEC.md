@@ -31,7 +31,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Menu | Items | Choosing an item |
 | --- | --- | --- |
 | File | Save and load, Compare & reset | Shows that one card in the settings panel |
-| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles, Bode plot, Nyquist plot, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
+| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Bode plot, Nyquist plot, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
 | System setup | Plant P(s), Controller C(s), Reference/disturbance/noise, Actuator saturation | Shows that card in the settings panel |
 | Analysis & design | Design specifications, Auto-tuning (tuning rules), Parameter sweep | Shows that card in the settings panel |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
@@ -47,7 +47,7 @@ A drop-down opens and closes with its button, and closes on a click outside the 
 
 ### 2.3 Plot panels
 
-There are eight panels: block diagram, time response, transfer functions, loop transfer functions, poles, Bode plot, Nyquist plot and pole-zero map. At first the block diagram (full width at the top) and the time response and transfer functions (side by side below it) are shown. The ⠿ handle in each panel's title moves the panel, and its bottom edge changes its height (section 7). The plot buttons (+, −, Fit, PNG) appear only while the mouse is over the plot, while it has keyboard focus, or while it is zoomed. The × at the right end of each panel's title hides the panel, like its item in "Plots to show" (which shows it again); it is not available for the last panel shown.
+There are eight panels: block diagram, time response, transfer functions, loop transfer functions, poles and zeros, Bode plot, Nyquist plot and pole-zero map. At first the block diagram (full width at the top) and the time response and transfer functions (side by side below it) are shown. The ⠿ handle in each panel's title moves the panel, and its bottom edge changes its height (section 7). The plot buttons (+, −, Fit, PNG) appear only while the mouse is over the plot, while it has keyboard focus, or while it is zoomed. The × at the right end of each panel's title hides the panel, like its item in "Plots to show" (which shows it again); it is not available for the last panel shown.
 
 ### 2.4 Narrow screens and smartphones
 
@@ -108,7 +108,7 @@ Every change of a setting recomputes all shown plots and metrics. In every plot 
 | Block diagram | The current structure (one or two degrees of freedom; saturation, disturbance and noise only when used) | — |
 | Transfer functions | P(s) and C(s) (and C_r(s) with two degrees of freedom) in one column, aligned at "=" | — |
 | Loop transfer functions | The ones chosen with the buttons of the panel among L(s), S(s), T(s), G_yr(s) and G_yd(s) (at first L(s) and G_yr(s)), each as "name = definition = rational function with the numbers", aligned at the first "="; the dead time is kept as e^(−Ls), the denominator made monic, common factors not cancelled | — |
-| Poles | A table of the poles of the transfer functions chosen with the buttons of the panel among P(s), C(s), L(s), S(s), T(s), G_yr(s) and G_yd(s) (at first P(s), C(s) and T(s)), as written in the loop transfer functions panel (common factors not cancelled): a conjugate pair on one row, sorted from the right, with ζ, ωn, ωd and 1/\|Re\|; poles with Re > 0 in red. With a dead time the closed-loop poles come from the third-order Padé approximation (noted under the table) | — |
+| Poles and zeros | A table of the poles and zeros of the transfer functions chosen with the buttons of the panel among P(s), C(s), L(s), S(s), T(s), G_yr(s) and G_yd(s) (at first P(s), C(s) and T(s)), as written in the loop transfer functions panel (common factors not cancelled; the dead time has no zeros): a conjugate pair as one entry, sorted from the right, the poles and the zeros side by side; poles with Re > 0 in red. With a dead time the closed-loop poles come from the third-order Padé approximation (noted under the table) | — |
 | Time response | r, y, u and the held responses for comparison (gray, up to 4) | Rise time (10% → 90%), overshoot, settling time (±2%), steady-state error, peak deviation and recovery time after a disturbance; for a sine reference, amplitude ratio and phase difference |
 | Bode plot | L, P, C, S, T, G_yd = P/(1+L) and G_yr = C_r P/(1+L), switched with buttons; the legend is shown even for one curve; the frequency range can be set by hand (section 9) | Gain margin, phase margin, peak sensitivity Ms, Mt, closed-loop bandwidth, peak disturbance gain |
 | Nyquist plot | L(jω), the point −1, a circle of radius 1/Ms | Stability margins |

@@ -1481,11 +1481,11 @@
 "ko": "위의 버튼으로 표시할 전달함수를 선택하십시오.",
 "th": "เลือกฟังก์ชันถ่ายโอนที่จะแสดงด้วยปุ่มด้านบน"
 },
-"Pole": {
-"ja": "極",
-"zh": "极点",
-"ko": "극",
-"th": "โพล"
+"Poles and zeros": {
+"ja": "極と零点",
+"zh": "极点与零点",
+"ko": "극과 영점",
+"th": "โพลและซีโร่"
 },
 "S(s), T(s), Gyr(s) and Gyd(s) have the closed-loop poles (common factors are not cancelled, as in the loop transfer functions).": {
 "ja": "S(s)・T(s)・Gyr(s)・Gyd(s) の極は閉ループ極です（ループの伝達関数と同じく、共通因子は約分していません）。",

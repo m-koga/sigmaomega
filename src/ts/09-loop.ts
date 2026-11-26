@@ -193,26 +193,32 @@ export function computePZ(st: State = S) {
   };
 }
 export type PoleKey = 'P' | 'C' | LoopTFKey;
-/** Poles of P(s), C(s) and of the transfer functions of the loop (as written in loopTFs: common factors not
- *  cancelled). approx: the closed-loop poles of a loop with dead time, from the third-order Padé approximation (the
- *  actual closed loop has infinitely many) */
+/** Poles and zeros of P(s), C(s) and of the transfer functions of the loop (as written in loopTFs: common factors not
+ *  cancelled; the dead time has no zeros). approx: the closed-loop poles of a loop with dead time, from the
+ *  third-order Padé approximation (the actual closed loop has infinitely many) */
 export function loopPoles(
   st: State = S,
   pz: ReturnType<typeof computePZ> = computePZ(st),
-): Record<PoleKey, { poles: Complex[]; approx: boolean }> {
+): Record<PoleKey, { poles: Complex[]; zeros: Complex[]; approx: boolean }> {
   const c = ctrlTF(st),
     r = isTFMode(st) ? c : ctrlTF(st, spWeights(st)),
     sameDen = r.den.length === c.den.length && r.den.every((v, i) => v === c.den[i]),
-    cl = { poles: pz.cl, approx: pz.pade },
-    exact = (poles: Complex[]) => ({ poles, approx: false });
+    rz = r.num.every(v => v === 0) ? [] : polyRoots(r.num),
+    cl = (zeros: Complex[]) => ({ poles: pz.cl, zeros, approx: pz.pade }),
+    exact = (poles: Complex[], zeros: Complex[]) => ({ poles, zeros, approx: false });
   return {
-    P: exact(pz.pp),
-    C: exact(pz.cp),
-    L: exact([...pz.pp, ...pz.cp]),
-    S: cl,
-    T: cl,
-    D: cl,
-    R: sameDen ? cl : { poles: [...polyRoots(r.den), ...pz.cl], approx: pz.pade },
+    P: exact(pz.pp, pz.pz),
+    C: exact(pz.cp, pz.cz),
+    L: exact([...pz.pp, ...pz.cp], [...pz.pz, ...pz.cz]),
+    // S = D/(D + N e): the zeros are the poles of P and C; T = N e/(D + N e): the zeros of P and C;
+    // Gyd = Np Dc e/(D + N e): the zeros of P and the poles of C; Gyr = Nr Np e/(D + N e) (Nr Np Dc e/(Dr (D + N e))
+    // when Cr has another denominator)
+    S: cl([...pz.pp, ...pz.cp]),
+    T: cl([...pz.pz, ...pz.cz]),
+    D: cl([...pz.pz, ...pz.cp]),
+    R: sameDen
+      ? cl([...rz, ...pz.pz])
+      : { poles: [...polyRoots(r.den), ...pz.cl], zeros: [...rz, ...pz.pz, ...pz.cp], approx: pz.pade },
   };
 }
 export let lastLocus: LocusPoint[] | null = null,

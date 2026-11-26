@@ -67,7 +67,7 @@ test('loop transfer functions: the bottom edge scales the formulas, kept apart f
   expect(await page.evaluate(() => layout.loopFs)).toBeNull();
 });
 
-test('poles: shown from the menu, the buttons choose the transfer functions, poles in the right half-plane in red', async ({
+test('poles and zeros: shown from the menu, the buttons choose the transfer functions, poles in the right half-plane in red', async ({
   page,
 }) => {
   await togglePanel(page, 'poles');
@@ -85,6 +85,10 @@ test('poles: shown from the menu, the buttons choose the transfer functions, pol
     update();
   });
   await expect(page.locator('#polesBox tr.grp').first().locator('td.uns')).toHaveText('1');
+  // three columns: the name, the poles and the zeros (the plant has no zero)
+  await expect(page.locator('#polesBox thead th')).toHaveCount(3);
+  const none = await page.evaluate(() => T('none'));
+  await expect(page.locator('#polesBox tr.grp').first().locator('td').nth(2)).toHaveText(none);
   // none chosen: an empty table and a hint
   for (const k of ['P', 'L', 'T']) await page.click(`label.ctg:has(#poles${k})`);
   await expect(page.locator('#polesBox table')).toHaveCount(0);

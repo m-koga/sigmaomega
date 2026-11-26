@@ -40,7 +40,7 @@ window.MathJax = {
       <button class="tab on" type="button" data-tab="time" aria-pressed="true" data-i18n>Time response</button>
       <button class="tab" type="button" data-tab="tf" aria-pressed="false" data-i18n>Transfer functions</button>
       <button class="tab" type="button" data-tab="loop" aria-pressed="false" data-i18n>Loop transfer functions</button>
-      <button class="tab" type="button" data-tab="poles" aria-pressed="false" data-i18n>Poles</button>
+      <button class="tab" type="button" data-tab="poles" aria-pressed="false" data-i18n>Poles and zeros</button>
       <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
       <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
       <button class="tab" type="button" data-tab="pz" aria-pressed="false" data-i18n>Pole-zero map</button>
@@ -251,9 +251,10 @@ window.MathJax = {
       </div>
     </div>
 
-    <!-- Poles of P(s), C(s) and of the transfer functions of the loop: the ones chosen with the buttons, in a table -->
+    <!-- Poles and zeros of P(s), C(s) and of the transfer functions of the loop: the ones chosen with the buttons, in
+         a table -->
     <div class="card tabpanel" id="panel-poles">
-      <div class="h2row"><h2 data-i18n>Poles</h2></div>
+      <div class="h2row"><h2 data-i18n>Poles and zeros</h2></div>
       <div class="ctg-row loop-opts" id="polesOpts">
         <label class="ctg" title="Plant P(s)" data-i18n-title><input type="checkbox" id="polesP" checked><span>P(s)</span></label>
         <label class="ctg" title="Controller C(s)" data-i18n-title><input type="checkbox" id="polesC" checked><span>C(s)</span></label>

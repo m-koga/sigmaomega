@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.78.0',
+    d: '2026-11-26',
+    en: [
+      'The panel "Poles" is now "Poles and zeros": its table lists the zeros of each chosen transfer function beside its poles (the roots of the numerators as written in the loop transfer functions panel: for example the zeros of S(s) are the poles of P(s) and C(s); the dead time has no zeros); the columns of ζ, ωn, ωd and the time constant are removed',
+    ],
+    ja: [
+      '区画「極」を「極と零点」にした：表に、選んだ伝達関数それぞれの極と並べて零点を示す（ループの伝達関数の区画に表示した式の分子の根。例えば S(s) の零点は P(s) と C(s) の極。むだ時間は零点を持たない）。ζ、ωn、ωd、時定数の列は削除した',
+    ],
+  },
+  {
     v: '1.77.0',
     d: '2026-11-26',
     en: [

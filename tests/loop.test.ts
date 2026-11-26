@@ -65,7 +65,7 @@ test('formulas: definition and rational function; dead time kept as e^{-Ls}; onl
   assert.ok(a.loopTeXLines().some(l => l.includes('\\dfrac{C_r(s)P(s)}{1+L(s)}')));
 });
 
-test('poles: P, C and L as their denominators; the closed-loop poles make 1 + L(s) zero; Padé with dead time', () => {
+test('poles and zeros: P, C and L; the closed-loop poles make 1 + L(s) zero; zeros of the numerators; Padé with dead time', () => {
   const a = fresh();
   Object.assign(a.S, { plant: 'third', K: 1, T: 1, mode: 'PID', Kp: 2, Ki: 0.5, Kd: 1, N: 20, tdof: true, bw: 0.5 });
   const p = a.loopPoles(),
@@ -83,10 +83,24 @@ test('poles: P, C and L as their denominators; the closed-loop poles make 1 + L(
     assert.ok(Math.hypot(n[0] + d[0], n[1] + d[1]) < 1e-8 * (1 + Math.hypot(...d)), `closed-loop pole ${z}`);
   }
   for (const k of ['S', 'R', 'D'] as const) assert.deepEqual(p[k].poles, p.T.poles);
+  // the zeros are the roots of the numerators: P none, C those of KD N s² + … (two), L those of P and C; S the poles
+  // of P and C; T the zeros of P and C; Gyd the zeros of P and the poles of C; Gyr those of Cr(s) (b = 0.5) and P
+  const { c } = a.loopRational(),
+    cz: C[] = a.polyRoots(c.num);
+  assert.equal(p.P.zeros.length, 0);
+  assert.equal(p.C.zeros.length, 2);
+  assert.ok(cz.every(z => near(p.C.zeros, z) && near(p.L.zeros, z) && near(p.T.zeros, z)));
+  assert.equal(p.S.zeros.length, 5);
+  assert.ok([...p.P.poles, ...p.C.poles].every(z => near(p.S.zeros, z)));
+  assert.equal(p.D.zeros.length, 2);
+  assert.ok(near(p.D.zeros, [0, 0]) && near(p.D.zeros, [-20, 0]));
+  const rz: C[] = a.polyRoots(a.ctrlTF(a.S, a.spWeights(a.S)).num);
+  assert.ok(rz.length === 2 && rz.every(z => near(p.R.zeros, z)) && !cz.every(z => near(p.R.zeros, z)));
   assert.ok(!p.T.approx);
   // dead time: the closed-loop poles from the Padé approximation, marked as approximate; P, C and L stay exact
   Object.assign(a.S, { plant: 'dead', L: 0.5 });
   const d = a.loopPoles();
   assert.ok(d.T.approx && !d.P.approx && !d.L.approx);
+  assert.equal(d.T.zeros.length, 2); // the dead time adds no zeros
   assert.equal(d.T.poles.length, 6); // (s+1)·s(s+20)·Padé of order three
 });

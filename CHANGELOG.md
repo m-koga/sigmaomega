@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.78.0 (2026-11-26)
+- The panel "Poles" is now "Poles and zeros": its table lists the zeros of each chosen transfer function beside its poles (the roots of the numerators as written in the loop transfer functions panel: for example the zeros of S(s) are the poles of P(s) and C(s); the dead time has no zeros); the columns of ζ, ωn, ωd and the time constant are removed
+
 ## v1.77.0 (2026-11-26)
 - New panel "Poles" (in "Plots to show", hidden at first): its buttons choose which of P(s), C(s), L(s), S(s), T(s), G_yr(s) and G_yd(s) are listed, and a table gives their poles with ζ, ωn, ωd and the time constant 1/|Re| (a conjugate pair on one row; poles in the right half-plane in red). The poles are those of the transfer functions as written in the loop transfer functions panel (common factors not cancelled); with a dead time the closed-loop poles come from the third-order Padé approximation, as noted under the table. The height of the table is changed at its bottom edge; the choice is saved with the layout of a scenario
 - Layout "Rows": when the panels hidden at first are gathered in rows at the bottom, the plots come first, so that they come back side by side
