@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 Masanobu Koga
+// Numerical accuracy (ACCURACY.md): the results stay within the bounds stated there, against exact solutions or
+// independent references (scripts/accuracy.ts, which prints the full tables)
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  DEAD_CASES,
+  FREQ_CASES,
+  TIME_CASES,
+  deadCase,
+  discretizationError,
+  freqCase,
+  padeCase,
+  pMul,
+  rootError,
+  sineCase,
+  timeCase,
+} from '../scripts/accuracy.ts';
+
+const rel = (a: number | null | undefined, b: number | null | undefined) =>
+  a === null || a === undefined || b === null || b === undefined
+    ? a === b
+      ? 0
+      : Infinity
+    : Math.abs(a - b) / Math.abs(b);
+const pick = <T>(cases: [string, T][], names: string[]) => cases.filter(([n]) => names.includes(n));
+
+test('time response: within 0.3 % of the exact closed loop; metrics within 0.2 % (overshoot 0.1 point)', () => {
+  for (const [name, set] of pick(TIME_CASES, [
+    '1st-order lag + PI',
+    '3rd-order lag + PID, N = 100',
+    '3rd-order lag + PID, fast',
+    '3rd-order lag + lead',
+  ])) {
+    const r = timeCase(set);
+    assert.ok(r.rel < 3e-3, `${name}: error ${r.rel}`);
+    assert.ok(Math.abs((r.got?.os ?? 0) - r.ref.os) < 0.1, `${name}: overshoot ${r.got?.os} / ${r.ref.os}`);
+    assert.ok(rel(r.got?.rise, r.ref.rise) < 2e-3, `${name}: rise ${r.got?.rise} / ${r.ref.rise}`);
+    assert.ok(rel(r.got?.ts, r.ref.ts) < 2e-3, `${name}: settling ${r.got?.ts} / ${r.ref.ts}`);
+  }
+});
+
+test('dead time not a whole number of substeps is not rounded; PID with dead time within 0.2 %', () => {
+  for (const [name, set] of pick(DEAD_CASES, ['L = 0.537 (not a whole number), P', 'Exercise 3: L = 0.5, PID'])) {
+    const r = deadCase(set);
+    assert.ok(r.err < 2e-3, `${name}: error ${r.err}`);
+    assert.ok(Math.abs((r.got?.os ?? 0) - r.ref.os) < 0.1, `${name}: overshoot ${r.got?.os} / ${r.ref.os}`);
+  }
+});
+
+test('frequency response: phase margin within 0.02°, gain margin within 0.001 dB, Ms within 1e-6', () => {
+  for (const [name, set] of FREQ_CASES) {
+    const { got, ref } = freqCase(set);
+    assert.ok(Math.abs(got.pm! - ref.pm!) < 0.02, `${name}: PM ${got.pm} / ${ref.pm}`);
+    if (ref.gm !== null) assert.ok(Math.abs(got.gm! - ref.gm) < 1e-3, `${name}: GM ${got.gm} / ${ref.gm}`);
+    assert.ok(rel(got.ms, ref.ms) < 1e-6, `${name}: Ms ${got.ms} / ${ref.ms}`);
+  }
+});
+
+test('discretization, roots and the Padé approximation', () => {
+  for (const n of [1, 3, 10]) assert.ok(discretizationError(n) < 1e-12, `1/(s+1)^${n}`);
+  let p = [1];
+  const ex: [number, number][] = [];
+  for (let i = 1; i <= 10; i++) {
+    p = pMul(p, [1, i]);
+    ex.push([-i, 0]);
+  }
+  assert.ok(rootError(p, ex) < 1e-9, 'distinct roots');
+  assert.ok(rootError(pMul(pMul([1, 1], [1, 1]), [1, 1]), [[-1, 0]]) < 1e-5, 'triple root');
+  for (const [L, Kp] of [
+    [0.5, 1],
+    [3, 0.5],
+  ])
+    assert.ok(padeCase(L, Kp).err < 2e-3, `Padé L = ${L}`);
+});
+
+test('sine reference: amplitude ratio within 1 %, phase difference within 0.5°', () => {
+  for (const [Tp, Tsim] of [
+    [5, 40],
+    [0.3, 10],
+  ]) {
+    const r = sineCase(Tp, Tsim);
+    assert.ok(Math.abs(r.ratio) < 0.01 && Math.abs(r.phase) < 0.5, `period ${Tp}: ${r.ratio}, ${r.phase}°`);
+  }
+});

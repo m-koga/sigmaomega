@@ -36,7 +36,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Analysis & design | Design specifications, Auto-tuning (tuning rules), Parameter sweep | Shows that card in the settings panel |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
 | Metrics display | Cards, Table | Changes how the response metrics are shown |
-| Help (button at the right end) | — | Opens the user manual in a dialog: a list of its ten sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean and Thai); × , Esc or a click beside it closes it. On phones the button shows only its icon |
+| Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean and Thai); × , Esc or a click beside it closes it. On phones the button shows only its icon |
 
 A drop-down opens and closes with its button, and closes on a click outside the list or on Esc. While it is open, ↑ and ↓ move between items and Enter chooses one. Only one drop-down is open at a time.
 
@@ -254,18 +254,18 @@ The time response is computed by exact discretization of the plant; the frequenc
 | --- | --- |
 | State-space model | Transfer function converted to controllable canonical form |
 | Discretization | Exact zero-order-hold discretization with the matrix exponential (scaling and squaring + Taylor series) |
-| Time step | 4,000 recorded points (dt = simulation time / 4000). Each step is split into up to 100 substeps so that ωh ≤ 0.02 (phase error at most 0.6°) at the gain crossover frequency and at the frequency of a periodic reference; the controller is updated at each substep |
-| Controller | PID types compute the proportional, integral and derivative parts separately (with the filter coefficient N discretized). Other controllers are discretized from their transfer function in the same way as the plant |
-| Dead time | In the time response, a buffer delaying the input by L/h steps. In the frequency response, e^(−jωL) exactly. For the poles, a third-order Padé approximation |
+| Time step | 4,000 recorded points (dt = simulation time / 4000). Each step is split into up to 100 substeps h so that ωh ≤ 0.02 (phase error at most 0.6°) at the gain crossover frequency, at the frequency of a periodic reference and at the fastest dynamics of the controller (the derivative filter N, or the largest pole of a controller given as a transfer function); the controller is updated at each substep |
+| Controller | The output held over each substep is the exact average of the continuous controller's output over it, for the error held over the substep: for PID types the integral part adds e·h/2 and the filtered derivative part is scaled by (1 − e^(−Nh))/(Nh); a controller given as a transfer function uses the average obtained from the exponential of an augmented matrix. So a PID and the same controller entered as a transfer function give the same response |
+| Dead time | In the time response, a buffer delaying the input by L/h substeps; when L/h is not a whole number, the delayed input over a substep is the average of the two held values it overlaps (no rounding). In the frequency response, e^(−jωL) exactly. For the poles, a third-order Padé approximation |
 | Noise | Seeded pseudo-random numbers (Mulberry32) with the Box–Muller method |
 | Divergence | The simulation stops when y or u is no longer finite or the magnitude of y exceeds a limit |
-| Response metrics | Rise 10% → 90%, settling ±2%, steady-state error at the last point. For a sine reference, amplitude ratio and phase difference from the Fourier coefficients over the last whole periods |
+| Response metrics | Rise 10% → 90% and settling ±2%, with the crossing times interpolated linearly between the recorded points; overshoot from a parabola through the largest recorded point and its neighbours; steady-state error at the last point. For a sine reference, amplitude ratio and phase difference from the Fourier coefficients over the last whole periods. Ms and Mt: the largest value on the frequency grid, refined between the neighbouring grid points by golden-section search |
 | Frequency range | Chosen automatically from the poles and zeros of the plant and controller, the dead time and the simulation time (from 1/100 of the smallest to 100 times the largest, in whole decades); logarithmically spaced, 150 points per decade (at most 2,400). The range of the Bode plot can be set by hand under the plot ("Frequency range", 10⁻⁷ – 10⁷ rad/s); it stays until "Auto" is pressed or the poles, zeros, dead time or simulation time change (a gain alone keeps it), and also applies to the curves of a parameter sweep and to the CSV of the Bode plot. The stability margins and the other frequency-domain metrics, and the Nyquist plot, always use the automatic range |
 | Polynomial roots | Durand–Kerner method |
 | Root locus | Roots of the characteristic polynomial for each loop-gain factor k, starting from the roots for the previous k so that branches connect |
 | Disturbance metrics | Peak deviation after the disturbance is applied, and the recovery time after it |
 
-Tests check that the time response matches the analytic solutions of first- and second-order closed loops, and that the frequency response matches simulations with sine inputs (section 11).
+The numerical accuracy of these methods, the way it was evaluated and the results are in [ACCURACY.md](ACCURACY.md) (`npm run accuracy` prints the tables; `tests/accuracy.test.ts` checks the bounds). Tests also check that the time response matches the analytic solutions of first- and second-order closed loops, and that the frequency response matches simulations with sine inputs (section 11).
 
 ## 10. Non-functional requirements
 

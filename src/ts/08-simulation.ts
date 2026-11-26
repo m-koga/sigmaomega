@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Simulation ================= */
+import { polyRoots } from './03-math.ts';
 import { PLANTS, hasTerm } from './05-definitions.ts';
 import { S, ctrlRational, isTFMode, refValue } from './06-state.ts';
 import { evalCP, evalT, freqRange, spWeights } from './07-frequency.ts';
@@ -96,6 +97,31 @@ export function ssStepD(ss: DiscreteSS, x: number[], u: number): number[] {
   }
   return y;
 }
+// Average output over a step h with the input u held: (1/h)∫ y dt = (ca·x + cb·u), where the row ca = c·∫e^{Aτ}dτ / h
+// and cb = (c·∫∫e^{Aσ}dσ dτ B + D h) / h come from the exponential of an augmented matrix (exact for a held input)
+export function averageOut(ss: StateSpace, h: number): { ca: number[]; cb: number } {
+  const n = ss.n;
+  if (!n) return { ca: [], cb: ss.D };
+  // M = [[A, I, 0], [0, 0, 0], [0, 0, 0]] for ∫e^{Aτ}, and [[A, B, 0], [0, 0, 1], [0, 0, 0]] for ∫∫e^{Aσ}B
+  const N1 = 2 * n,
+    M1: number[][] = [],
+    N2 = n + 2,
+    M2: number[][] = [];
+  for (let i = 0; i < N1; i++) M1.push(new Array(N1).fill(0));
+  for (let i = 0; i < N2; i++) M2.push(new Array(N2).fill(0));
+  for (let k = 0; k < n - 1; k++) M1[k][k + 1] = M2[k][k + 1] = h;
+  for (let k = 0; k < n; k++) M1[n - 1][k] = M2[n - 1][k] = -ss.dn[n - k] * h;
+  for (let k = 0; k < n; k++) M1[k][n + k] = h;
+  M2[n - 1][n] = h;
+  M2[n][n + 1] = h;
+  const E1 = expm(M1),
+    E2 = expm(M2);
+  const ca = new Array(n).fill(0);
+  let cb = ss.D;
+  for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) ca[j] += (ss.c[k] * E1[k][n + j]) / h;
+  for (let k = 0; k < n; k++) cb += (ss.c[k] * E2[k][n + 1]) / h;
+  return { ca, cb };
+}
 export const ssOut = (ss: StateSpace, x: number[], u: number): number => {
   let y = ss.D * u;
   for (let k = 0; k < ss.n; k++) y += ss.c[k] * x[k];
@@ -113,15 +139,23 @@ export function crossoverHigh(tf: TF, st: State = S): number {
   }
   return wh;
 }
+// Fastest dynamics of the controller (rad/s): the derivative filter N of a PID with a derivative term, or the
+// largest pole magnitude of a controller given as a transfer function (0 when there is none)
+export function ctrlFastest(st: State = S): number {
+  if (isTFMode(st)) return Math.max(0, ...polyRoots(ctrlRational(st).den).map(z => Math.hypot(z[0], z[1])));
+  return hasTerm(st, 'D') && st.Kd !== 0 ? st.N : 0;
+}
 // Time steps: NS recorded points, and m substeps of length h between them (the controller is updated at every
 // substep). Holding the controller output over a step h acts like a delay of h/2, so h is chosen to keep ω·h ≤ 0.02
-// (phase error ≤ 0.6°) at the gain crossover and at the frequency of a periodic reference; m is at most 100.
+// (phase error ≤ 0.6°) at the gain crossover, at the frequency of a periodic reference and at the fastest dynamics
+// of the controller (e.g. the derivative filter N); m is at most 100.
 const SIM_POINTS = 4000;
 function simSteps(tf: TF, st: State): { dt: number; m: number; h: number } {
   const dt = st.Tsim / SIM_POINTS;
   const wh = crossoverHigh(tf, st),
-    wr = st.refType === 'sine' || st.refType === 'square' ? (2 * Math.PI) / st.rPer : 0;
-  const m = Math.max(1, Math.min(100, Math.ceil((dt * Math.max(wh, wr)) / 0.02)));
+    wr = st.refType === 'sine' || st.refType === 'square' ? (2 * Math.PI) / st.rPer : 0,
+    wc = ctrlFastest(st);
+  const m = Math.max(1, Math.min(100, Math.ceil((dt * Math.max(wh, wr, wc)) / 0.02)));
   return { dt, m, h: dt / m };
 }
 /** The controller during a simulation: out() gives its output before saturation for the reference r and the
@@ -134,10 +168,16 @@ function simController(st: State, h: number): SimController {
   // a controller entered as a transfer function: its discretized state space, driven by the error
   const cr = isTFMode(st) ? ctrlRational(st) : null;
   if (cr) {
-    const cs = discretize(makeSS(cr.num, cr.den), h);
+    const cs = discretize(makeSS(cr.num, cr.den), h),
+      { ca, cb } = averageOut(cs, h);
     let xc: number[] = new Array(cs.n).fill(0);
     return {
-      out: (r, ym) => ssOut(cs, xc, r - ym),
+      // the output held over the substep is its exact average for the error held over the substep
+      out: (r, ym) => {
+        let u = cb * (r - ym);
+        for (let k = 0; k < cs.n; k++) u += ca[k] * xc[k];
+        return u;
+      },
       step: (r, ym) => {
         xc = ssStepD(cs, xc, r - ym);
       },
@@ -150,13 +190,17 @@ function simController(st: State, h: number): SimController {
     ki = hasTerm(st, 'I') ? st.Ki : 0,
     kd = useD ? st.Kd : 0;
   const { b: wb, c: wc } = spWeights(st);
-  const alpha = 1 - Math.exp(-st.N * h);
+  // the output held over each substep is the exact average of the continuous controller's output over the substep
+  // (for the error held over it): the integral term adds e·h/2, and the derivative term, which decays with the time
+  // constant 1/N, is scaled by its average factor (1 − e^{−Nh})/(Nh)
+  const alpha = 1 - Math.exp(-st.N * h),
+    davg = st.N * h > 1e-9 ? alpha / (st.N * h) : 1;
   let xi = 0, // integral of the error
     xf = 0; // filtered derivative signal
   return {
     out: (r, ym) => {
-      const D = useD ? kd * st.N * (wc * r - ym - xf) : 0;
-      return kp * (wb * r - ym) + ki * xi + D;
+      const D = useD ? kd * st.N * davg * (wc * r - ym - xf) : 0;
+      return kp * (wb * r - ym) + ki * (xi + ((r - ym) * h) / 2) + D;
     },
     step: (r, ym, ur, u) => {
       const e = r - ym;
@@ -165,16 +209,22 @@ function simController(st: State, h: number): SimController {
     },
   };
 }
-// Dead time of n substeps: a ring buffer that returns the input of n calls before (zero at first)
-function delayLine(n: number): (u: number) => number {
-  if (n <= 0) return u => u;
-  const buf: number[] = new Array(n).fill(0);
+// Dead time of d substeps (d ≥ 0, not necessarily whole): the input held over each substep, delayed by d substeps,
+// averaged over the substep — (1 − f)·u[k − n] + f·u[k − n − 1] with n = ⌊d⌋, f = d − n — so a dead time that is
+// not a whole number of substeps is not rounded (zero before the first input)
+function delayLine(d: number): (u: number) => number {
+  const n = Math.floor(d + 1e-9),
+    f = Math.max(0, d - n);
+  if (n <= 0 && f < 1e-9) return u => u;
+  const len = n + 2,
+    buf: number[] = new Array(len).fill(0);
   let k = 0;
   return u => {
-    const out = buf[k];
     buf[k] = u;
-    k = (k + 1) % n;
-    return out;
+    const a = buf[(k - n + len) % len],
+      b = buf[(k - n - 1 + 2 * len) % len];
+    k = (k + 1) % len;
+    return f < 1e-9 ? a : (1 - f) * a + f * b;
   };
 }
 // Measurement noise: normal with standard deviation st.noise, from a fixed seed (the same settings give the same
@@ -196,7 +246,7 @@ export function simulate(st: State = S) {
     { dt, m, h } = simSteps(tf, st);
   const ps = discretize(makeSS(tf.num, tf.den), h);
   const ctrl = simController(st, h),
-    delay = delayLine(Math.round(tf.L / h)),
+    delay = delayLine(tf.L / h),
     noise = noiseSource(st);
   let x: number[] = new Array(ps.n).fill(0),
     iae = 0,
@@ -254,17 +304,33 @@ export function stepMetrics(sim: SimResult, st: State = S) {
   const R = st.R,
     t0 = st.rT0,
     yn = sim.Y.map(v => v / R);
+  // times between the recorded points are found by linear interpolation, and the peak by a parabola through the
+  // largest point and its neighbours, so that the metrics do not depend on the spacing of the recorded points
+  const T = sim.T,
+    cross = (i: number, lv: number) =>
+      i <= i0 || yn[i] === yn[i - 1] ? T[i] : T[i - 1] + ((lv - yn[i - 1]) / (yn[i] - yn[i - 1])) * (T[i] - T[i - 1]);
   let t10: number | null = null,
     t90: number | null = null,
-    mx = -Infinity;
+    k = i0;
   for (let i = i0; i <= last; i++) {
-    if (t10 === null && yn[i] >= 0.1) t10 = sim.T[i] - t0;
-    if (t90 === null && yn[i] >= 0.9) t90 = sim.T[i] - t0;
-    if (yn[i] > mx) mx = yn[i];
+    if (t10 === null && yn[i] >= 0.1) t10 = cross(i, 0.1) - t0;
+    if (t90 === null && yn[i] >= 0.9) t90 = cross(i, 0.9) - t0;
+    if (yn[i] > yn[k]) k = i;
+  }
+  let mx = yn[k];
+  if (k > i0 && k < last) {
+    const c = yn[k + 1] - 2 * yn[k] + yn[k - 1];
+    if (c < 0) mx = yn[k] - (yn[k + 1] - yn[k - 1]) ** 2 / (8 * c);
   }
   let lastOut = -1;
   for (let i = i0; i <= last; i++) if (Math.abs(yn[i] - 1) > 0.02) lastOut = i;
-  const ts = lastOut === last ? null : lastOut < 0 ? 0 : sim.T[lastOut + 1] - t0;
+  let ts: number | null = null;
+  if (lastOut < 0) ts = 0;
+  else if (lastOut < last) {
+    const j = lastOut,
+      lv = yn[j] > 1 ? 1.02 : 0.98;
+    ts = T[j] + ((yn[j] - lv) / (yn[j] - yn[j + 1])) * (T[j + 1] - T[j]) - t0;
+  }
   return {
     rise: t10 !== null && t90 !== null ? t90 - t10 : null,
     os: Math.max(0, (mx - 1) * 100),

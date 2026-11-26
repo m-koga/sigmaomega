@@ -249,16 +249,16 @@ export const HELP: HelpSection[] = [
 <p>Plant 1/(<i>s</i>+1)<sup>3</sup>, PID with <i>K</i><sub>P</sub> = 1, <i>K</i><sub>I</sub> = 0.3, <i>K</i><sub>D</sub> = 0.5. Specifications: overshoot ≤ 10 %, settling time ≤ 10 s, phase margin ≥ 45° (and gain margin ≥ 6 dB).</p>
 <ol>
 <li>Add the <b>Bode plot</b>. At first the overshoot is 0 % and the phase margin about 88°, but the settling time is about 15 s: ✗. The loop is safe but slow.</li>
-<li>Raise <i>K</i><sub>I</sub> from 0.3 to 0.4. The settling time drops to about 8.3 s and every specification is ✓ (phase margin about 76°; <a class="hp-ref" href="#" data-ref="ex1-time"></a>).
+<li>Raise <i>K</i><sub>I</sub> from 0.3 to 0.4. The settling time drops to about 8.4 s and every specification is ✓ (phase margin about 76°; <a class="hp-ref" href="#" data-ref="ex1-time"></a>).
 <figure class="hp-fig" data-img="ex1-time" data-id="ex1-time"><figcaption><i>K</i><sub>I</sub> = 0.4 (blue) against the first setting <i>K</i><sub>I</sub> = 0.3 (gray, held). The dashed red line is the overshoot limit and the dotted green lines the settling band; the metrics under the plot show ✓.</figcaption></figure></li>
 <li>Compare with the tuning rules (<b>Analysis &amp; design › Auto-tuning</b>, controller type PID, <b>Apply to the controller</b>); <a class="hp-ref" href="#" data-ref="rules"></a> gives the results:
 <table data-id="rules"><caption>Exercise 1: the PID tuning rules compared</caption>
 <tr><th>Rule</th><th>Overshoot</th><th>Settling time</th><th>Phase margin</th></tr>
-<tr><td>Ziegler–Nichols (step response)</td><td>about 52 %</td><td>about 11 s</td><td>about 21°</td></tr>
-<tr><td>CHR (set-point, 0% overshoot)</td><td>about 9.9 %</td><td>about 7.3 s</td><td>about 52°</td></tr>
-<tr><td>IMC</td><td>about 13 %</td><td>about 11 s</td><td>about 48°</td></tr>
+<tr><td>Ziegler–Nichols (step response)</td><td>about 55 %</td><td>about 13 s</td><td>about 21°</td></tr>
+<tr><td>CHR (set-point, 0% overshoot)</td><td>about 11 %</td><td>about 7.3 s</td><td>about 52°</td></tr>
+<tr><td>IMC</td><td>about 15 %</td><td>about 11 s</td><td>about 48°</td></tr>
 </table>
-Only CHR (set-point, 0 % overshoot) meets all the specifications. Ziegler–Nichols aims at a fast, oscillating response (a quarter decay ratio), so its overshoot is large and its phase margin small.</li>
+None of the rules meets every specification as it is. CHR (set-point, 0 % overshoot) comes closest: only its overshoot (about 11 %) is just over the limit. A tuning rule gives a starting point, to be adjusted by hand. Ziegler–Nichols aims at a fast, oscillating response (a quarter decay ratio), so its overshoot is large and its phase margin small.</li>
 </ol>
 <h4>Exercise 2: PI control of a plant with dead time</h4>
 <p>Plant <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1), PI with <i>K</i><sub>P</sub> = 0.5, <i>K</i><sub>I</sub> = 0.2. Specifications: phase margin ≥ 60°, gain margin ≥ 6 dB, peak sensitivity Ms ≤ 1.6.</p>
@@ -266,15 +266,15 @@ Only CHR (set-point, 0 % overshoot) meets all the specifications. Ziegler–Nich
 <li>Add the <b>Bode plot</b> and the <b>Nyquist plot</b> (tick the 1/Ms circle). The margins are large (phase margin about 83°, Ms about 1.22), but the response is slow (settling time about 19 s).</li>
 <li>Set <i>K</i><sub>P</sub> = 0.7. In <b>Analysis &amp; design › Parameter sweep</b>, tick the box, choose the parameter <i>K</i><sub>I</sub> and type the values <code>0.2, 0.3, 0.4, 0.5, 0.6</code>. Each value is drawn in its own color, and the table of the sweep compares them (<a class="hp-ref" href="#" data-ref="ex2-table"></a>).
 <figure class="hp-fig" data-img="ex2-table" data-id="ex2-table"><figcaption>The table of the sweep (<i>K</i><sub>P</sub> = 0.7). PM is the phase margin, GM the gain margin; the last column tells whether every specification is met.</figcaption></figure>
-With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.9 s, the phase margin about 64° and Ms 1.41. From 0.5 on, the phase margin falls below 60° (about 55°), and at 0.6 Ms also exceeds 1.6 (1.70); with 0.2 every specification is met, but the response is slow (about 22 s). In the Nyquist plot the curves come closer to −1 as <i>K</i><sub>I</sub> grows (<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>). Click the row 0.4 to use that value: it is the fastest one that keeps every specification.
+With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.8 s, the phase margin about 64° and Ms 1.41. From 0.5 on, the phase margin falls below 60° (about 55°), and at 0.6 Ms also exceeds 1.6 (1.70); with 0.2 every specification is met, but the response is slow (about 22 s). In the Nyquist plot the curves come closer to −1 as <i>K</i><sub>I</sub> grows (<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>). Click the row 0.4 to use that value: it is the fastest one that keeps every specification.
 <figure class="hp-fig" data-img="ex2-nyq" data-id="ex2-nyq"><figcaption>The Nyquist plot near −1 (zoomed with the wheel). The purple circle has the radius 1/Ms of the current setting, the dotted green one that of the specification Ms = 1.6.</figcaption></figure></li>
 <li>For comparison, the PI rules give: Ziegler–Nichols (step response) Ms about 2.3 and gain margin about 5.7 dB (✗), CHR (set-point, 0 % overshoot) all ✓ but slower (about 12 s), IMC Ms about 2.0 (✗).</li>
 </ol>
 <h4>Exercise 3: set-point weighting (2-DOF PID)</h4>
 <p>Plant <i>e</i><sup>−0.5<i>s</i></sup>/(<i>s</i>+1), 2-DOF PID tuned for disturbance rejection (<i>K</i><sub>P</sub> = 1.9, <i>K</i><sub>I</sub> = 1.583, <i>K</i><sub>D</sub> = 0.399) with weights <i>b</i> = <i>c</i> = 1, and a disturbance <i>d</i> = 0.5 from <i>t</i> = 15 s. Specification: overshoot ≤ 10 %.</p>
 <ol>
-<li>The step response overshoots by about 21 % (✗; the gray line in <a class="hp-ref" href="#" data-ref="ex3-time"></a>). After <i>t</i> = 15 s the disturbance gives a peak deviation of about 0.21, recovered in about 3.2 s.</li>
-<li>In <b>System setup › Controller C(s)</b>, set <i>b</i> = 0.7 and <i>c</i> = 0. The overshoot drops to about 0.7 % (✓; the blue line in <a class="hp-ref" href="#" data-ref="ex3-time"></a>). With <i>b</i> = 0.5 it is almost 0 %, but the response is slower (settling time about 3.6 s instead of 2.4 s).</li>
+<li>The step response overshoots by about 19 % (✗; the gray line in <a class="hp-ref" href="#" data-ref="ex3-time"></a>). After <i>t</i> = 15 s the disturbance gives a peak deviation of about 0.21, recovered in about 3.2 s.</li>
+<li>In <b>System setup › Controller C(s)</b>, set <i>b</i> = 0.7 and <i>c</i> = 0. The overshoot drops to about 0.3 % (✓; the blue line in <a class="hp-ref" href="#" data-ref="ex3-time"></a>). With <i>b</i> = 0.5 it is almost 0 %, but the response is slower (settling time about 3.6 s instead of 2.4 s).</li>
 <li>Look at the disturbance response after <i>t</i> = 15 s: the peak deviation and the recovery time do not change, nor do the stability margins. The weights act only on the path from the reference (<i>C</i><sub>r</sub>), not on the feedback. In the Bode plot, <i>G</i><sub>yr</sub> changes while <i>G</i><sub>yd</sub> stays the same.
 <figure class="hp-fig" data-img="ex3-time" data-id="ex3-time"><figcaption><i>b</i> = 0.7, <i>c</i> = 0 (blue) against <i>b</i> = <i>c</i> = 1 (gray, held). The overshoot to the set-point is gone, while after <i>t</i> = 15 s the two responses to the disturbance lie on each other.</figcaption></figure></li>
 <li>The gain margin (about 4.9 dB) stays below 6 dB whatever <i>b</i> and <i>c</i> are: it belongs to the feedback gains.</li>
@@ -296,16 +296,16 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.9 s, the phase marg
 <p>制御対象 1/(<i>s</i>+1)<sup>3</sup>、PID（<i>K</i><sub>P</sub> = 1、<i>K</i><sub>I</sub> = 0.3、<i>K</i><sub>D</sub> = 0.5）。仕様：オーバーシュート 10 % 以下、整定時間 10 s 以下、位相余裕 45° 以上（とゲイン余裕 6 dB 以上）。</p>
 <ol>
 <li><b>ボード線図</b> を加えます。最初はオーバーシュート 0 %、位相余裕 約 88° ですが、整定時間が 約 15 s で ✗ です。安定ですが遅い応答です。</li>
-<li><i>K</i><sub>I</sub> を 0.3 から 0.4 に上げます。整定時間が 約 8.3 s になり、すべての仕様が ✓ になります（位相余裕 約 76°、<a class="hp-ref" href="#" data-ref="ex1-time"></a>）。
+<li><i>K</i><sub>I</sub> を 0.3 から 0.4 に上げます。整定時間が 約 8.4 s になり、すべての仕様が ✓ になります（位相余裕 約 76°、<a class="hp-ref" href="#" data-ref="ex1-time"></a>）。
 <figure class="hp-fig" data-img="ex1-time" data-id="ex1-time"><figcaption><i>K</i><sub>I</sub> = 0.4（青）と最初の設定 <i>K</i><sub>I</sub> = 0.3（灰色、保持した応答）。赤の破線がオーバーシュートの上限、緑の点線が整定の幅です。図の下の指標に ✓ が付きます。</figcaption></figure></li>
 <li>チューニング則と比べます（<b>解析・設計 › 自動調整</b>、制御器の種類 PID、<b>制御器に適用</b>）。結果を <a class="hp-ref" href="#" data-ref="rules"></a> に示します：
 <table data-id="rules"><caption>演習 1：PID のチューニング則の比較</caption>
 <tr><th>調整則</th><th>オーバーシュート</th><th>整定時間</th><th>位相余裕</th></tr>
-<tr><td>ジーグラ・ニコルス（ステップ応答法）</td><td>約 52 %</td><td>約 11 s</td><td>約 21°</td></tr>
-<tr><td>CHR（目標値追従、オーバーシュート 0%）</td><td>約 9.9 %</td><td>約 7.3 s</td><td>約 52°</td></tr>
-<tr><td>IMC</td><td>約 13 %</td><td>約 11 s</td><td>約 48°</td></tr>
+<tr><td>ジーグラ・ニコルス（ステップ応答法）</td><td>約 55 %</td><td>約 13 s</td><td>約 21°</td></tr>
+<tr><td>CHR（目標値追従、オーバーシュート 0%）</td><td>約 11 %</td><td>約 7.3 s</td><td>約 52°</td></tr>
+<tr><td>IMC</td><td>約 15 %</td><td>約 11 s</td><td>約 48°</td></tr>
 </table>
-すべての仕様を満たすのは CHR（目標値追従、オーバーシュート 0%）だけです。ジーグラ・ニコルスは減衰比 1/4 の速く振動する応答をねらうため、オーバーシュートが大きく位相余裕が小さくなります。</li>
+そのままですべての仕様を満たす調整則はありません。最も近いのは CHR（目標値追従、オーバーシュート 0%）で、オーバーシュート（約 11 %）だけがわずかに上限を超えます。チューニング則は、手で調整するための出発点です。ジーグラ・ニコルスは減衰比 1/4 の速く振動する応答をねらうため、オーバーシュートが大きく位相余裕が小さくなります。</li>
 </ol>
 <h4>演習 2：むだ時間を含む系の PI 制御</h4>
 <p>制御対象 <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1)、PI（<i>K</i><sub>P</sub> = 0.5、<i>K</i><sub>I</sub> = 0.2）。仕様：位相余裕 60° 以上、ゲイン余裕 6 dB 以上、最大感度 Ms 1.6 以下。</p>
@@ -313,15 +313,15 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.9 s, the phase marg
 <li><b>ボード線図</b> と <b>ナイキスト線図</b>（1/Ms の円も表示）を加えます。余裕は大きい（位相余裕 約 83°、Ms 約 1.22）ものの、応答は遅めです（整定時間 約 19 s）。</li>
 <li><i>K</i><sub>P</sub> = 0.7 にしてから、<b>解析・設計 › パラメータの掃引</b> でチェックを入れ、パラメータに <i>K</i><sub>I</sub> を選び、値に <code>0.2, 0.3, 0.4, 0.5, 0.6</code> と入力します。値ごとに色の違う線が重なり、掃引の表で比べられます（<a class="hp-ref" href="#" data-ref="ex2-table"></a>）。
 <figure class="hp-fig" data-img="ex2-table" data-id="ex2-table"><figcaption>掃引の表（<i>K</i><sub>P</sub> = 0.7）。PM は位相余裕、GM はゲイン余裕、最後の列はすべての仕様を満たすかどうかです。</figcaption></figure>
-<i>K</i><sub>I</sub> = 0.4 では整定時間 約 8.9 s、位相余裕 約 64°、Ms 1.41 です。0.5 以上では位相余裕が 60° を下回り（約 55°）、0.6 では Ms も 1.6 を超えます（1.70）。0.2 はすべての仕様を満たしますが、応答が遅くなります（約 22 s）。<i>K</i><sub>I</sub> が大きいほど、ナイキスト線図の曲線が −1 に近づきます（<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>）。表の 0.4 の行をクリックしてその値を使います。仕様をすべて満たす中で最も速い設定です。
+<i>K</i><sub>I</sub> = 0.4 では整定時間 約 8.8 s、位相余裕 約 64°、Ms 1.41 です。0.5 以上では位相余裕が 60° を下回り（約 55°）、0.6 では Ms も 1.6 を超えます（1.70）。0.2 はすべての仕様を満たしますが、応答が遅くなります（約 22 s）。<i>K</i><sub>I</sub> が大きいほど、ナイキスト線図の曲線が −1 に近づきます（<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>）。表の 0.4 の行をクリックしてその値を使います。仕様をすべて満たす中で最も速い設定です。
 <figure class="hp-fig" data-img="ex2-nyq" data-id="ex2-nyq"><figcaption>−1 の付近のナイキスト線図（ホイールで拡大）。紫の円は現在の設定の半径 1/Ms、緑の点線の円は仕様 Ms = 1.6 の半径です。</figcaption></figure></li>
 <li>比較として、PI のチューニング則では、ジーグラ・ニコルス（ステップ応答法）が Ms 約 2.3、ゲイン余裕 約 5.7 dB で ✗、CHR（目標値追従、オーバーシュート 0%）はすべて ✓ ですが遅め（約 12 s）、IMC は Ms 約 2.0 で ✗ です。</li>
 </ol>
 <h4>演習 3：目標値の重み付け（2自由度 PID）</h4>
 <p>制御対象 <i>e</i><sup>−0.5<i>s</i></sup>/(<i>s</i>+1)、外乱抑制向けに調整した 2自由度 PID（<i>K</i><sub>P</sub> = 1.9、<i>K</i><sub>I</sub> = 1.583、<i>K</i><sub>D</sub> = 0.399）、重み <i>b</i> = <i>c</i> = 1、<i>t</i> = 15 s から外乱 <i>d</i> = 0.5。仕様：オーバーシュート 10 % 以下。</p>
 <ol>
-<li>ステップ応答のオーバーシュートは 約 21 %（✗、<a class="hp-ref" href="#" data-ref="ex3-time"></a> の灰色の線）です。<i>t</i> = 15 s 以降は、外乱による最大変動が 約 0.21、回復時間が 約 3.2 s です。</li>
-<li><b>系の設定 › 制御器 C(s)</b> で <i>b</i> = 0.7、<i>c</i> = 0 にします。オーバーシュートは 約 0.7 %（✓、<a class="hp-ref" href="#" data-ref="ex3-time"></a> の青い線）に下がります。<i>b</i> = 0.5 ではほぼ 0 % ですが、応答は遅くなります（整定時間 約 2.4 s → 約 3.6 s）。</li>
+<li>ステップ応答のオーバーシュートは 約 19 %（✗、<a class="hp-ref" href="#" data-ref="ex3-time"></a> の灰色の線）です。<i>t</i> = 15 s 以降は、外乱による最大変動が 約 0.21、回復時間が 約 3.2 s です。</li>
+<li><b>系の設定 › 制御器 C(s)</b> で <i>b</i> = 0.7、<i>c</i> = 0 にします。オーバーシュートは 約 0.3 %（✓、<a class="hp-ref" href="#" data-ref="ex3-time"></a> の青い線）に下がります。<i>b</i> = 0.5 ではほぼ 0 % ですが、応答は遅くなります（整定時間 約 2.4 s → 約 3.6 s）。</li>
 <li><i>t</i> = 15 s 以降の外乱応答を見ます。最大変動も回復時間も、安定余裕も変わりません。重みは目標値からの経路（<i>C</i><sub>r</sub>）だけに作用し、フィードバックには影響しないためです。ボード線図でも <i>G</i><sub>yr</sub> は変わり、<i>G</i><sub>yd</sub> は変わりません。
 <figure class="hp-fig" data-img="ex3-time" data-id="ex3-time"><figcaption><i>b</i> = 0.7、<i>c</i> = 0（青）と <i>b</i> = <i>c</i> = 1（灰色、保持した応答）。目標値に対するオーバーシュートはなくなり、<i>t</i> = 15 s 以降の外乱に対する応答は 2 本が重なっています。</figcaption></figure></li>
 <li>ゲイン余裕（約 4.9 dB）は <i>b</i>、<i>c</i> をどう変えても 6 dB に届きません。フィードバックのゲインで決まる量だからです。</li>
@@ -353,6 +353,29 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.9 s, the phase marg
 <li><b>キーボード</b>：すべてのメニュー・つまみ・ボタンをキーボードで操作できます。メニューでは <kbd>↑</kbd> <kbd>↓</kbd> で移動し <kbd>Enter</kbd> で選びます。<kbd>Esc</kbd> でメニューやこのマニュアルを閉じます。</li>
 <li><b>データ</b>：計算はブラウザの中で行い、入力した設定や計算結果をシミュレーターが外部に送ることはありません。保存した例題・レイアウト・言語は、このブラウザの中だけに保存します。ページを開くとき、ブラウザは Google Fonts からフォントを、jsDelivr から数式表示の MathJax を読み込みます。このとき、一般のウェブページと同じく、それらのサービスとページを配信するサーバーには IP アドレスやブラウザの種類が伝わりますが、設定は伝わりません。<b>リンクをコピー</b> で作るリンクは、設定をアドレスの <code>#</code> の後に入れます。この部分はブラウザがサーバーに送りません。</li>
 </ul>`],
+  },
+  {
+    id: 'accuracy',
+    en: ['Numerical accuracy', `
+<p>The results are computed numerically and carry small errors. Compared with exact solutions and with independent, far more accurate computations, they stay within these bounds:</p>
+<ul>
+<li><b>Time response</b>: within about 0.3 % of the size of the response; the overshoot within 0.1 percentage point, the rise and settling times within 0.5 %.</li>
+<li><b>Bode and Nyquist plots</b>: computed directly from the transfer functions (the dead time exactly); the phase margin within 0.02°, the gain margin within 0.001 dB, Ms within 10<sup>−6</sup> (relative).</li>
+<li><b>Poles and zeros</b>: within 10<sup>−9</sup> when they are distinct. A pole repeated <i>k</i> times can only be found to about 10<sup>−16/<i>k</i></sup> (10<sup>−5</sup> for a triple pole): a limit of the problem itself, not of the method.</li>
+<li><b>Dead time</b>: the time and frequency responses use the exact delay; the poles and the root locus use a third-order Padé approximation (the dominant poles within about 10<sup>−3</sup> for <i>L</i>/<i>T</i> ≤ 3).</li>
+</ul>
+<p>Keep in mind: the response is recorded at 4000 points over the simulation time, so a change much faster than (simulation time)/4000 cannot be resolved; shorten the simulation time to see it. The plotted <i>u</i> is its value at those points, so a very short peak (such as the derivative kick, which lasts about 1/<i>N</i>) may look lower than it is.</p>
+<p>The methods and all the results are in <a href="https://github.com/m-koga/sigmaomega/blob/main/ACCURACY.md" target="_blank" rel="noopener">ACCURACY.md</a> on GitHub.</p>`],
+    ja: ['数値精度', `
+<p>結果は数値計算で求めているため、わずかな誤差を含みます。厳密解や、別の方法ではるかに高い精度で求めた値と比べると、誤差は次の範囲に収まります。</p>
+<ul>
+<li><b>時間応答</b>：応答の大きさの 約 0.3 % 以内。オーバーシュートは 0.1 ポイント以内、立ち上がり時間と整定時間は 0.5 % 以内。</li>
+<li><b>ボード線図・ナイキスト線図</b>：伝達関数から直接計算します（むだ時間も厳密）。位相余裕は 0.02° 以内、ゲイン余裕は 0.001 dB 以内、Ms は相対誤差 10<sup>−6</sup> 以内。</li>
+<li><b>極・零点</b>：互いに異なる値なら 10<sup>−9</sup> 以内。<i>k</i> 重の極は 約 10<sup>−16/<i>k</i></sup>（3 重なら 10<sup>−5</sup>）までしか求まりません。これは計算方法ではなく問題そのものの限界です。</li>
+<li><b>むだ時間</b>：時間応答と周波数応答では厳密な遅れを使います。極と根軌跡は 3 次の Padé 近似によるもので、<i>L</i>/<i>T</i> ≤ 3 なら主な極の誤差は 約 10<sup>−3</sup> です。</li>
+</ul>
+<p>注意：応答はシミュレーション時間を 4000 点に分けて記録するため、（シミュレーション時間）/4000 よりずっと速い変化は捉えられません。その場合はシミュレーション時間を短くしてください。図の <i>u</i> もこの点での値なので、ごく短いピーク（約 1/<i>N</i> で消える微分の立ち上がりなど）は実際より低く見えることがあります。</p>
+<p>評価の方法とすべての結果は、GitHub の <a href="https://github.com/m-koga/sigmaomega/blob/main/ACCURACY.ja.md" target="_blank" rel="noopener">ACCURACY.ja.md</a> にあります。</p>`],
   },
   {
     id: 'faq',

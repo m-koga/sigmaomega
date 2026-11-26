@@ -18,6 +18,7 @@
     "docs": "node scripts/build.ts && node scripts/gen-docs.ts",
     "coverage": "node scripts/coverage.ts",
     "pixcmp": "node scripts/pixcmp.ts",
+    "accuracy": "node scripts/accuracy.ts",
     "edits": "node scripts/publish-edits.ts",
     "shots": "node scripts/help-shots.ts",
     "icon": "node scripts/icon-png.ts",

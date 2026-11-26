@@ -9,7 +9,7 @@ SigmaOmega は、ブラウザで動くフィードバック制御系のシミュ
 ## 主な機能
 
 - ヘッダーの下の濃い色のメニューバーにすべてのメニュー（ファイル、表示する図、系の設定、解析・設計、図の並び方、指標の表示）を線のアイコン付きで配置。開いているメニューとカードを表示しているメニューには赤い下線。その下の設定パネルは「ファイル」「系の設定」「解析・設計」のメニューから選んだカードを1枚ずつ表示し、細い帯に折りたたみ可能（≪）。指標はカードと表形式を切り替え可能。スマートフォンでは画面下のバーで設定と図を切り替え
-- アプリの中の利用者マニュアル：メニューバー右端の「使い方」で開く（10 の章と目次。4 つの演習を手順どおりに説明する章を含む。日本語と英語）
+- アプリの中の利用者マニュアル：メニューバー右端の「使い方」で開く（11 の章と目次。4 つの演習を手順どおりに説明する章を含む。日本語と英語）
 - 制御対象：6 種類のプリセット、または伝達関数を直接入力（むだ時間を含む）
 - 制御器：P / PI / PD / PID、位相進み・位相遅れ・位相進み遅れ補償、または伝達関数を直接入力
 - 目標値：ステップ・ランプ・放物線・台形・パルス・矩形波・正弦波
@@ -46,6 +46,8 @@ SigmaOmega は次の 3 つの方法で使えます。
 文献として引用するときは [CITATION.cff](CITATION.cff) を使ってください（GitHub では *Cite this repository* として表示されます）。リリースごとの版番号と日付で生成しています。
 
 仕様（画面、機能、計算方式、非機能要件、開発とテスト）は [SPEC.ja.md](SPEC.ja.md)（[English](SPEC.md)）にまとめています。書かれている動作を変えたときは、両方の言語の仕様書も更新してください。
+
+数値精度（厳密解や独立に求めた参照解との比較による評価の方法と結果）は [ACCURACY.ja.md](ACCURACY.ja.md)（[English](ACCURACY.md)）にまとめています。利用者マニュアルの章「数値精度」にその要約があります。
 
 ## 自動テスト
 
@@ -87,6 +89,7 @@ npm run test:watch                                 # 変更のたびに自動で
 | `modules.test.ts` | `src/ts` の層：各ファイルは番号の小さいファイルからだけ import すること（循環がない）、計算のファイル 01–12 はページに触れないこと |
 | `license-headers.test.ts` | すべてのソースファイルの先頭に、SPDX のライセンス識別子と著作権の行があること |
 | `tutorial.test.ts` | 利用者マニュアルの章「例題で試す」に書いた数値：4 つの演習の各手順（手での調整、チューニング則、K_I の掃引、目標値の重み、不安定な系の安定化）が本文どおりの値になること |
+| `accuracy.test.ts` | 数値精度（ACCURACY.ja.md）：時間応答を厳密な閉ループ・厳密なむだ時間を含む連続時間の参照解と、応答指標、安定余裕と Ms を細かい周波数の走査と、離散化、根、Padé 近似、正弦波の指標を比べ、書いてある範囲に収まることを確かめる |
 | `version.test.ts` | 版番号の整合性、更新履歴の英語・日本語の項目がそろっていること、CHANGELOG.md・CHANGELOG.ja.md が最新であること |
 
 ### ブラウザでの操作テスト
@@ -157,6 +160,7 @@ GitHub に push すると、GitHub Actions（`.github/workflows/test.yml`）で�
 | `tsconfig.json` | `src/ts` の型チェックの設定 |
 | `tsconfig.node.json` | ビルド用のプログラムとテスト（`scripts/`、`tests/`、`ui/`、`playwright.config.ts`）の型チェックの設定 |
 | `CONTRIBUTING.md`、`CONTRIBUTING.ja.md` | 準備、ビルド、テスト、貢献の方法と、変更するときの決まり |
+| `ACCURACY.md`、`ACCURACY.ja.md`、`scripts/accuracy.ts` | 数値精度の評価と結果、それを計算するスクリプト（`npm run accuracy`） |
 | `CLAUDE.md`、`.claude/` | 開発者（メンテナー）専用：開発者が使う AI のコーディング支援ツール（Claude Code）向けの手順（スキルは日本語）。`.claude/README.md` を参照。利用や貢献には不要 |
 | `LICENSE`、`NOTICE` | Apache License 2.0 の本文と、複製に引き継ぐ著作権・帰属の表示 |
 | `tests/app-api.d.ts` | テストから見たページのスクリプトの型：`src/ts` が export するすべての名前とその型。ブラウザのテストがページ内で実行するコードのために、グローバルとしても宣言する（`npm run typecheck` が生成。直接編集しない） |
@@ -169,6 +173,7 @@ npm run format   # Prettier で TypeScript のファイルを整形する（npm 
 npm test         # ビルドと型チェックをしてから自動テストを実行する
 npm run docs     # ビルドしてから CHANGELOG.md と CHANGELOG.ja.md を生成する
 npm run pixcmp -- old.html   # 古いビルドと index.html の図と指標を画素単位で比べる
+npm run accuracy # 結果を厳密解と比べ、ACCURACY.md の表を出力する（約 30 秒）
 npm run edits -- 1.62.1      # 公開中の版 1.62.1 から index.html への文字列の置き換え（/tmp/publish-edits.json）と、
                              # 公開後に読んで確かめる行（/tmp/publish-edits-checks.json）
 npm run icon     # src/icon.svg から PNG のアイコン（src/icon-180.png、-192、-512、-maskable-512）を作り直す（その後 npm run build）

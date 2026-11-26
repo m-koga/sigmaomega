@@ -8,6 +8,26 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.74.0',
+    d: '2026-11-26',
+    en: [
+      'More accurate time responses: the controller output held over each simulation step is now the exact average of the continuous controller over the step (the derivative part of a PID decays within a step), and the step is also chosen small enough for the derivative filter N and for fast poles of a controller entered as a transfer function. The largest error against the exact closed loop drops from about 1–6 % to about 0.3 % (for example 3rd-order lag + PID with N = 100: from 6.4 % to 0.004 %)',
+      'A dead time that is not a whole number of simulation steps is no longer rounded to one',
+      'Rise and settling times are interpolated between the recorded points, and the overshoot is taken from a parabola through the peak, so they no longer change in steps of the simulation time / 4000; the peak sensitivity Ms and the peak Mt are refined between the points of the frequency grid (for a sharp peak near instability, from 30.55 to the exact 31.00)',
+      'Fix: some numbers of the exercises in the user manual came from the less accurate computation. Exercise 1: the PID tuning rules give 55 %, 11 % and 15 % overshoot, so none of them meets every specification as it is (the manual said CHR did, with 9.9 %); exercise 3 overshoots by about 19 % (not 21 %), and by 0.3 % with b = 0.7, c = 0; the settling times of exercises 1 and 2 are 8.4 s and 8.8 s. The screenshots of the manual were taken again',
+      'User manual: a new section "Numerical accuracy" with the error bounds of each result and what to keep in mind; ACCURACY.md and ACCURACY.ja.md describe the evaluation against exact solutions and independent references, and its results',
+      'Development: npm run accuracy (scripts/accuracy.ts) computes the comparisons and prints the tables of ACCURACY.md; tests/accuracy.test.ts checks the stated bounds',
+    ],
+    ja: [
+      '時間応答の精度を上げた：シミュレーションの各刻みのあいだ保持する制御器の出力を、その刻みでの連続時間の制御器の出力の厳密な平均にした（PID の微分項は刻みの中で減衰する）。刻みの大きさも、微分フィルタ N と、伝達関数で入力した制御器の速い極に十分小さくなるように選ぶ。厳密な閉ループとの最大誤差は 約 1〜6 % から 約 0.3 % 以内になった（例：3 次遅れ＋PID、N = 100 で 6.4 % → 0.004 %）',
+      'むだ時間がシミュレーションの刻みの整数倍でないときに、整数倍に丸めないようにした',
+      '立ち上がり時間と整定時間を記録点の間で補間し、オーバーシュートをピークを通る放物線から求めるようにした（シミュレーション時間/4000 の刻みで値が飛ばなくなった）。最大感度 Ms と Mt も周波数の点の間で詰める（安定限界近くの鋭いピークで 30.55 → 厳密値 31.00）',
+      '修正：利用者マニュアルの演習の数値の一部が、精度の低い計算によるものだった。演習 1：PID のチューニング則のオーバーシュートは 55 %、11 %、15 % で、そのままですべての仕様を満たすものはない（マニュアルでは CHR が 9.9 % で満たすとしていた）。演習 3 のオーバーシュートは 約 19 %（21 % ではない）、b = 0.7、c = 0 で 0.3 %。演習 1・2 の整定時間は 8.4 s・8.8 s。マニュアルのスクリーンショットも撮り直した',
+      '利用者マニュアルに章「数値精度」を追加：結果ごとの誤差の範囲と注意点。ACCURACY.md・ACCURACY.ja.md に、厳密解や独立に求めた参照解と比べた評価の方法と結果をまとめた',
+      '開発：npm run accuracy（scripts/accuracy.ts）で比較を計算して ACCURACY.md の表を出力する。tests/accuracy.test.ts で書いてある精度の範囲を確かめる',
+    ],
+  },
+  {
     v: '1.73.9',
     d: '2026-11-26',
     en: [

@@ -194,7 +194,9 @@ export function freqResp(st: State = S, rng?: [number, number]) {
     },
     0,
   );
-  const sens = sensMetrics(W, Ss.mag, Ts.mag);
+  // L(jω) with the dead time, for refining the peaks of |S| and |T| between the grid points
+  const Lw = (w: number): Complex => cmul(evalCP(w, tf, st), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]);
+  const sens = sensMetrics(W, Ss.mag, Ts.mag, Lw);
   // Disturbance at the plant input to the output: P/(1+L) = P S; reference to the output: Cr P/(1+L)
   ii = 0;
   const Ds = bodeSeries(
@@ -262,7 +264,40 @@ export function distMetrics(sim: SimResult, st: State = S): { dev: number; rec: 
   return { dev, rec };
 }
 // Peaks of |S| and |T| and the closed-loop bandwidth (|T| falls 3 dB below its low-frequency value)
-export function sensMetrics(W: number[], sm: number[], tm: number[]) {
+// Peak of f (a magnitude) near the grid point i of W: golden-section search over log ω between the neighbouring
+// points, so that a sharp peak between two grid points is not missed. Returns [peak value, ω at the peak].
+export function refinePeak(W: number[], i: number, f: (w: number) => number): [number, number] {
+  if (i <= 0 || i >= W.length - 1) return [f(W[i]), W[i]];
+  let a = Math.log(W[i - 1]),
+    b = Math.log(W[i + 1]);
+  const g = (Math.sqrt(5) - 1) / 2;
+  let x1 = b - g * (b - a),
+    x2 = a + g * (b - a),
+    f1 = f(Math.exp(x1)),
+    f2 = f(Math.exp(x2));
+  for (let k = 0; k < 60; k++) {
+    if (f1 >= f2) {
+      b = x2;
+      x2 = x1;
+      f2 = f1;
+      x1 = b - g * (b - a);
+      f1 = f(Math.exp(x1));
+    } else {
+      a = x1;
+      x1 = x2;
+      f1 = f2;
+      x2 = a + g * (b - a);
+      f2 = f(Math.exp(x2));
+    }
+  }
+  const fi = f(W[i]),
+    best = Math.max(f1, f2);
+  return best > fi ? [best, Math.exp(f1 >= f2 ? x1 : x2)] : [fi, W[i]];
+}
+// Peak sensitivity Ms, peak complementary sensitivity Mt (with the frequencies of the peaks) and the closed-loop
+// bandwidth, from the gains in dB on the grid W; with L (the open-loop frequency response), the peaks are refined
+// between the grid points
+export function sensMetrics(W: number[], sm: number[], tm: number[], L?: (w: number) => Complex) {
   let ms = -Infinity,
     wms: number | null = null,
     mt = -Infinity,
@@ -289,11 +324,19 @@ export function sensMetrics(W: number[], sm: number[], tm: number[]) {
         break;
       }
     }
-  return {
-    ms: isFinite(ms) ? Math.pow(10, ms / 20) : null,
-    wms,
-    mt: isFinite(mt) ? Math.pow(10, mt / 20) : null,
-    wmt,
-    wbw,
-  };
+  let msv = isFinite(ms) ? Math.pow(10, ms / 20) : null,
+    mtv = isFinite(mt) ? Math.pow(10, mt / 20) : null;
+  if (L) {
+    const absS = (w: number) => {
+        const z = L(w);
+        return 1 / Math.hypot(1 + z[0], z[1]);
+      },
+      absT = (w: number) => {
+        const z = L(w);
+        return Math.hypot(z[0], z[1]) / Math.hypot(1 + z[0], z[1]);
+      };
+    if (msv !== null && wms !== null) [msv, wms] = refinePeak(W, W.indexOf(wms), absS);
+    if (mtv !== null && wmt !== null) [mtv, wmt] = refinePeak(W, W.indexOf(wmt), absT);
+  }
+  return { ms: msv, wms, mt: mtv, wmt, wbw };
 }

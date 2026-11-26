@@ -18,6 +18,7 @@ npm run test:ui    # ブラウザのテスト（Playwright）
 npm run format     # TypeScript のファイルを整形（CI は npm run format:check で確かめる）
 npm run docs       # ビルドし、CHANGELOG.md・CHANGELOG.ja.md を作り直す
 npm run pixcmp -- old.html   # 古いビルドと index.html の図をピクセル単位で比べる
+npm run accuracy   # 結果を厳密解と比べる（ACCURACY.md の表）
 ```
 
 `npm test`、`npm run test:ui`、`npm run check`、`npm run format:check` がすべて通る必要があります。プルリクエストごとに GitHub Actions でも実行されます。テストとソースファイルの一覧は README.ja.md にあります。
@@ -30,6 +31,7 @@ npm run pixcmp -- old.html   # 古いビルドと index.html の図をピクセ�
 - **仕様書。** `SPEC.md`／`SPEC.ja.md` に書いてある内容を変えたときは、両方を更新します。
 - **マニュアルの数値**は `tests/tutorial.test.ts` が確かめます。計算を変えて数値が変わったら、テストと一緒にマニュアルも直します。マニュアルのスクリーンショットは `npm run shots` で撮り直します。
 - **描画。** 図や指標が変わりうる変更では、前のビルドと `npm run pixcmp` で比べ、違いがあれば理由を説明してください。
+- **数値精度。** 計算を変えたときも `tests/accuracy.test.ts` が通る必要があります。結果が変わったら `npm run accuracy` を実行し、`ACCURACY.md`・`ACCURACY.ja.md` の表を更新します。
 - **ライセンスの表示。** 新しいソースファイルの先頭には、`SPDX-License-Identifier: Apache-2.0` と `Copyright 2026 Masanobu Koga` の 2 行をコメントで入れます（`tests/license-headers.test.ts`）。
 
 ## 保守

@@ -37,13 +37,13 @@ test('exercise 1: PID control of a third-order plant', () => {
   about(r.mt!.ts, 15);
   assert.equal(r.ok, false);
   r = run(0, { Ki: 0.4 });
-  about(r.mt!.ts, 8.3, 1);
+  about(r.mt!.ts, 8.4, 1);
   about(r.fr.pm, 76);
   assert.equal(r.ok, true);
   const rows: [string, number, number, number, boolean][] = [
-    ['zn-step', 52, 11, 21, false],
-    ['chr-sp0', 9.9, 7.3, 52, true],
-    ['imc', 13, 11, 48, false],
+    ['zn-step', 55, 13, 21, false],
+    ['chr-sp0', 11, 7.3, 52, false],
+    ['imc', 15, 11, 48, false],
   ];
   for (const [rule, os, ts, pm, ok] of rows) {
     r = run(0, tuned(0, rule, 'PID'));
@@ -61,7 +61,7 @@ test('exercise 2: PI control of a plant with dead time (sweep of K_I)', () => {
   about(r.mt!.ts, 19);
   const rows: [number, number, number, number, boolean, boolean][] = [
     [0.2, 22, 91, 1.29, true, true],
-    [0.4, 8.9, 64, 1.41, true, true],
+    [0.4, 8.8, 64, 1.41, true, true],
     [0.5, 9.6, 55, 1.53, false, true],
     [0.6, 13, 47, 1.7, false, false],
   ];
@@ -84,12 +84,12 @@ test('exercise 2: PI control of a plant with dead time (sweep of K_I)', () => {
 
 test('exercise 3: set-point weighting leaves the disturbance response and the margins as they are', () => {
   const r0 = run(2);
-  about(r0.mt!.os, 21);
+  about(r0.mt!.os, 19);
   about(r0.dist!.dev, 0.21, 2);
   about(r0.dist!.rec, 3.2, 1);
   about(r0.fr.gm, 4.9, 1);
   const r1 = run(2, { bw: 0.7, cw: 0 });
-  about(r1.mt!.os, 0.7, 1);
+  about(r1.mt!.os, 0.3, 1);
   about(r1.mt!.ts, 2.4, 1);
   const r2 = run(2, { bw: 0.5, cw: 0 });
   about(r2.mt!.os, 0);
