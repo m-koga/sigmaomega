@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.82.0 (2026-11-27)
+- Nyquist plot: the Nyquist stability criterion. The new tab "Nyquist criterion" shows P (open-loop poles in the right half-plane), N (clockwise encirclements of −1) and Z = N + P (closed-loop poles in the right half-plane) with the verdict, and lists the crossings of the real axis to the left of −1 one by one (upward +1, downward −1) so that N can be counted by hand. The count follows the Nyquist contour, passing poles on the imaginary axis (integrators) by small half circles, and uses the exact dead time; when L(jω) passes through −1 it says so (marginally stable). The new option "Crossings of the real axis to the left of −1" marks them on the plot (▲ +1, ▼ −1)
+
 ## v1.81.0 (2026-11-27)
 - Pole-zero map: construction rules of the root locus. The new option "Construction rules of the root locus" (off at first) draws the real-axis segments, the asymptotes from their centroid, the breakaway and break-in points, the imaginary-axis crossings and the departure and arrival angles with their values; the new tab "Locus rules" lists each rule with how it is found and its value (k at the breakaway points and crossings), for checking a locus sketched by hand. The 0° locus (leading coefficients of opposite signs, as with the Padé approximation of a dead time), repeated poles and cancelled pole-zero pairs are handled
 

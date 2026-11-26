@@ -23,6 +23,7 @@ import {
   charPolyK,
   errorConstants,
   hurwitzK,
+  nyqCount,
   loopPoles,
   loopTFs,
   positiveKRanges,
@@ -688,6 +689,66 @@ export function renderRouth() {
       ? `<p class="note">${T('With a dead time, e^(−Ls) is replaced by its third-order Padé approximation, as in the pole-zero map: the results are approximate. The Nyquist plot and the margins use the exact delay.')}</p>`
       : '');
   if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(() => {});
+}
+/* ---- Nyquist stability criterion ---- */
+// The tab "Nyquist criterion" under the Nyquist plot: P, N and Z = N + P with the verdict, and the crossings of the
+// real axis to the left of −1 that give N
+export function renderNyqCrit() {
+  const box = byId('nyqCrit'),
+    c = nyqCount();
+  if (!c) {
+    box.innerHTML = `<p class="note">${T('No loop: the controller gain is zero.')}</p>`;
+    return;
+  }
+  const cStr = (z: Complex) =>
+      z[1] === 0 ? numStr(z[0]) : `${numStr(z[0])} ${z[1] < 0 ? '−' : '+'} ${numStr(Math.abs(z[1]))}j`,
+    rhp = c.rhp.length ? ` (s = ${c.rhp.map(cStr).join(', ')})` : '',
+    axis = c.axis.length
+      ? `<p class="note">${T('Poles on the imaginary axis: {list}. The contour passes them on their right by small half circles, so they are not counted in P; on these half circles L(s) goes around at a large radius (not drawn).', { list: c.axis.map(a => (a.w === 0 ? 's = 0' : `s = ±j${numStr(a.w)}`) + (a.mult > 1 ? ` (×${a.mult})` : '')).join(', ') })}</p>`
+      : '';
+  const verdict = c.through
+    ? `<p class="verdict">${T('L(jω) passes through −1: the closed loop has poles on the imaginary axis (marginally stable), and N is not defined.')}</p>`
+    : c.Z === 0
+      ? `<p class="verdict ok">${T('Z = 0: no closed-loop pole in the right half-plane. The closed loop is stable.')}</p>`
+      : `<p class="verdict bad">${T('Z = {z}: closed-loop poles in the right half-plane. The closed loop is unstable.', { z: c.Z })}</p>`;
+  const nv = c.through ? '—' : String(c.N),
+    zv = c.through ? '—' : String(c.Z);
+  const tab =
+    `<table class="pzt rules"><tbody>` +
+    `<tr><td>P${`<span class="how">${T('open-loop poles of L(s) in the right half-plane')}</span>`}</td><td>${c.P}${rhp}</td></tr>` +
+    `<tr><td>N${`<span class="how">${T('clockwise encirclements of −1 by L(jω), ω from −∞ to ∞ (counterclockwise ones count −1)')}</span>`}</td><td>${nv}</td></tr>` +
+    `<tr><td>Z = N + P${`<span class="how">${T('closed-loop poles in the right half-plane')}</span>`}</td><td>${zv}</td></tr>` +
+    `</tbody></table>`;
+  const dirText = (d: number) => (d > 0 ? T('upward (clockwise)') : T('downward (counterclockwise)'));
+  const cross = c.crossings.length
+    ? `<table class="pzt rules"><thead><tr><th>${T('Where')}</th><th>${T('Direction')}</th><th>${T('Count')}</th></tr></thead><tbody>` +
+      c.crossings
+        .map(
+          k =>
+            `<tr><td>${
+              k.arc === null
+                ? `Re L = ${numStr(k.x)}<span class="how">ω = ${numStr(k.w)}</span>`
+                : `${T('on the half circle around {p}', { p: k.arc === 0 ? 's = 0' : `s = j${numStr(k.arc)}` })}<span class="how">${T('|L| → ∞')}</span>`
+            }</td><td>${dirText(k.dir)}</td><td>${k.dir > 0 ? '+1' : '−1'}</td></tr>`,
+        )
+        .join('') +
+      `<tr><td><b>${T('Sum')}</b></td><td></td><td><b>${c.crossings.reduce((s, k) => s + k.dir, 0)}</b></td></tr></tbody></table>`
+    : `<p>${T('L(jω) does not cross the real axis to the left of −1: N = 0.')}</p>`;
+  const notes = [
+    c.P > 0 && !c.through
+      ? T('With P > 0, the closed loop is stable only when L(jω) encircles −1 counterclockwise P times (N = −P).')
+      : '',
+    c.delay ? T('With a dead time, the count uses e^(−jωL) itself (not the Padé approximation): it is exact.') : '',
+  ]
+    .filter(Boolean)
+    .map(t => `<p class="note">${t}</p>`)
+    .join('');
+  box.innerHTML =
+    `<p><b>${T('Nyquist criterion')}</b>: Z = N + P</p>${tab}${verdict}${axis}` +
+    `<h4>${T('Counting N: crossings of the real axis to the left of −1')}</h4>` +
+    `<p class="note">${T('Each crossing from below to above is one clockwise encirclement (+1), from above to below one counterclockwise (−1); the sum is N.')}</p>` +
+    cross +
+    notes;
 }
 /* ---- System type and steady-state error ---- */
 // A value that may be infinite; a product with an amplitude (∞ × 0 = 0: no input, no error)

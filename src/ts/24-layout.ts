@@ -38,6 +38,7 @@ export const ZOOM_AREAS: Record<string, string> = {
   bodeopts: 'bodeOpts',
   bodenote: 'bodeNote',
   nyqopts: 'nyqOpts',
+  nyqcrit: 'nyqCrit',
   nyqnote: 'nyqNote',
   pzopts: 'pzOpts',
   pzhelp: 'pzHelp',

@@ -235,4 +235,7 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
   $('nyqMs').onchange = () => {
     if (shownPanels.has('nyq') && lastFr) drawNyq(lastFr);
   };
+  $('nyqCount').onchange = () => {
+    if (shownPanels.has('nyq') && lastFr) drawNyq(lastFr);
+  };
 })();

@@ -464,6 +464,11 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 .poles-box tr.grp td:first-child{font-weight:700}
 /* Routh–Hurwitz stability test: the table of the current setting (first column emphasized) and the analysis in k */
 .routh-box{height:420px;overflow:auto}
+#nyqCrit h4{margin:10px 0 4px;font-size:13px}
+#nyqCrit p{margin:6px 0}
+#nyqCrit .verdict{font-weight:600}
+#nyqCrit .verdict.ok{color:#2e7d32}
+#nyqCrit .verdict.bad{color:#c62828}
 table.pzt.rules th,table.pzt.rules td{text-align:left;vertical-align:top;white-space:normal}
 table.pzt.rules td:first-child{font-family:inherit;width:45%}
 table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"JetBrains Mono",monospace;font-size:.88em}

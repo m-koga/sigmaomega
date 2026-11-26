@@ -7,6 +7,7 @@ import { PLOTS } from './05-definitions.ts';
 import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
 import { distMetrics, twoDof } from './07-frequency.ts';
 import { metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
+import { nyqCount } from './09-loop.ts';
 import { evalSpecs, specIcon, specOn } from './11-specs.ts';
 import { sweepSeries } from './12-sweep.ts';
 import { $, ctx2d, savePNG } from './13-dom.ts';
@@ -738,6 +739,56 @@ export function drawNyq(fr: FreqResult) {
     ],
     vlines: [{ v: 0, color: COLORS.zeroLine, dash: [] }],
   });
+  if ($('nyqCount').checked) drawNyqCrossings(cv);
+}
+// The crossings of the real axis to the left of −1 on the drawn part of the plot: ▲ from below to above (clockwise,
+// +1) and ▼ from above to below (counterclockwise, −1); those on the half circles around the poles on the imaginary
+// axis are far away and not drawn
+export function drawNyqCrossings(cv: HTMLCanvasElement) {
+  const c = nyqCount(),
+    tf = cv._tf;
+  if (!c || !tf) return;
+  const g = ctx2d(cv),
+    { m, pw, ph, xmin, xmax, ymin, ymax } = tf,
+    X = (x: number) => m.l + ((x - xmin) / (xmax - xmin)) * pw,
+    Y = (y: number) => m.t + ((ymax - y) / (ymax - ymin)) * ph;
+  g.save();
+  g.beginPath();
+  g.rect(m.l, m.t, pw, ph);
+  g.clip();
+  g.fillStyle = COLORS.nyqCrossing;
+  g.strokeStyle = COLORS.white;
+  g.lineWidth = 1;
+  // a crossing at ω > 0 and its mirror image at ω < 0 are at the same place, in the same direction: one mark, counted
+  const marks: { x: number; dir: number; n: number }[] = [];
+  c.crossings.forEach(k => {
+    if (k.arc !== null) return;
+    const same = marks.find(q => q.dir === k.dir && Math.abs(q.x - k.x) <= 1e-6 * (1 + Math.abs(k.x)));
+    if (same) same.n++;
+    else marks.push({ x: k.x, dir: k.dir, n: 1 });
+  });
+  g.font = '11px "JetBrains Mono", monospace';
+  g.textAlign = 'center';
+  marks.forEach(({ x, dir: d, n }) => {
+    const px = X(x),
+      py = Y(0); // ▲ for +1
+    g.fillStyle = COLORS.nyqCrossing;
+    g.strokeStyle = COLORS.white;
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(px, py - 7 * d);
+    g.lineTo(px + 6, py + 4 * d);
+    g.lineTo(px - 6, py + 4 * d);
+    g.closePath();
+    g.fill();
+    g.stroke();
+    const label = `${d > 0 ? '+' : '−'}${n}`,
+      ly = py - 13 * d + (d > 0 ? 0 : 8);
+    g.lineWidth = 3;
+    g.strokeText(label, px, ly);
+    g.fillText(label, px, ly);
+  });
+  g.restore();
 }
 export const PNG_NAMES: Record<string, string> = Object.fromEntries(Object.entries(PLOTS).map(([k, v]) => [k, v.file]));
 // The plot as a PNG image (white background, at the screen's pixel density)

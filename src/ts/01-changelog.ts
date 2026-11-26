@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.82.0',
+    d: '2026-11-27',
+    en: [
+      'Nyquist plot: the Nyquist stability criterion. The new tab "Nyquist criterion" shows P (open-loop poles in the right half-plane), N (clockwise encirclements of −1) and Z = N + P (closed-loop poles in the right half-plane) with the verdict, and lists the crossings of the real axis to the left of −1 one by one (upward +1, downward −1) so that N can be counted by hand. The count follows the Nyquist contour, passing poles on the imaginary axis (integrators) by small half circles, and uses the exact dead time; when L(jω) passes through −1 it says so (marginally stable). The new option "Crossings of the real axis to the left of −1" marks them on the plot (▲ +1, ▼ −1)',
+    ],
+    ja: [
+      'ナイキスト線図：ナイキストの安定判別。新しいタブ「ナイキストの安定判別」に、P（右半平面にある開ループの極の数）、N（−1 を時計回りに回る回数）、Z = N + P（右半平面にある閉ループの極の数）と判定を示し、−1 より左での実軸との交差を一つずつ（下から上 +1、上から下 −1）一覧にして、N を手で数えられるようにした。虚軸上の極（積分器）を小さな半円で避けるナイキスト周回路に沿って数え、むだ時間も厳密に扱う。L(jω) が −1 を通るときはその旨（安定限界）を示す。新しい表示項目「−1 より左での実軸との交差」で交差を図に示す（▲ +1、▼ −1）',
+    ],
+  },
+  {
     v: '1.81.0',
     d: '2026-11-27',
     en: [

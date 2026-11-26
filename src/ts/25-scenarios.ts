@@ -230,6 +230,7 @@ export const VIEW_CHECKS = [
   'polesR',
   'polesD',
   'nyqMs',
+  'nyqCount',
   'pzPlant',
   'pzCtrl',
   'pzCL',

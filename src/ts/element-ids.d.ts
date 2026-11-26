@@ -78,6 +78,8 @@ interface ElementById {
   "mviewList": HTMLDivElement;
   "mviewMenu": HTMLDivElement;
   "ninfo": HTMLDivElement;
+  "nyqCount": HTMLInputElement;
+  "nyqCrit": HTMLDivElement;
   "nyqMs": HTMLInputElement;
   "nyqNote": HTMLDivElement;
   "nyqOpts": HTMLDivElement;
