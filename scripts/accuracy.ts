@@ -279,10 +279,13 @@ export function freqCase(set: Settings) {
   const a = app(set);
   return { got: a.freqResp(), ref: refFreq(a) };
 }
-/** Largest distance from an exact root to the nearest computed root */
+/** Error of the computed roots: the largest distance from a computed root to the nearest exact root, or from an exact
+ *  root to the nearest computed one (both ways, so that every one of repeated roots counts) */
 export function rootError(poly: number[], exact: C[]) {
-  const r: C[] = fresh().polyRoots(poly);
-  return Math.max(...exact.map(z => Math.min(...r.map(q => Math.hypot(q[0] - z[0], q[1] - z[1])))));
+  const r: C[] = fresh().polyRoots(poly),
+    d = (p: C, q: C) => Math.hypot(p[0] - q[0], p[1] - q[1]),
+    far = (a: C[], b: C[]) => Math.max(...a.map(z => Math.min(...b.map(q => d(z, q)))));
+  return Math.max(far(r, exact), far(exact, r));
 }
 /** Largest error of the open-loop step response of 1/(s+1)^n by the app's exact discretization (h = 0.01, 30 s) */
 export function discretizationError(n: number) {

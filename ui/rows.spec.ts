@@ -4,16 +4,20 @@
 import { test, expect, boxOf, pickView, showAllPanels, togglePanel } from './fixtures.ts';
 import type { Page } from '@playwright/test';
 
-const rows = (page: Page) => page.evaluate(() => layout.rows?.rows.map(r => r.panels.filter(k => shownPanels.has(k))));
+// The shown panels row by row (rows of hidden panels only are left out)
+const rows = (page: Page) =>
+  page.evaluate(() => layout.rows?.rows.map(r => r.panels.filter(k => shownPanels.has(k))).filter(r => r.length));
 // The tops of the shown panels, rounded: panels in one row share their top
 const tops = (page: Page, ks: string[]) =>
   Promise.all(ks.map(async k => Math.round((await boxOf(page, `#panel-${k}`)).y)));
-// Rows with every panel shown but the loop transfer functions (hidden at first, they share the third row)
+// Rows with every panel shown but the loop transfer functions and the poles (hidden at first, they share the
+// third row)
 const start = async (page: Page) => {
   await page.setViewportSize({ width: 1700, height: 1000 });
   await pickView(page, '#pcols', 'rows');
   await showAllPanels(page);
   await togglePanel(page, 'loop');
+  await togglePanel(page, 'poles');
 };
 
 test('rows: one, two and three panels side by side, kept after a reload', async ({ page }) => {

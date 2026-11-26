@@ -85,6 +85,7 @@ interface ElementById {
   "panel-diag": HTMLDivElement;
   "panel-loop": HTMLDivElement;
   "panel-nyq": HTMLDivElement;
+  "panel-poles": HTMLDivElement;
   "panel-pz": HTMLDivElement;
   "panel-tf": HTMLDivElement;
   "panel-time": HTMLDivElement;
@@ -102,6 +103,16 @@ interface ElementById {
   "pinfo": HTMLDivElement;
   "plant": HTMLSelectElement;
   "plant-params": HTMLDivElement;
+  "polesBox": HTMLDivElement;
+  "polesC": HTMLInputElement;
+  "polesD": HTMLInputElement;
+  "polesL": HTMLInputElement;
+  "polesNote": HTMLDivElement;
+  "polesOpts": HTMLDivElement;
+  "polesP": HTMLInputElement;
+  "polesR": HTMLInputElement;
+  "polesS": HTMLInputElement;
+  "polesT": HTMLInputElement;
   "pzBanner": HTMLDivElement;
   "pzCL": HTMLInputElement;
   "pzCtrl": HTMLInputElement;

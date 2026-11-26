@@ -1481,6 +1481,30 @@
 "ko": "위의 버튼으로 표시할 전달함수를 선택하십시오.",
 "th": "เลือกฟังก์ชันถ่ายโอนที่จะแสดงด้วยปุ่มด้านบน"
 },
+"Pole": {
+"ja": "極",
+"zh": "极点",
+"ko": "극",
+"th": "โพล"
+},
+"S(s), T(s), Gyr(s) and Gyd(s) have the closed-loop poles (common factors are not cancelled, as in the loop transfer functions).": {
+"ja": "S(s)・T(s)・Gyr(s)・Gyd(s) の極は閉ループ極です（ループの伝達関数と同じく、共通因子は約分していません）。",
+"zh": "S(s)、T(s)、Gyr(s) 和 Gyd(s) 的极点是闭环极点（与回路传递函数相同，公因式未约去）。",
+"ko": "S(s)·T(s)·Gyr(s)·Gyd(s)의 극은 폐루프 극입니다(루프 전달함수와 마찬가지로 공통 인수는 약분하지 않았습니다).",
+"th": "โพลของ S(s), T(s), Gyr(s) และ Gyd(s) คือโพลวงปิด (ไม่ได้ตัดตัวประกอบร่วม เช่นเดียวกับฟังก์ชันถ่ายโอนของลูป)"
+},
+"With a dead time the closed loop has infinitely many poles: those shown come from the third-order Padé approximation of the dead time.": {
+"ja": "むだ時間があると閉ループの極は無数にあります。表示しているのは、むだ時間を 3 次の Padé 近似で置き換えて求めた極です。",
+"zh": "存在纯滞后时闭环有无穷多个极点：所显示的是用三阶 Padé 近似代替纯滞后求得的极点。",
+"ko": "시간 지연이 있으면 폐루프의 극은 무수히 많습니다. 표시된 극은 시간 지연을 3차 Padé 근사로 대체하여 구한 것입니다.",
+"th": "เมื่อมีเวลาหน่วง วงปิดมีโพลจำนวนนับไม่ถ้วน: โพลที่แสดงได้จากการประมาณเวลาหน่วงด้วย Padé อันดับสาม"
+},
+"Red: poles in the right half-plane.": {
+"ja": "赤：右半平面の極。",
+"zh": "红色：右半平面的极点。",
+"ko": "빨간색: 우반평면의 극.",
+"th": "สีแดง: โพลในครึ่งระนาบขวา"
+},
 "Output y(t) plot": {
 "ja": "出力 y(t) のグラフ",
 "zh": "输出 y(t) 曲线",

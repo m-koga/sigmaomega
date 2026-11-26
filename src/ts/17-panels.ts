@@ -16,10 +16,10 @@ import {
   hasTerm,
   paramSym,
 } from './05-definitions.ts';
-import { S, ctrlRational, lastSweep } from './06-state.ts';
+import { S, ctrlRational, lastPZ, lastSweep } from './06-state.ts';
 import { spWeights } from './07-frequency.ts';
-import { loopTFs } from './09-loop.ts';
-import type { LoopTF, LoopTFKey } from './09-loop.ts';
+import { loopPoles, loopTFs } from './09-loop.ts';
+import type { LoopTF, LoopTFKey, PoleKey } from './09-loop.ts';
 import { tuneErr, tuneGains, tuneRule } from './10-tuning.ts';
 import type { TuneResult } from './10-tuning.ts';
 import { evalSpecs, specIcon } from './11-specs.ts';
@@ -474,6 +474,63 @@ export function renderTeX() {
   }
 }
 window.renderTeX = renderTeX;
+/* ---- Poles of P(s), C(s) and of the transfer functions of the loop: a table of the ones chosen ---- */
+// Order of the transfer functions and their names in the table
+export const POLE_TFS: [PoleKey, string][] = [
+  ['P', 'P(s)'],
+  ['C', 'C(s)'],
+  ['L', 'L(s)'],
+  ['S', 'S(s)'],
+  ['T', 'T(s)'],
+  ['R', 'G<sub>yr</sub>(s)'],
+  ['D', 'G<sub>yd</sub>(s)'],
+];
+export const polesBox = (k: PoleKey) => byId(`poles${k}`) as HTMLInputElement;
+// One row per pole (a conjugate pair on one row), the poles sorted from the right; a pole in the right half-plane
+// (Re > 0) in red
+function poleRows(name: string, poles: Complex[]): string {
+  const rows = poles
+    .filter(z => z[1] >= 0)
+    .sort((a, b) => b[0] - a[0] || b[1] - a[1])
+    .map(([x, y]) => {
+      const wn = Math.hypot(x, y),
+        zeta = wn > 1e-12 ? numStr(-x / wn) : '—',
+        val = y === 0 ? numStr(x) : `${numStr(x)} ± ${numStr(y)}j`,
+        tau = Math.abs(x) > 1e-12 ? numStr(1 / Math.abs(x)) : '∞',
+        uns = x > 1e-6 ? ' class="uns"' : '';
+      return `<td${uns}>${val}</td><td>${zeta}</td><td>${numStr(wn)}</td><td>${y === 0 ? '—' : numStr(y)}</td><td>${tau}</td>`;
+    });
+  if (!rows.length) rows.push(`<td>${T('none')}</td><td></td><td></td><td></td><td></td>`);
+  return rows.map((r, i) => `<tr${i ? '' : ' class="grp"'}><td>${i ? '' : name}</td>${r}</tr>`).join('');
+}
+// The table of the chosen transfer functions, and the note under it
+export function renderPoles() {
+  const pz = lastPZ;
+  if (!pz) return;
+  const all = loopPoles(S, pz),
+    chosen = POLE_TFS.filter(([k]) => polesBox(k).checked);
+  byId('polesBox').innerHTML = chosen.length
+    ? `<table class="pzt"><thead><tr><th>${T('Transfer function')}</th><th>${T('Pole')}</th><th>${T('Damping ratio ζ')}</th><th>${T('Natural frequency ωn [rad/s]')}</th><th>${T('Damped frequency ωd [rad/s]')}</th><th>${T('Time constant 1/|Re| [s]')}</th></tr></thead><tbody>${chosen.map(([k, name]) => poleRows(name, all[k].poles)).join('')}</tbody></table>`
+    : '';
+  const notes: string[] = [];
+  if (!chosen.length) notes.push(T('Choose the transfer functions to show with the buttons above.'));
+  else {
+    if (chosen.some(([k]) => 'STRD'.includes(k)))
+      notes.push(
+        T(
+          'S(s), T(s), Gyr(s) and Gyd(s) have the closed-loop poles (common factors are not cancelled, as in the loop transfer functions).',
+        ),
+      );
+    if (chosen.some(([k]) => all[k].approx))
+      notes.push(
+        T(
+          'With a dead time the closed loop has infinitely many poles: those shown come from the third-order Padé approximation of the dead time.',
+        ),
+      );
+    if (chosen.some(([k]) => all[k].poles.some(z => z[0] > 1e-6))) notes.push(T('Red: poles in the right half-plane.'));
+  }
+  byId('polesNote').textContent = notes.join(' ');
+}
 /* ---- Design specifications: rows of the card and their results ---- */
 export function renderSpecs(): SpecEval {
   specRows();

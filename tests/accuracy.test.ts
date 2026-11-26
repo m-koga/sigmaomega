@@ -67,7 +67,7 @@ test('discretization, roots and the Padé approximation', () => {
     ex.push([-i, 0]);
   }
   assert.ok(rootError(p, ex) < 1e-9, 'distinct roots');
-  assert.ok(rootError(pMul(pMul([1, 1], [1, 1]), [1, 1]), [[-1, 0]]) < 1e-5, 'triple root');
+  assert.ok(rootError(pMul(pMul([1, 1], [1, 1]), [1, 1]), [[-1, 0]]) < 5e-5, 'triple root');
   for (const [L, Kp] of [
     [0.5, 1],
     [3, 0.5],

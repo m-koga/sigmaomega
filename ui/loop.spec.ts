@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-// The panel "Loop transfer functions": shown from the menu, the buttons choose the formulas, the formulas follow
-// the settings, and the bottom edge scales them (independently of the transfer functions panel)
+// The panels "Loop transfer functions" and "Poles": shown from the menu, the buttons choose the formulas or the
+// transfer functions, the formulas follow the settings, and the bottom edge scales them (independently of the
+// transfer functions panel); poles in the right half-plane are red
 import { test, expect, dragY, boxOf, togglePanel } from './fixtures.ts';
 
 const formulas = (page: import('@playwright/test').Page) => page.locator('#tex-loop mjx-container > svg');
@@ -64,4 +65,29 @@ test('loop transfer functions: the bottom edge scales the formulas, kept apart f
   await page.dblclick('#panel-loop .pgrip');
   expect(await size('tex-loop')).toBe(f0);
   expect(await page.evaluate(() => layout.loopFs)).toBeNull();
+});
+
+test('poles: shown from the menu, the buttons choose the transfer functions, poles in the right half-plane in red', async ({
+  page,
+}) => {
+  await togglePanel(page, 'poles');
+  await expect(page.locator('#panel-poles')).toBeVisible();
+  const names = () => page.locator('#polesBox tr.grp td:first-child').evaluateAll(tds => tds.map(td => td.textContent));
+  // at first P(s), C(s) and T(s)
+  await expect.poll(names).toEqual(['P(s)', 'C(s)', 'T(s)']);
+  await page.click('label.ctg:has(#polesC)');
+  await page.click('label.ctg:has(#polesL)');
+  await expect.poll(names).toEqual(['P(s)', 'L(s)', 'T(s)']);
+  // the plant 1/(Ts − 1): its pole +1 in red
+  await page.evaluate(() => {
+    S.plant = 'unstable';
+    buildPlant();
+    update();
+  });
+  await expect(page.locator('#polesBox tr.grp').first().locator('td.uns')).toHaveText('1');
+  // none chosen: an empty table and a hint
+  for (const k of ['P', 'L', 'T']) await page.click(`label.ctg:has(#poles${k})`);
+  await expect(page.locator('#polesBox table')).toHaveCount(0);
+  const hint = await page.evaluate(() => T('Choose the transfer functions to show with the buttons above.'));
+  await expect(page.locator('#polesNote')).toHaveText(hint);
 });

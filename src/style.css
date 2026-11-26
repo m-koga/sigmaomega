@@ -452,3 +452,10 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 .loop-opts{margin:2px 0 6px}
 .loop-opts .ctg{--c:#33363d}
 #loopNote{margin-top:4px}
+/* Table of the poles of the chosen transfer functions (scrolls inside its area; right half-plane poles in red) */
+.poles-box{height:240px;overflow:auto}
+.poles-box table.pzt{margin-top:4px}
+.poles-box tr.grp td{border-top:1px solid var(--line)}
+.poles-box td.uns{color:#c62828;font-weight:700}
+#polesNote{margin-top:6px}
+.poles-box tr.grp td:first-child{font-weight:700}

@@ -6,6 +6,11 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.77.0 (2026-11-26)
+- New panel "Poles" (in "Plots to show", hidden at first): its buttons choose which of P(s), C(s), L(s), S(s), T(s), G_yr(s) and G_yd(s) are listed, and a table gives their poles with ζ, ωn, ωd and the time constant 1/|Re| (a conjugate pair on one row; poles in the right half-plane in red). The poles are those of the transfer functions as written in the loop transfer functions panel (common factors not cancelled); with a dead time the closed-loop poles come from the third-order Padé approximation, as noted under the table. The height of the table is changed at its bottom edge; the choice is saved with the layout of a scenario
+- Layout "Rows": when the panels hidden at first are gathered in rows at the bottom, the plots come first, so that they come back side by side
+- Fix of ACCURACY.md and the manual section "Numerical accuracy": the error of repeated roots was measured only from the exact root to the nearest computed one, which hides the spread of the computed roots; measured both ways, a pole repeated k times is found to a few times 10^(−16/k) (2×10⁻⁵ for a triple pole, not 2.2×10⁻⁶)
+
 ## v1.76.0 (2026-11-26)
 - New panel "Loop transfer functions" (in "Plots to show", hidden at first): its buttons choose which of L(s), S(s), T(s), G_yr(s) and G_yd(s) are shown, each as its definition and as a rational function with the numbers substituted, for example L(s) = C(s)P(s) = (22s² + 41s + 20)/(s³ + 21s² + 20s). The dead time is kept as e^(−Ls), the denominator is monic, and common factors are not cancelled; G_yr(s) uses C_r(s) with set-point weights. The bottom edge of the panel scales the formulas like that of the transfer functions panel, with a size of its own; the choice is saved with the layout of a scenario
 

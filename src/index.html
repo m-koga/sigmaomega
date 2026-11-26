@@ -40,6 +40,7 @@ window.MathJax = {
       <button class="tab on" type="button" data-tab="time" aria-pressed="true" data-i18n>Time response</button>
       <button class="tab" type="button" data-tab="tf" aria-pressed="false" data-i18n>Transfer functions</button>
       <button class="tab" type="button" data-tab="loop" aria-pressed="false" data-i18n>Loop transfer functions</button>
+      <button class="tab" type="button" data-tab="poles" aria-pressed="false" data-i18n>Poles</button>
       <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
       <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
       <button class="tab" type="button" data-tab="pz" aria-pressed="false" data-i18n>Pole-zero map</button>
@@ -248,6 +249,23 @@ window.MathJax = {
         <div class="tex" id="tex-loop"></div>
         <div class="note" id="loopNote"></div>
       </div>
+    </div>
+
+    <!-- Poles of P(s), C(s) and of the transfer functions of the loop: the ones chosen with the buttons, in a table -->
+    <div class="card tabpanel" id="panel-poles">
+      <div class="h2row"><h2 data-i18n>Poles</h2></div>
+      <div class="ctg-row loop-opts" id="polesOpts">
+        <label class="ctg" title="Plant P(s)" data-i18n-title><input type="checkbox" id="polesP" checked><span>P(s)</span></label>
+        <label class="ctg" title="Controller C(s)" data-i18n-title><input type="checkbox" id="polesC" checked><span>C(s)</span></label>
+        <label class="ctg" title="Open loop L(s) = C(s)P(s)" data-i18n-title><input type="checkbox" id="polesL"><span>L(s)</span></label>
+        <label class="ctg" title="Sensitivity S(s) = 1/(1 + L(s))" data-i18n-title><input type="checkbox" id="polesS"><span>S(s)</span></label>
+        <label class="ctg" title="Complementary sensitivity T(s) = L(s)/(1 + L(s))" data-i18n-title><input type="checkbox" id="polesT" checked><span>T(s)</span></label>
+        <label class="ctg" title="Reference to output Gyr(s) = Cr(s)P(s)/(1 + L(s))" data-i18n-title><input type="checkbox" id="polesR"><span>G<sub>yr</sub>(s)</span></label>
+        <label class="ctg" title="Disturbance to output Gyd(s) = P(s)/(1 + L(s))" data-i18n-title><input type="checkbox" id="polesD"><span>G<sub>yd</sub>(s)</span></label>
+      </div>
+      <div class="poles-box" id="polesBox"></div>
+      <div class="hgrip" data-target="polesBox" data-min="80" data-max="1400"></div>
+      <div class="note" id="polesNote"></div>
     </div>
 
     <div class="card tabpanel" id="panel-bode">

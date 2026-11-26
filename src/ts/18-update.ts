@@ -10,6 +10,7 @@ import { shownPanels } from './14-view.ts';
 import { drawBode, drawNyq, drawTime } from './15-drawing.ts';
 import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
+  renderPoles,
   renderSpecs,
   renderSweepTable,
   renderSweepUI,
@@ -39,6 +40,7 @@ export function update() {
   if (S.wr.on && !bodeRange()) S.wr.on = false;
   setResults({ fr: freqResp(), frB: bodeResp(), pz: computePZ() });
   resetLoopCache();
+  renderPoles();
   renderSpecs();
   renderTune();
   renderSweepUI();

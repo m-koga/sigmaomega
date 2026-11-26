@@ -25,6 +25,9 @@ import {
 import {
   FORMULA_PANELS,
   LOOP_TFS,
+  POLE_TFS,
+  polesBox,
+  renderPoles,
   diagMaxH,
   fitTex,
   loopBox,
@@ -373,6 +376,8 @@ if (typeof ResizeObserver !== 'undefined')
   });
 // The transfer functions of the loop chosen with the buttons of their panel
 LOOP_TFS.forEach(([k]) => (loopBox(k).onchange = renderFormulas));
+// The transfer functions whose poles are listed, chosen with the buttons of their panel
+POLE_TFS.forEach(([k]) => (polesBox(k).onchange = renderPoles));
 // Bottom edge of a panel of formulas: the formulas are scaled to fit the height (their size, layout.texFs or
 // layout.loopFs)
 function tfGrip(g: HTMLElement, panel: FormulaPanel) {

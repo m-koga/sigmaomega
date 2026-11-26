@@ -8,6 +8,20 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.77.0',
+    d: '2026-11-26',
+    en: [
+      'New panel "Poles" (in "Plots to show", hidden at first): its buttons choose which of P(s), C(s), L(s), S(s), T(s), G_yr(s) and G_yd(s) are listed, and a table gives their poles with ζ, ωn, ωd and the time constant 1/|Re| (a conjugate pair on one row; poles in the right half-plane in red). The poles are those of the transfer functions as written in the loop transfer functions panel (common factors not cancelled); with a dead time the closed-loop poles come from the third-order Padé approximation, as noted under the table. The height of the table is changed at its bottom edge; the choice is saved with the layout of a scenario',
+      'Layout "Rows": when the panels hidden at first are gathered in rows at the bottom, the plots come first, so that they come back side by side',
+      'Fix of ACCURACY.md and the manual section "Numerical accuracy": the error of repeated roots was measured only from the exact root to the nearest computed one, which hides the spread of the computed roots; measured both ways, a pole repeated k times is found to a few times 10^(−16/k) (2×10⁻⁵ for a triple pole, not 2.2×10⁻⁶)',
+    ],
+    ja: [
+      '新しい区画「極」（「表示する図」の中。最初は非表示）：区画のボタンで P(s)・C(s)・L(s)・S(s)・T(s)・G_yr(s)・G_yd(s) のうち表示するものを選び、その極を ζ・ωn・ωd・時定数 1/|Re| とともに表で示す（共役な対は 1 行、右半平面の極は赤）。極はループの伝達関数の区画に表示した伝達関数のもの（共通因子は約分しない）。むだ時間があるとき、閉ループの極は 3 次の Padé 近似によるもので、表の下に注記する。表の高さは区画の下端で変えられ、選んだものは例題のレイアウトと一緒に保存する',
+      '並べ方「行」：最初は隠れている区画を下の行にまとめるとき、グラフを先に置くようにした（表示したときにグラフが横に並ぶ）',
+      'ACCURACY.md とマニュアルの章「数値精度」の修正：重根の誤差を、厳密な根から最も近い計算値までの距離だけで測っていたため、計算値のばらつきが見えていなかった。両方向で測ると、k 重の極は 10^(−16/k) の数倍まで求まる（3 重なら 2.2×10⁻⁶ ではなく 2×10⁻⁵）',
+    ],
+  },
+  {
     v: '1.76.0',
     d: '2026-11-26',
     en: [

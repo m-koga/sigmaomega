@@ -39,8 +39,9 @@ export const COLORS = {
   outsideRegion: 'rgba(60,60,60,.07)', // outside the design region of the pole specifications
 };
 // Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s), loop: the
-// transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (the last two show formulas, no plots)
-export const PANELS = ['diag', 'time', 'tf', 'loop', 'bode', 'nyq', 'pz'] as const;
+// transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (these two show formulas), poles: the poles of
+// P(s), C(s) and of the transfer functions of the loop (a table)
+export const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'bode', 'nyq', 'pz'] as const;
 // Panels shown when nothing is stored
 export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
 // Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
@@ -156,9 +157,12 @@ export function splitFullRows(t: RowTiles, shown: Set<string>): RowTiles {
   });
   return rows.length === t.rows.length ? t : { rows };
 }
+// Panels without plots that go after the plots when hidden panels are gathered in rows (the plots then come back
+// side by side)
+const TEXT_PANELS = ['tf', 'loop', 'poles'];
 // The arrangement in rows that looks like a preset layout: the block diagram in a row of its own on top, the other
 // shown panels n to a row (1 column: one, 2 columns: two, 1 row: all, at most MAX_COLS); the hidden panels together
-// in rows at the bottom, so that they come back side by side
+// in rows at the bottom, the plots first, so that they come back side by side
 export function rowsFromPreset(mode: string, shown: string[]): RowTiles {
   const n = Math.min(MAX_COLS, presetCols(mode, shown)),
     vis = PANELS.filter(k => k !== 'diag' && shown.includes(k)),
@@ -168,10 +172,8 @@ export function rowsFromPreset(mode: string, shown: string[]): RowTiles {
     const p = vis.slice(i, i + n);
     rows.push({ panels: p, w: p.map(() => 1) });
   }
-  pushRows(
-    rows,
-    PANELS.filter(k => !shown.includes(k)),
-  );
+  const hidden = PANELS.filter(k => !shown.includes(k));
+  pushRows(rows, [...hidden.filter(k => !TEXT_PANELS.includes(k)), ...hidden.filter(k => TEXT_PANELS.includes(k))]);
   return { rows };
 }
 export const MIN_COL_W = 320; // narrowest column: when the boundary is dragged and when a column is added [px]

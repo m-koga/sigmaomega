@@ -16,7 +16,7 @@ Compared with exact solutions and with independent references computed far more 
 | Phase margin, gain margin | Within 0.02°, within 0.001 dB |
 | Peak sensitivity Ms | Within 10⁻⁶ (relative), sharp peaks included |
 | Bode and Nyquist plots | Computed directly from the transfer functions (the dead time exactly); only the rounding of double-precision arithmetic |
-| Poles and zeros | Within 10⁻⁹ when distinct; a pole repeated k times only to about 10⁻¹⁶ᐟᵏ (a limit of the problem itself) |
+| Poles and zeros | Within 10⁻⁹ when distinct; a pole repeated k times only to a few times 10⁻¹⁶ᐟᵏ (2×10⁻⁵ for a triple pole; a limit of the problem itself) |
 | Poles with a dead time | Third-order Padé approximation: the dominant poles within about 10⁻³ for L/T ≤ 3 |
 | Sine reference: amplitude ratio, phase difference | Within 1 %, within 0.3° |
 
@@ -42,7 +42,7 @@ Each result was compared with a reference that does not share the method under t
 | Overshoot, rise and settling times | The same references sampled at 100,000 points |
 | Margins and Ms | *L*(*j*ω) with the exact dead time on 5000 points per decade over 10⁻⁴ … 10⁴ rad/s, crossings refined by bisection and the peak by golden-section search |
 | Discretization | The exact step response of 1/(*s*+1)ⁿ: 1 − e⁻ᵗ Σⱼ₌₀ⁿ⁻¹ tʲ/j! |
-| Roots | Polynomials with known roots |
+| Roots | Polynomials with known roots; the error is the largest distance from a computed root to the nearest exact one or the other way round, so that every one of repeated roots counts |
 | Poles with a dead time | Newton's method on the exact characteristic equation *s* + 1 + *K*ₚ e⁻ᴸˢ = 0 (first-order lag + dead time with P control), started from the Padé pole |
 | Sine reference | The closed-loop frequency response \|*T*(*j*ω)\| and ∠*T*(*j*ω) |
 
@@ -87,12 +87,12 @@ The errors are absolute, for a unit step reference; "m" is the number of substep
 
 | Polynomial | Max. error of the roots |
 |---|---|
-| (s+1)^2 (a 2-fold root) | 0 |
-| (s+1)^3 (a 3-fold root) | 2.2×10<sup>-6</sup> |
-| (s+1)^4 (a 4-fold root) | 6.3×10<sup>-5</sup> |
-| (s+1)^6 (a 6-fold root) | 1.1×10<sup>-3</sup> |
-| (s+1)^8 (a 8-fold root) | 1.2×10<sup>-2</sup> |
-| (s+1)(s+2)…(s+10) | 1.4×10<sup>-10</sup> |
+| (s+1)^2 (a 2-fold root) | 7.6×10<sup>-10</sup> |
+| (s+1)^3 (a 3-fold root) | 1.7×10<sup>-5</sup> |
+| (s+1)^4 (a 4-fold root) | 3.1×10<sup>-4</sup> |
+| (s+1)^6 (a 6-fold root) | 6.2×10<sup>-3</sup> |
+| (s+1)^8 (a 8-fold root) | 2.7×10<sup>-2</sup> |
+| (s+1)(s+2)…(s+10) | 4.4×10<sup>-10</sup> |
 | (s+0.001)(s+1000) | 0 |
 | s² + 2·0.9·s + 1 | 1.1×10<sup>-16</sup> |
 
@@ -134,7 +134,7 @@ First-order lag + PID; errors against |*T*(*j*ω)| and ∠*T*(*j*ω).
 - **Very long simulation times.** At most 100 substeps are used between two recorded points. When the simulation time is more than about 8000/ω (ω: the gain crossover frequency, or *N*), *h* becomes larger than the target and the error grows. For example, with a crossover at 10 rad/s, keep the simulation time below about 800 s.
 - **Changes faster than the recorded points.** The response is recorded at 4000 points, so a change much faster than (simulation time)/4000 cannot be resolved, even with interpolation. For example, a rise time of 0.125 s simulated for 2000 s (a point every 0.5 s) is shown as about 0.41 s. Shorten the simulation time to see a fast response.
 - **The plotted *u*.** The control input is shown at the recorded points, so a very short peak, such as the derivative kick that decays in about 1/*N*, may look lower than it is.
-- **Repeated poles.** A pole repeated *k* times can only be computed to about 10⁻¹⁶ᐟᵏ (for example 10⁻⁵ for a triple pole, 10⁻² for an eightfold one), because a tiny rounding error in the coefficients moves such roots that much; their ζ and ωₙ are correspondingly approximate. An imaginary part below 10⁻⁴·(1 + |Re|) is shown as 0.
+- **Repeated poles.** A pole repeated *k* times can only be computed to a few times 10⁻¹⁶ᐟᵏ (for example 2×10⁻⁵ for a triple pole, 3×10⁻² for an eightfold one), because a tiny rounding error in the coefficients moves such roots that much; their ζ and ωₙ are correspondingly approximate. An imaginary part below 10⁻⁴·(1 + |Re|) is shown as 0.
 - **Dead time in the pole-zero map.** The poles, the root locus and the stable range of *k* use a third-order Padé approximation: the dominant poles are close (table above), but the actual system has infinitely many poles, and fast poles of the approximation have no exact counterpart. The Bode and Nyquist plots, the margins and the time response use the exact delay.
 - **Frequency grid.** The margins are interpolated between 150 frequencies per decade (errors in the table above), and only the first crossing in the frequency range is reported.
 - **Saturation, anti-windup and noise** are simulated with the same steps, but they have no exact solution to compare with; the accuracy above refers to linear systems.

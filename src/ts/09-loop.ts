@@ -192,6 +192,29 @@ export function computePZ(st: State = S) {
     L: tf.L,
   };
 }
+export type PoleKey = 'P' | 'C' | LoopTFKey;
+/** Poles of P(s), C(s) and of the transfer functions of the loop (as written in loopTFs: common factors not
+ *  cancelled). approx: the closed-loop poles of a loop with dead time, from the third-order Padé approximation (the
+ *  actual closed loop has infinitely many) */
+export function loopPoles(
+  st: State = S,
+  pz: ReturnType<typeof computePZ> = computePZ(st),
+): Record<PoleKey, { poles: Complex[]; approx: boolean }> {
+  const c = ctrlTF(st),
+    r = isTFMode(st) ? c : ctrlTF(st, spWeights(st)),
+    sameDen = r.den.length === c.den.length && r.den.every((v, i) => v === c.den[i]),
+    cl = { poles: pz.cl, approx: pz.pade },
+    exact = (poles: Complex[]) => ({ poles, approx: false });
+  return {
+    P: exact(pz.pp),
+    C: exact(pz.cp),
+    L: exact([...pz.pp, ...pz.cp]),
+    S: cl,
+    T: cl,
+    D: cl,
+    R: sameDen ? cl : { poles: [...polyRoots(r.den), ...pz.cl], approx: pz.pade },
+  };
+}
 export let lastLocus: LocusPoint[] | null = null,
   lastRanges: [number, number][] | null = null;
 // Root locus and stable ranges of k, computed when first needed after each update
