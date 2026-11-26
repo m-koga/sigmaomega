@@ -246,7 +246,7 @@ export const HELP: HelpSection[] = [
 <p>Four exercises come with the simulator. Load one with <b>File › Save and load</b>, list <b>Examples</b>, button <b>Load</b>; its task is shown above the plots. The numbers below are those the simulator shows for the settings given (rounded).</p>
 <p>Before you start, open <b>Analysis &amp; design › Design specifications</b> and tick <b>Show the specifications on the plots</b>, and choose the plots you need in <b>Plots to show</b>. To compare a new setting with the old one, use <b>File › Compare &amp; reset › Hold current response</b> first.</p>
 <h4>Exercise 1: PID control of a third-order plant</h4>
-<p>Plant 1/(<i>s</i>+1)<sup>3</sup>, PID with <i>K</i><sub>P</sub> = 1, <i>K</i><sub>I</sub> = 0.3, <i>K</i><sub>D</sub> = 0.5. Specifications: overshoot ≤ 10 %, settling time ≤ 10 s, phase margin ≥ 45° (and gain margin ≥ 6 dB).</p>
+<p>Plant 1/(<i>s</i>+1)<sup>3</sup>, PID with <i>K</i><sub>P</sub> = 1, <i>K</i><sub>I</sub> = 0.3, <i>K</i><sub>D</sub> = 0.5. Specifications: overshoot ≤ 12 %, settling time ≤ 10 s, phase margin ≥ 45° (and gain margin ≥ 6 dB).</p>
 <ol>
 <li>Add the <b>Bode plot</b>. At first the overshoot is 0 % and the phase margin about 88°, but the settling time is about 15 s: ✗. The loop is safe but slow.</li>
 <li>Raise <i>K</i><sub>I</sub> from 0.3 to 0.4. The settling time drops to about 8.4 s and every specification is ✓ (phase margin about 76°; <a class="hp-ref" href="#" data-ref="ex1-time"></a>).
@@ -258,7 +258,7 @@ export const HELP: HelpSection[] = [
 <tr><td>CHR (set-point, 0% overshoot)</td><td>about 11 %</td><td>about 7.3 s</td><td>about 52°</td></tr>
 <tr><td>IMC</td><td>about 15 %</td><td>about 11 s</td><td>about 48°</td></tr>
 </table>
-None of the rules meets every specification as it is. CHR (set-point, 0 % overshoot) comes closest: only its overshoot (about 11 %) is just over the limit. A tuning rule gives a starting point, to be adjusted by hand. Ziegler–Nichols aims at a fast, oscillating response (a quarter decay ratio), so its overshoot is large and its phase margin small.</li>
+Only CHR (set-point, 0 % overshoot) meets all the specifications: its overshoot of about 11 % is within the limit of 12 %. Ziegler–Nichols aims at a fast, oscillating response (a quarter decay ratio), so its overshoot is large and its phase margin small.</li>
 </ol>
 <h4>Exercise 2: PI control of a plant with dead time</h4>
 <p>Plant <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1), PI with <i>K</i><sub>P</sub> = 0.5, <i>K</i><sub>I</sub> = 0.2. Specifications: phase margin ≥ 60°, gain margin ≥ 6 dB, peak sensitivity Ms ≤ 1.6.</p>
@@ -293,7 +293,7 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.8 s, the phase marg
 <p>シミュレーターには 4 つの演習用の例題があります。<b>ファイル › 保存と読み込み</b> の <b>例</b> の一覧で <b>読み込む</b> を押すと読み込まれ、図の上に課題を表示します。以下の数値は、書いてある設定のときにシミュレーターが表示する値です（四捨五入）。</p>
 <p>始める前に、<b>解析・設計 › 設計仕様</b> で <b>仕様をグラフに表示</b> を選び、必要な図を <b>表示する図</b> で加えておきます。設定を変える前の応答と比べたいときは、先に <b>ファイル › 比較・リセット › 現在の応答を保持</b> を押します。</p>
 <h4>演習 1：3次系の PID 制御</h4>
-<p>制御対象 1/(<i>s</i>+1)<sup>3</sup>、PID（<i>K</i><sub>P</sub> = 1、<i>K</i><sub>I</sub> = 0.3、<i>K</i><sub>D</sub> = 0.5）。仕様：オーバーシュート 10 % 以下、整定時間 10 s 以下、位相余裕 45° 以上（とゲイン余裕 6 dB 以上）。</p>
+<p>制御対象 1/(<i>s</i>+1)<sup>3</sup>、PID（<i>K</i><sub>P</sub> = 1、<i>K</i><sub>I</sub> = 0.3、<i>K</i><sub>D</sub> = 0.5）。仕様：オーバーシュート 12 % 以下、整定時間 10 s 以下、位相余裕 45° 以上（とゲイン余裕 6 dB 以上）。</p>
 <ol>
 <li><b>ボード線図</b> を加えます。最初はオーバーシュート 0 %、位相余裕 約 88° ですが、整定時間が 約 15 s で ✗ です。安定ですが遅い応答です。</li>
 <li><i>K</i><sub>I</sub> を 0.3 から 0.4 に上げます。整定時間が 約 8.4 s になり、すべての仕様が ✓ になります（位相余裕 約 76°、<a class="hp-ref" href="#" data-ref="ex1-time"></a>）。
@@ -305,7 +305,7 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.8 s, the phase marg
 <tr><td>CHR（目標値追従、オーバーシュート 0%）</td><td>約 11 %</td><td>約 7.3 s</td><td>約 52°</td></tr>
 <tr><td>IMC</td><td>約 15 %</td><td>約 11 s</td><td>約 48°</td></tr>
 </table>
-そのままですべての仕様を満たす調整則はありません。最も近いのは CHR（目標値追従、オーバーシュート 0%）で、オーバーシュート（約 11 %）だけがわずかに上限を超えます。チューニング則は、手で調整するための出発点です。ジーグラ・ニコルスは減衰比 1/4 の速く振動する応答をねらうため、オーバーシュートが大きく位相余裕が小さくなります。</li>
+すべての仕様を満たすのは CHR（目標値追従、オーバーシュート 0%）だけです（オーバーシュート 約 11 % は上限の 12 % 以内）。ジーグラ・ニコルスは減衰比 1/4 の速く振動する応答をねらうため、オーバーシュートが大きく位相余裕が小さくなります。</li>
 </ol>
 <h4>演習 2：むだ時間を含む系の PI 制御</h4>
 <p>制御対象 <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1)、PI（<i>K</i><sub>P</sub> = 0.5、<i>K</i><sub>I</sub> = 0.2）。仕様：位相余裕 60° 以上、ゲイン余裕 6 dB 以上、最大感度 Ms 1.6 以下。</p>

@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.75.1',
+    d: '2026-11-26',
+    en: [
+      'Exercise 1 (PID control of a third-order plant): the overshoot specification is now at most 12 % (was 10 %), so that CHR (set-point, 0 % overshoot), whose overshoot is about 11 %, meets every specification as the exercise intends; the task text, the user manual and its screenshot were updated',
+      'The vertical range of the output plot now includes the specification lines that are shown (the overshoot limit, the settling band, the error limits), so a limit just above the response is no longer cut off',
+    ],
+    ja: [
+      '演習 1（3 次遅れ系の PID 制御）：オーバーシュートの仕様を 12 % 以下にした（以前は 10 %）。オーバーシュートが 約 11 % の CHR（目標値追従、オーバーシュート 0%）が、演習のねらいどおりすべての仕様を満たす。課題文、利用者マニュアルとそのスクリーンショットも更新した',
+      '出力の図の縦軸の範囲に、表示中の仕様の線（オーバーシュートの上限、整定の幅、偏差の上限）を含めるようにした。応答のすぐ上にある上限の線が図の外に切れなくなった',
+    ],
+  },
+  {
     v: '1.75.0',
     d: '2026-11-26',
     en: [

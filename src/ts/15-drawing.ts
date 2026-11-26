@@ -394,8 +394,9 @@ export function drawTime(sim: SimResult) {
   $('metrics').style.setProperty('--mcols', String(metricCols(items.length)));
 }
 
-// Vertical range of y(t): the reference, held responses, sweep runs and the output, leaving out values far
-// beyond the reference (automatic range when the response diverges or the reference is zero)
+// Vertical range of y(t): the reference, held responses, sweep runs, the output and the specification lines that
+// are shown, leaving out values far beyond the reference (automatic range when the response diverges or the
+// reference is zero)
 export function outputRange(sim: SimResult): { ymin?: number; ymax?: number } {
   const rmax = Math.max(0, ...sim.R.map(Math.abs));
   if (sim.diverged || !(rmax > 0)) return {};
@@ -403,6 +404,9 @@ export function outputRange(sim: SimResult): { ymin?: number; ymax?: number } {
   stretch(r, sim.R, () => true);
   const ys = [...ghosts.map(g => g.Y), ...(lastSweep || []).filter(w => !w.sim.diverged).map(w => w.sim.Y), sim.Y];
   ys.forEach(a => stretch(r, a, v => isFinite(v) && Math.abs(v) < 10 * rmax + 5));
+  // the specification lines that are shown (overshoot limit, settling band, error limits) stay inside the plot
+  const marks = specMarks();
+  stretch(r, [...(marks.segs || []).map(g => g.y), ...(marks.bands || []).flatMap(b => [b.y0, b.y1])], isFinite);
   const pad = (r.hi - r.lo) * 0.1 || 0.5;
   return { ymin: r.lo - pad, ymax: r.hi + pad };
 }

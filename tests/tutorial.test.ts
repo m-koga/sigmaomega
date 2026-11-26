@@ -42,7 +42,7 @@ test('exercise 1: PID control of a third-order plant', () => {
   assert.equal(r.ok, true);
   const rows: [string, number, number, number, boolean][] = [
     ['zn-step', 55, 13, 21, false],
-    ['chr-sp0', 11, 7.3, 52, false],
+    ['chr-sp0', 11, 7.3, 52, true],
     ['imc', 15, 11, 48, false],
   ];
   for (const [rule, os, ts, pm, ok] of rows) {

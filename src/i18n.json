@@ -2081,11 +2081,11 @@
 "ko": "연습: 3차계의 PID 제어",
 "th": "แบบฝึกหัด: การควบคุม PID ของระบบอันดับสาม"
 },
-"Tune the PID gains so that the overshoot is at most 10% and the settling time is at most 10 s, keeping a phase margin of at least 45°. Compare your result with the tuning rules.": {
-"ja": "位相余裕 45° 以上を保ちながら、オーバーシュート 10% 以下、整定時間 10 s 以下となるように PID のゲインを調整しなさい。結果をチューニング則と比べなさい。",
-"zh": "在保持相位裕度 45° 以上的同时，调整 PID 增益，使超调量不超过 10%、调节时间不超过 10 s。并将结果与整定规则进行比较。",
-"ko": "위상 여유 45° 이상을 유지하면서 오버슈트 10% 이하, 정착 시간 10 s 이하가 되도록 PID 이득을 조정하시오. 결과를 튜닝 규칙과 비교하시오.",
-"th": "ปรับอัตราขยาย PID ให้ค่าพุ่งเกินไม่เกิน 10% และเวลาเข้าที่ไม่เกิน 10 s โดยคงส่วนเผื่อเฟสอย่างน้อย 45° แล้วเปรียบเทียบผลกับกฎการปรับจูน"
+"Tune the PID gains so that the overshoot is at most 12% and the settling time is at most 10 s, keeping a phase margin of at least 45°. Compare your result with the tuning rules.": {
+"ja": "位相余裕 45° 以上を保ちながら、オーバーシュート 12% 以下、整定時間 10 s 以下となるように PID のゲインを調整しなさい。結果をチューニング則と比べなさい。",
+"zh": "在保持相位裕度 45° 以上的同时，调整 PID 增益，使超调量不超过 12%、调节时间不超过 10 s。并将结果与整定规则进行比较。",
+"ko": "위상 여유 45° 이상을 유지하면서 오버슈트 12% 이하, 정착 시간 10 s 이하가 되도록 PID 이득을 조정하시오. 결과를 튜닝 규칙과 비교하시오.",
+"th": "ปรับอัตราขยาย PID ให้ค่าพุ่งเกินไม่เกิน 12% และเวลาเข้าที่ไม่เกิน 10 s โดยคงส่วนเผื่อเฟสอย่างน้อย 45° แล้วเปรียบเทียบผลกับกฎการปรับจูน"
 },
 "Exercise: PI control of a plant with dead time": {
 "ja": "演習：むだ時間を含む系の PI 制御",

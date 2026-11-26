@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.75.1 (2026-11-26)
+- Exercise 1 (PID control of a third-order plant): the overshoot specification is now at most 12 % (was 10 %), so that CHR (set-point, 0 % overshoot), whose overshoot is about 11 %, meets every specification as the exercise intends; the task text, the user manual and its screenshot were updated
+- The vertical range of the output plot now includes the specification lines that are shown (the overshoot limit, the settling band, the error limits), so a limit just above the response is no longer cut off
+
 ## v1.75.0 (2026-11-26)
 - Faster: with the pole-zero map shown, a change takes 2 to 60 times less time (start-up settings 223 → 26 ms, an eighth-order plant 2.6 s → 43 ms on the test computer). The roots were found by an iteration that stopped at an absolute step of 1e-13, which large roots (the root locus at high gain) and repeated roots never reach, so it always ran 2000 times; it now stops at a step relative to the root, or when the polynomial is as small as its rounding error allows, and the stable gain ranges reuse the roots of the root locus. The results are unchanged (accuracy tests pass, every plot pixel-identical)
 - New document PERFORMANCE.md (English and Japanese) and a section "Time efficiency" of the user manual: how long the page takes to open, to respond to a change and to follow a slider, in Chrome at normal speed and with the processor slowed down 4 times, judged against the RAIL and INP guidelines, with the upper limits of the work for one change; npm run performance measures it, and tests/performance.test.ts keeps the heaviest computations fast

@@ -42,8 +42,18 @@ export const SC_KEYS = (() => {
 export const SC_EXAMPLES: { name: string; note: string; S: Record<string, unknown> }[] = [
   {
     name: 'Exercise: PID control of a third-order plant',
-    note: 'Tune the PID gains so that the overshoot is at most 10% and the settling time is at most 10 s, keeping a phase margin of at least 45°. Compare your result with the tuning rules.',
-    S: { plant: 'third', K: 1, T: 1, mode: 'PID', Kp: 1, Ki: 0.3, Kd: 0.5, Tsim: 30 },
+    note: 'Tune the PID gains so that the overshoot is at most 12% and the settling time is at most 10 s, keeping a phase margin of at least 45°. Compare your result with the tuning rules.',
+    S: {
+      plant: 'third',
+      K: 1,
+      T: 1,
+      mode: 'PID',
+      Kp: 1,
+      Ki: 0.3,
+      Kd: 0.5,
+      Tsim: 30,
+      spec: { os: { on: true, v: 12 } },
+    },
   },
   {
     name: 'Exercise: PI control of a plant with dead time',

@@ -181,7 +181,7 @@ A scenario holds all the settings with a name and a task text. Whether it includ
 | Copy as link | Encoded in `#s=` of the page URL; opening the link loads the scenario |
 | Delete | Confirmed by a second click |
 
-Three exercise scenarios are included (for example: PID control of a third-order plant with at most 10% overshoot, a settling time of at most 10 s and a phase margin of at least 45°; PI control of a plant with dead time with a phase margin of at least 60° and Ms of at most 1.6).
+Three exercise scenarios are included (for example: PID control of a third-order plant with at most 12% overshoot, a settling time of at most 10 s and a phase margin of at least 45°; PI control of a plant with dead time with a phase margin of at least 60° and Ms of at most 1.6).
 
 ### 6.2 Export
 
