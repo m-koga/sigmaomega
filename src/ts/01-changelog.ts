@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.86.0',
+    d: '2026-11-27',
+    en: [
+      'New card "Lead and lag compensator design" (Analysis & design): from the target phase margin PM*, the gain K_c (for the steady-state error) and an allowance θ, it works through the classical frequency-response steps for K_c P(s) one by one — lead: φm, α, the new crossover ωm where |K_c P| = √α, and T1; lag: the frequency where the phase is −180° + PM* + θ, β and T2 = 10/ω — and shows the phase margin reached; "Apply to the controller" sets the compensator',
+      'Development: npm run pixcmp matches the canvases of the two pages by id, so that a new plot does not show as differences in the others',
+    ],
+    ja: [
+      '新しいカード「位相進み・遅れ補償器の設計」（解析・設計）：目標の位相余裕 PM*、ゲイン K_c（定常偏差から決める）、余裕 θ から、K_c P(s) の周波数応答に基づく古典的な手順を一つずつ示す。位相進みでは φm、α、|K_c P| = √α となる新しい交差周波数 ωm、T1。位相遅れでは位相が −180° + PM* + θ となる周波数、β、T2 = 10/ω。最後に得られる位相余裕を示し、「制御器に適用」で補償器を設定する',
+      '開発：npm run pixcmp で 2 つのページの canvas を id で対応させるようにした（新しいグラフが加わっても、ほかのグラフの差に見えない）',
+    ],
+  },
+  {
     v: '1.85.0',
     d: '2026-11-27',
     en: [

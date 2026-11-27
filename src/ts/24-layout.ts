@@ -20,7 +20,7 @@ import {
   subFolded,
   tilesFromPreset,
 } from './14-view.ts';
-import { diagMaxH, fitTex, renderTune } from './17-panels.ts';
+import { diagMaxH, fitTex, renderComp, renderTune } from './17-panels.ts';
 import { redraw, scheduleRedraw } from './18-update.ts';
 import { applyPanels } from './23-tiles.ts';
 
@@ -199,6 +199,7 @@ export function setSideCard(key: string) {
     b.setAttribute('aria-current', on ? 'true' : 'false');
   });
   if (key === 'tune') renderTune();
+  if (key === 'comp') renderComp();
 }
 // Shows section key of area a (the first one when key is not one of its sections)
 export function setInfoTab(a: string, key: string | undefined) {

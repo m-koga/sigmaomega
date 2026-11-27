@@ -33,6 +33,13 @@ interface ElementById {
   "clearHold": HTMLButtonElement;
   "clTitle": HTMLHeadingElement;
   "cNum": HTMLInputElement;
+  "comp-card": HTMLDivElement;
+  "compApply": HTMLButtonElement;
+  "compKc": HTMLInputElement;
+  "compMethod": HTMLSelectElement;
+  "compOut": HTMLDivElement;
+  "compPm": HTMLInputElement;
+  "compTheta": HTMLInputElement;
   "cPoles": HTMLDivElement;
   "ctrl-custom": HTMLDivElement;
   "ctrl-info": HTMLDivElement;

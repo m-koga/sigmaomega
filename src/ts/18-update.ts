@@ -11,6 +11,7 @@ import { drawBode, drawNich, drawNyq, drawTime } from './15-drawing.ts';
 import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
   renderBodeAsym,
+  renderComp,
   renderNyqCrit,
   renderPoles,
   scheduleRouth,
@@ -49,6 +50,7 @@ export function update() {
   scheduleSSE();
   renderSpecs();
   renderTune();
+  renderComp();
   renderSweepUI();
   setResults({ sweep: sweepRuns() });
   renderSweepTable();

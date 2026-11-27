@@ -23,13 +23,22 @@ import {
   hardRange,
   paramDef,
 } from './05-definitions.ts';
-import { S, ghosts, lastSim, lastSweep, switchDefaults } from './06-state.ts';
+import { S, ghosts, isTFMode, lastSim, lastSweep, switchDefaults } from './06-state.ts';
 import { resetLocus } from './09-loop.ts';
 import { TUNE_METHODS, TUNE_TYPES, tuneGains, tuneLabel } from './10-tuning.ts';
 import { parseSweep, sweepDefaults } from './12-sweep.ts';
 import { $, byId, errMessage, fmtVal, i18nText, must } from './13-dom.ts';
 import { PLOT_VIEWS, layout, saveLayout, subFolded } from './14-view.ts';
-import { lastTune, renderSpecs, renderTeX, renderTune, scheduleTeX, specRows } from './17-panels.ts';
+import {
+  lastComp,
+  lastTune,
+  renderComp,
+  renderSpecs,
+  renderTeX,
+  renderTune,
+  scheduleTeX,
+  specRows,
+} from './17-panels.ts';
 import { redraw, update } from './18-update.ts';
 
 export function slider(key: NumKey, def: ParamDef): string {
@@ -399,6 +408,7 @@ export function buildStatic() {
     .join('');
   bindSliders(CTRL);
   buildTune();
+  buildComp();
   buildRef();
   $('input-params').innerHTML = entriesOf(INPUTS)
     .map(([k, d]) => slider(k, d))
@@ -533,6 +543,68 @@ export function applyTune() {
   if (type !== 'P') S.Ki = +g.Ki.toPrecision(4);
   if (type === 'PID') S.Kd = +g.Kd.toPrecision(4);
   (['Kp', 'Ki', 'Kd'] as NumKey[]).forEach(showCtrlParam);
+  buildCtrlCustom();
+  renderTeX();
+  update();
+}
+// The card of the lead and lag compensator design: kind, target phase margin, gain Kc and allowance θ
+export function buildComp() {
+  const c = S.comp;
+  byId('comp-card').innerHTML = `<div class="tune-grid">
+      <label for="compMethod">${T('Compensator')}</label><select id="compMethod">${(['lead', 'lag'] as const)
+        .map(
+          m =>
+            `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(m === 'lead' ? 'Lead compensator' : 'Lag compensator')}</option>`,
+        )
+        .join('')}</select>
+      <label for="compPm">${T('Target phase margin PM* [°]')}</label><input type="number" id="compPm" step="any" min="1" value="${c.pm}">
+      <label for="compKc">${T('Gain K_c (for the steady-state error)').replace('K_c', 'K<sub>c</sub>')}</label><input type="number" id="compKc" step="any" min="0" value="${c.kc}">
+      <label for="compTheta">${T('Allowance θ [°]')}</label><input type="number" id="compTheta" step="any" min="0" value="${c.theta}">
+    </div>
+    <div class="poles" id="compOut"></div>
+    <button class="chip" id="compApply">${T('Apply to the controller')}</button>
+    <div class="hint">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); both keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>`;
+  byId<HTMLSelectElement>('compMethod').onchange = e => {
+    c.method = (e.target as HTMLSelectElement).value;
+    renderComp();
+  };
+  (
+    [
+      ['compPm', 'pm', 1],
+      ['compKc', 'kc', 1e-9],
+      ['compTheta', 'theta', 0],
+    ] as const
+  ).forEach(([id, k, lo]) => {
+    const inp = byId<HTMLInputElement>(id);
+    inp.onchange = () => {
+      const v = parseFloat(inp.value);
+      if (isFinite(v) && v >= lo) c[k] = v;
+      inp.value = String(c[k]);
+      renderComp();
+    };
+    inp.onkeydown = e => {
+      if (e.key === 'Enter') inp.blur();
+    };
+  });
+  byId('compApply').onclick = applyComp;
+}
+// Sets the designed compensator as the controller
+export function applyComp() {
+  const d = lastComp;
+  if (!d || d.err !== undefined) return;
+  const prev = S.mode;
+  if (prev !== 'custom' && !isTFMode(S)) S.lastPid = prev;
+  S.Kc = +S.comp.kc.toPrecision(4);
+  if (S.comp.method === 'lead') {
+    S.mode = 'lead';
+    S.T1 = +d.T1!.toPrecision(4);
+    S.alpha = +d.alpha!.toPrecision(4);
+  } else {
+    S.mode = 'lag';
+    S.T2 = +d.T2!.toPrecision(4);
+    S.beta = +d.beta!.toPrecision(4);
+  }
+  (['Kc', 'T1', 'alpha', 'T2', 'beta'] as NumKey[]).forEach(showCtrlParam);
   buildCtrlCustom();
   renderTeX();
   update();

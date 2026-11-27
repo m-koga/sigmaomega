@@ -33,7 +33,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | File | Save and load, Compare & reset | Shows that one card in the settings panel |
 | Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Routh–Hurwitz test, Steady-state error, Bode plot, Nyquist plot, Nichols chart, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
 | System setup | Plant P(s), Controller C(s), Reference/disturbance/noise, Actuator saturation | Shows that card in the settings panel |
-| Analysis & design | Design specifications, Auto-tuning (tuning rules), Parameter sweep | Shows that card in the settings panel |
+| Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep | Shows that card in the settings panel |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
 | Metrics display | Cards, Table | Changes how the response metrics are shown |
 | Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean and Thai); × , Esc or a click beside it closes it. On phones the button shows only its icon |
@@ -133,7 +133,7 @@ Holding the current response in the "Compare & reset" card overlays it as a gray
 
 ## 5. Design support
 
-Three cards in the "Analysis & design" menu check design specifications, tune controllers with tuning rules, and sweep parameters.
+Four cards in the "Analysis & design" menu check design specifications, tune controllers with tuning rules, design lead and lag compensators, and sweep parameters.
 
 ### 5.1 Design specifications
 
@@ -166,7 +166,18 @@ A model is identified from the plant, and the gains for the chosen rule and cont
 
 For unstable plants, or types a rule does not cover, the reason is shown instead of gains.
 
-### 5.3 Parameter sweep
+### 5.3 Lead and lag compensator design
+
+From the frequency response of K_c P(s) (K_c given, for the steady-state error; the dead time included), with the target phase margin PM* and the allowance θ:
+
+| Kind | Steps | Compensator |
+| --- | --- | --- |
+| Lead | ω_gc and PM of K_c P; φ_m = PM* − PM + θ; α = (1 − sin φ_m)/(1 + sin φ_m); ω_m where \|K_c P(jω)\| = √α; T_1 = 1/(ω_m √α) | C(s) = K_c (T_1 s + 1)/(α T_1 s + 1) |
+| Lag | ω_gc and PM of K_c P; ω where the phase of K_c P is −180° + PM* + θ; β = \|K_c P(jω)\| there; T_2 = 10/ω | C(s) = K_c (T_2 s + 1)/(β T_2 s + 1) |
+
+The phase margin of C(s)P(s) is then computed. No design is made when K_c P has no gain crossover, when its phase margin already meets PM*, when a lead would have to add more than 80°, or when no frequency has the required gain or phase. "Apply to the controller" sets the compensator (rounded to 4 significant digits). The settings are kept with the scenario.
+
+### 5.4 Parameter sweep
 
 One parameter of the plant or the controller is given up to 8 values, and the results for every value are overlaid in all plots in different colors. A table lists overshoot, settling time, stability margins, stability and the specification checks for each value; choosing a row applies that value to the settings.
 

@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.86.0 (2026-11-27)
+- New card "Lead and lag compensator design" (Analysis & design): from the target phase margin PM*, the gain K_c (for the steady-state error) and an allowance θ, it works through the classical frequency-response steps for K_c P(s) one by one — lead: φm, α, the new crossover ωm where |K_c P| = √α, and T1; lag: the frequency where the phase is −180° + PM* + θ, β and T2 = 10/ω — and shows the phase margin reached; "Apply to the controller" sets the compensator
+- Development: npm run pixcmp matches the canvases of the two pages by id, so that a new plot does not show as differences in the others
+
 ## v1.85.0 (2026-11-27)
 - New panel "Nichols chart" (in "Plots to show", hidden at first): the gain of L(jω) [dB] against its phase [deg], over the M contours of the closed loop |T| (12 … −20 dB, labelled) and the critical point (−180°, 0 dB). The largest M the curve touches is the resonance peak Mt; the margins are read where it crosses −180° and 0 dB. It zooms like the other plots, and its data can be saved as CSV
 

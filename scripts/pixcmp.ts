@@ -92,8 +92,10 @@ let bad = 0;
 for (const c of cases) {
   const a = await render(oldHtml, c),
     b = await render(newHtml, c);
-  a.canvases.forEach(([id, d], i) => {
-    if (d !== b.canvases[i]?.[1]) {
+  // canvases matched by id (a new canvas in the page does not shift the others; one only in the new page is skipped)
+  const nb = new Map(b.canvases as [string, string][]);
+  a.canvases.forEach(([id, d]) => {
+    if (d !== nb.get(id)) {
       bad++;
       console.log(`DIFF ${c.name}: canvas ${id}`);
     }

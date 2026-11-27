@@ -434,7 +434,18 @@ export const EXAMPLES: { label: string; n: string; d: string }[] = [
 /* ---- Cards of the settings panel ----
    Chosen one at a time from three drop-down lists (System setup, Analysis & design, File); only the chosen card is
    shown. The keys follow the order of the cards in src/index.html. */
-export const CARD_KEYS: string[] = ['plant', 'ctrl', 'input', 'sat', 'spec', 'tune', 'sweep', 'scen', 'compare'];
+export const CARD_KEYS: string[] = [
+  'plant',
+  'ctrl',
+  'input',
+  'sat',
+  'spec',
+  'tune',
+  'comp',
+  'sweep',
+  'scen',
+  'compare',
+];
 // The drop-down list of each card
 export const CARD_GROUP: Record<string, string> = {
   plant: 'sys',
@@ -443,6 +454,7 @@ export const CARD_GROUP: Record<string, string> = {
   sat: 'sys',
   spec: 'ana',
   tune: 'ana',
+  comp: 'ana',
   sweep: 'ana',
   scen: 'file',
   compare: 'file',

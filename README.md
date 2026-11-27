@@ -24,6 +24,7 @@ SigmaOmega is a browser-based simulator for feedback control systems. Its name c
 - Scenarios: save all settings with a name and a task note in the browser or to a .json file, copy them as text or a link for students, load them back, optionally together with the layout; example exercises included
 - Sensitivity S(jω) and complementary sensitivity T(jω) on the Bode plot, peak sensitivity Ms, peak Mt, closed-loop bandwidth, the 1/Ms circle on the Nyquist plot, and Ms as a design specification
 - Parameter sweep: overlay responses for up to 8 values of a plant or controller parameter on all plots, with a table of overshoot, settling time, margins, stability and specification checks
+- Lead and lag compensator design from a target phase margin by the classical frequency-response steps (each step with its values, the margin reached, applied with one click)
 - PID auto-tuning by tuning rules (Ziegler–Nichols step response and ultimate sensitivity, CHR, IMC): shows the identified model and the gains, applied with one click
 - Design specifications (overshoot, settling time, rise time, steady-state error, phase margin, gain margin, damping ratio ζ) with ✓/✗ checks, limits drawn on the plots, the design region on the pole-zero map, and the range of k on the root locus that meets the pole specifications
 - The block diagram is a panel like the plots: on top across the whole width in the preset layouts, anywhere in the free arrangement (plots to its left or right, its width set by the column boundary); its bottom edge changes its height, and the diagram is never wider than its area
@@ -107,6 +108,7 @@ They check the following (`tests/` folder).
 | `nyquist.test.ts` | Nyquist criterion: Z = N + P equals the closed-loop poles in the right half-plane on twelve settings (unstable plant, integrators, dead time, compensator), N equals the sum of the crossings; textbook examples (crossing at −1.5 for ω = ±√3, passing through −1, N = −1 for an unstable plant, an integrator on the imaginary axis) |
 | `bode-asymptote.test.ts` | Bode gain asymptotes: they meet the true gain far from the break frequencies and end with −20(n − m) dB/dec on seven settings; textbook examples (first-order lag: −3 dB at the break; complex pair: −20 log10(2ζ); integrator) |
 | `nichols.test.ts` | Nichols chart: every point of the M contours has |L/(1 + L)| = M (closed curves for M > 0 dB, −6.02 dB at −180° for M = 0 dB), and the curve's largest closed-loop gain equals Mt |
+| `compensator.test.ts` | Lead and lag compensator design on the textbook example 10/(s(s + 1)) with a target of 50° (each step's value, the margin reached, the same margin once applied), and the cases with no design (target met, too much phase, no crossover) |
 | `version.test.ts` | Consistency of version numbers, matching English and Japanese change log items, CHANGELOG.md and CHANGELOG.ja.md being up to date |
 
 ### Browser tests

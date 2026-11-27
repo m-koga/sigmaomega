@@ -37,7 +37,7 @@ test('settings panel: three drop-down lists choose the one card shown, which is 
   await expect(page.locator('#smenuBtn-sys')).toHaveClass(/on/);
   // the items of each list: the cards of that group, named like their headings
   expect(await items('sys')).toEqual(['plant', 'ctrl', 'input', 'sat']);
-  expect(await items('ana')).toEqual(['spec', 'tune', 'sweep']);
+  expect(await items('ana')).toEqual(['spec', 'tune', 'comp', 'sweep']);
   expect(await items('file')).toEqual(['scen', 'compare']);
   for (const k of ['ctrl', 'tune', 'compare'])
     await expect(page.locator(`.smenu .vb-opt[data-card=${k}]`)).toHaveText(
@@ -61,14 +61,14 @@ test('settings panel: three drop-down lists choose the one card shown, which is 
   await expect(page.locator('#smenuList-ana .vb-opt[data-card=tune]')).toBeFocused();
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
-  expect(await shown()).toEqual(['sweep']);
+  expect(await shown()).toEqual(['comp']);
   await page.click('#smenuBtn-file');
   await page.keyboard.press('Escape');
   await expect(page.locator('#smenuList-file')).toBeHidden();
   await page.click('#smenuBtn-file');
   await page.mouse.click(700, 500);
   await expect(page.locator('#smenuList-file')).toBeHidden();
-  expect(await shown()).toEqual(['sweep']);
+  expect(await shown()).toEqual(['comp']);
   // remembered after a reload
   await page.click('#smenuBtn-file');
   await page.click('#smenuList-file .vb-opt[data-card=compare]');

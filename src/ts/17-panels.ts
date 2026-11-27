@@ -34,8 +34,8 @@ import {
   steadyErrors,
 } from './09-loop.ts';
 import type { LoopTF, LoopTFKey, PoleKey } from './09-loop.ts';
-import { tuneErr, tuneGains, tuneRule } from './10-tuning.ts';
-import type { TuneResult } from './10-tuning.ts';
+import { compDesign, tuneErr, tuneGains, tuneRule } from './10-tuning.ts';
+import type { CompDesign, TuneResult } from './10-tuning.ts';
 import { evalSpecs, specIcon } from './11-specs.ts';
 import { SWEEP_COLORS, plainLabel, sweepDefaults, sweepParams } from './12-sweep.ts';
 import { $, byId, i18nText, must } from './13-dom.ts';
@@ -1019,6 +1019,92 @@ export function renderTune() {
   }
   box.innerHTML = out.join('<br>');
   $('tuneApply').disabled = !!r.err;
+}
+/* ---- Lead and lag compensator design: the steps and the result ---- */
+export let lastComp: CompDesign | null = null;
+export function compVisible() {
+  return layout.scard === 'comp'; // the card shown in the settings panel
+}
+export function renderComp() {
+  const box = byId('compOut');
+  if (!compVisible()) {
+    lastComp = null;
+    return;
+  } // computed only while its card is shown
+  const c = S.comp,
+    d = (lastComp = compDesign(c)),
+    n = numStr,
+    lead = c.method === 'lead',
+    steps: string[] = [];
+  steps.push(
+    d.pm0 === null
+      ? T('With K_c = {k}, |K_c P(jω)| does not cross 0 dB (no gain crossover).', { k: n(c.kc) })
+      : T(
+          'With K_c = {k} (chosen for the steady-state error), K_c P(s) has the gain crossover ω = {w} rad/s and the phase margin {pm}°.',
+          {
+            k: n(c.kc),
+            w: n(d.wgc0!),
+            pm: n(d.pm0),
+          },
+        ),
+  );
+  if (lead && d.phiM !== undefined)
+    steps.push(
+      T('Phase to add: φm = PM* − PM + θ = {a} − {b} + {c} = {p}°', {
+        a: n(c.pm),
+        b: n(d.pm0!),
+        c: n(c.theta),
+        p: n(d.phiM),
+      }),
+    );
+  if (lead && d.alpha !== undefined) steps.push(T('α = (1 − sin φm)/(1 + sin φm) = {a}', { a: n(d.alpha) }));
+  if (lead && d.wm !== undefined)
+    steps.push(
+      T(
+        'The lead raises the gain by 1/√α at ωm, so the new crossover is where |K_c P(jω)| = √α ({db} dB): ωm = {w} rad/s',
+        {
+          db: n(10 * Math.log10(d.alpha!)),
+          w: n(d.wm),
+        },
+      ),
+    );
+  if (lead && d.T1 !== undefined) steps.push(T('T₁ = 1/(ωm √α) = {t} s', { t: n(d.T1) }));
+  if (!lead && d.phiT !== undefined && d.wg !== undefined)
+    steps.push(
+      T('New crossover where the phase of K_c P(jω) is −180° + PM* + θ = {p}°: ω = {w} rad/s', {
+        p: n(d.phiT),
+        w: n(d.wg),
+      }),
+    );
+  if (!lead && d.beta !== undefined)
+    steps.push(
+      T('β = |K_c P(jω)| there = {b} ({db} dB): the lag lowers the gain by 1/β', {
+        b: n(d.beta),
+        db: n(20 * Math.log10(d.beta)),
+      }),
+    );
+  if (!lead && d.T2 !== undefined)
+    steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
+  const err = d.err
+    ? `<p class="err">${T(
+        {
+          'no-crossover': 'No gain crossover: the phase margin is not defined.',
+          'not-needed': 'The target phase margin is already met: no compensator is needed.',
+          'too-much': 'More than 80° to add: one lead stage is not enough (use two, or lower the target).',
+          'no-frequency': 'No frequency with the required gain or phase was found.',
+        }[d.err],
+      )}</p>`
+    : '';
+  const res =
+    d.err === undefined
+      ? `<p><b>${T('Result')}</b>: ${
+          d.pm === null
+            ? T('no gain crossover')
+            : T('phase margin {pm}° at ω = {w} rad/s', { pm: n(d.pm), w: n(d.wgc!) })
+        }${d.pm !== null && d.pm < c.pm - 0.5 ? ` <span class="err">${T('(short of the target: increase θ and design again)')}</span>` : ''}</p>`
+      : '';
+  box.innerHTML = `<ol class="comp-steps">${steps.map(s => `<li>${s.replace(/K_c/g, 'K<sub>c</sub>')}</li>`).join('')}</ol>${err}${res}`;
+  $('compApply').disabled = d.err !== undefined;
 }
 /* ---- Parameter sweep: its inputs and the table of results ---- */
 export let sweepKeys = ''; // parameters and language of the sweep inputs last built (rebuilt when they change)

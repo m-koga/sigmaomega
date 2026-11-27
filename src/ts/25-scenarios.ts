@@ -176,6 +176,7 @@ export function applyScenario(data: Scenario, opts: { layout?: boolean } = {}) {
   if (!PLANTS[S.plant]) S.plant = 'first';
   if (!(S.mode in MODE_PARAMS)) S.mode = 'PID';
   if (!REF_TYPES[S.refType]) S.refType = 'step';
+  if (S.comp.method !== 'lead' && S.comp.method !== 'lag') S.comp.method = 'lead';
   try {
     S.cNum = parsePoly(S.cNumStr);
     S.cDen = parsePoly(S.cDenStr);

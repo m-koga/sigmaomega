@@ -46,6 +46,27 @@ test('impulse reference: its metrics, the area of y equal to the theory A·T(0)'
   await expect(val(3)).toHaveText('0.6667');
 });
 
+test('lead and lag compensator design: the steps, the result and Apply', async ({ page }) => {
+  await page.evaluate(() => {
+    Object.assign(S, { plant: 'integ', K: 1, T: 1 });
+    buildPlant();
+    update();
+  });
+  await openCard(page, 'comp');
+  await page.fill('#compKc', '10');
+  await page.press('#compKc', 'Enter');
+  await expect(page.locator('#compOut li')).toHaveCount(5); // the five steps of the lead design
+  await expect(page.locator('#compOut')).toContainText('17.96');
+  await page.click('#compApply');
+  expect(await page.evaluate(() => [S.mode, S.Kc, S.alpha > 0.2 && S.alpha < 0.3])).toEqual(['lead', 10, true]);
+  expect(await page.evaluate(() => Math.round(lastFr!.pm!))).toBe(50);
+  // lag: four steps
+  await page.selectOption('#compMethod', 'lag');
+  await expect(page.locator('#compOut li')).toHaveCount(4);
+  await page.click('#compApply');
+  expect(await page.evaluate(() => S.mode)).toBe('lag');
+});
+
 test('a parameter sweep is drawn in the Bode, Nyquist and pole-zero plots', async ({ page }) => {
   await openCard(page, 'sweep');
   await page.check('#sw-on');

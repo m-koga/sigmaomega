@@ -55,7 +55,7 @@ export const HELP: HelpSection[] = [
 <tr><td>File</td><td>Cards <b>Save and load</b> and <b>Compare &amp; reset</b></td></tr>
 <tr><td>Plots to show</td><td>Shows or hides the panels (several at once; <b>All</b> shows every panel)</td></tr>
 <tr><td>System setup</td><td>Cards for the plant, the controller, the reference, disturbance and noise, and the actuator saturation</td></tr>
-<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b> and <b>Parameter sweep</b></td></tr>
+<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b> and <b>Parameter sweep</b></td></tr>
 <tr><td>Plot arrangement</td><td>How the panels are arranged (section 5)</td></tr>
 <tr><td>Metrics display</td><td>Metrics as cards or as a table</td></tr>
 <tr><td>Help</td><td>This manual</td></tr>
@@ -71,7 +71,7 @@ export const HELP: HelpSection[] = [
 <tr><td>ファイル</td><td><b>保存と読み込み</b>、<b>比較・リセット</b> のカード</td></tr>
 <tr><td>表示する図</td><td>区画の表示・非表示（続けて複数選べる。<b>すべて</b> で全部表示）</td></tr>
 <tr><td>系の設定</td><td>制御対象、制御器、目標値・外乱・ノイズ、操作量の飽和のカード</td></tr>
-<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>パラメータの掃引</b> のカード</td></tr>
+<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b> のカード</td></tr>
 <tr><td>図の並び方</td><td>区画の並べ方（5 章）</td></tr>
 <tr><td>指標の表示</td><td>指標をカードで表示するか表で表示するか</td></tr>
 <tr><td>使い方</td><td>このマニュアル</td></tr>
@@ -213,6 +213,8 @@ export const HELP: HelpSection[] = [
 <p>Switch on the specifications you want: overshoot, settling time, rise time, steady-state error, phase margin, gain margin, peak sensitivity Ms and damping ratio ζ. Each one is checked with ✓ or ✗. With <b>Show the specifications on the plots</b>, the limits are drawn in the plots, and the pole-zero map shows the region where the poles should be and the range of <i>k</i> on the root locus that keeps them there.</p>
 <h4>Auto-tuning (tuning rules)</h4>
 <p>Choose a rule (Ziegler–Nichols step response or ultimate sensitivity, CHR for set-point or disturbance response, IMC) and the controller type (P, PI, PID). The model found from the plant and the computed gains are shown; <b>Apply to the controller</b> puts them into the controller. When a rule cannot be used (for example for an unstable plant), the reason is shown.</p>
+<h4>Lead and lag compensator design</h4>
+<p>Choose a lead or lag compensator, the target phase margin PM*, the gain <i>K</i><sub>c</sub> (chosen for the steady-state error) and the allowance θ. The card works through the classical frequency-response steps for <i>K</i><sub>c</sub><i>P</i>(<i>s</i>) one by one — lead: the phase to add φ<sub>m</sub>, α, the new crossover ω<sub>m</sub> where |<i>K</i><sub>c</sub><i>P</i>| = √α, and <i>T</i><sub>1</sub>; lag: the new crossover where the phase is −180° + PM* + θ, β and <i>T</i><sub>2</sub> = 10/ω — and shows the phase margin reached. <b>Apply to the controller</b> sets the compensator. When the margin falls short (a lead shifts the crossover where the phase drops fast), increase θ.</p>
 <h4>Parameter sweep</h4>
 <p>Choose one parameter of the plant or the controller and give up to 8 values separated by commas. The results for every value are drawn in all plots in different colors, and a table lists the overshoot, settling time, margins, stability and the checks of the specifications. Click a row to use that value.</p>
 <h4>Comparing responses</h4>
@@ -222,6 +224,8 @@ export const HELP: HelpSection[] = [
 <p>使う仕様を選びます：オーバーシュート、整定時間、立ち上がり時間、定常偏差、位相余裕、ゲイン余裕、最大感度 Ms、減衰係数 ζ。それぞれ ✓ か ✗ で判定します。<b>仕様をグラフに表示</b> を選ぶと、図に仕様の線を描き、極・零点配置には極があるべき領域と、極をその中に保つ根軌跡上の <i>k</i> の範囲を表示します。</p>
 <h4>自動調整（チューニング則）</h4>
 <p>調整則（ジーグラ・ニコルスのステップ応答法・限界感度法、CHR の目標値応答・外乱応答、IMC）と制御器の種類（P、PI、PID）を選ぶと、制御対象から求めたモデルと計算したゲインを表示します。<b>制御器に適用</b> でそのゲインを制御器に入れます。使えないとき（不安定な制御対象など）は理由を表示します。</p>
+<h4>位相進み・遅れ補償器の設計</h4>
+<p>位相進み補償器か位相遅れ補償器を選び、目標の位相余裕 PM*、ゲイン <i>K</i><sub>c</sub>（定常偏差から決める）、余裕 θ を入力します。<i>K</i><sub>c</sub><i>P</i>(<i>s</i>) の周波数応答から、古典的な手順を一つずつ示します。位相進みでは、加える位相 φ<sub>m</sub>、α、|<i>K</i><sub>c</sub><i>P</i>| = √α となる新しい交差周波数 ω<sub>m</sub>、<i>T</i><sub>1</sub>。位相遅れでは、位相が −180° + PM* + θ となる新しい交差周波数、β、<i>T</i><sub>2</sub> = 10/ω。最後に得られる位相余裕を示します。<b>制御器に適用</b> で補償器を設定します。位相余裕が目標に届かないとき（位相進みで、位相が急に下がるところへ交差周波数がずれたときなど）は θ を大きくします。</p>
 <h4>パラメータの掃引</h4>
 <p>制御対象か制御器のパラメータを 1 つ選び、値をカンマで区切って最大 8 個入力します。すべての値の結果を色を変えてすべての図に重ね、オーバーシュート、整定時間、安定余裕、安定性、設計仕様の判定を表にします。表の行をクリックするとその値を設定に使います。</p>
 <h4>応答を比べる</h4>

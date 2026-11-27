@@ -2,7 +2,7 @@
 // Copyright 2026 Masanobu Koga
 /* ================= PID tuning rules ================= */
 import { T } from './02-i18n.ts';
-import { lastOf, polyRoots, trimPoly } from './03-math.ts';
+import { cdiv, cmul, lastOf, polyRoots, trimPoly } from './03-math.ts';
 import { PLANTS } from './05-definitions.ts';
 import { S } from './06-state.ts';
 import { bodeSeries, evalPr, freqRange } from './07-frequency.ts';
@@ -262,3 +262,117 @@ export function tuneRule(method: string, type: string, lam: number | null = null
 }
 // Gains of the parallel form C(s) = KP + KI/s + KD s/(s/N+1)
 export const tuneGains = (r: TuneGains) => ({ Kp: r.Kp, Ki: r.Ti ? r.Kp / r.Ti : 0, Kd: r.Td ? r.Kp * r.Td : 0 });
+
+/* ---- Lead and lag compensator design from the frequency response (the classical steps) ---- */
+/** Settings of the design: the kind, the target phase margin [deg], the gain Kc (chosen for the steady-state error)
+ *  and the allowance θ [deg] (lead: extra phase for the shift of the crossover; lag: for the lag's own phase lag) */
+export interface CompSettings {
+  method: string;
+  pm: number;
+  kc: number;
+  theta: number;
+}
+/** Result of the design. wgc0, pm0: crossover and phase margin of Kc P(s); lead: phiM (phase to add), alpha, wm (the
+ *  new crossover where |Kc P| = √α), T1; lag: phiT (phase at the new crossover), wg, beta = |Kc P(jwg)|, T2 = 10/wg;
+ *  wgc, pm: the crossover and phase margin of C(s) P(s) with the designed C. err: no crossover of Kc P, not needed
+ *  (the target is already met), too much phase for one lead stage (φm > 80°), or no frequency found */
+export interface CompDesign {
+  wgc0: number | null;
+  pm0: number | null;
+  phiM?: number;
+  alpha?: number;
+  wm?: number;
+  T1?: number;
+  phiT?: number;
+  wg?: number;
+  beta?: number;
+  T2?: number;
+  wgc: number | null;
+  pm: number | null;
+  err?: 'no-crossover' | 'not-needed' | 'too-much' | 'no-frequency';
+}
+// The frequency response of g(ω) on a log grid: frequencies, gains [dB] and phases [deg] unwrapped from the lowest
+function compGrid(st: State, g: (w: number) => Complex) {
+  const tf = PLANTS[st.plant].tf(st),
+    [a, b] = freqRange(tf, st),
+    n = 6000,
+    W: number[] = [],
+    db: number[] = [],
+    ph: number[] = [];
+  let prev = 0;
+  for (let i = 0; i < n; i++) {
+    const w = Math.pow(10, a - 2 + ((b - a + 4) * i) / (n - 1)),
+      z = g(w);
+    let p = (Math.atan2(z[1], z[0]) * 180) / Math.PI;
+    if (i > 0) p -= 360 * Math.round((p - prev) / 360);
+    prev = p;
+    W.push(w);
+    db.push(20 * Math.log10(Math.hypot(z[0], z[1])));
+    ph.push(p);
+  }
+  return { W, db, ph };
+}
+// The first frequency (from below) where v crosses the level from above, by linear interpolation in log ω, with the
+// other quantity interpolated there; null when it does not cross
+function crossDown(W: number[], v: number[], level: number, other: number[]): { w: number; o: number } | null {
+  for (let i = 1; i < W.length; i++)
+    if (v[i - 1] >= level && v[i] < level) {
+      const u = (v[i - 1] - level) / (v[i - 1] - v[i]);
+      return {
+        w: Math.pow(10, Math.log10(W[i - 1]) + u * (Math.log10(W[i]) - Math.log10(W[i - 1]))),
+        o: other[i - 1] + u * (other[i] - other[i - 1]),
+      };
+    }
+  return null;
+}
+// Gain crossover and phase margin of g (180° + the phase there, taken in (−180°, 180°] around −180°)
+function crossover(st: State, g: (w: number) => Complex): { wgc: number | null; pm: number | null } {
+  const r = compGrid(st, g),
+    c = crossDown(r.W, r.db, 0, r.ph);
+  if (!c) return { wgc: null, pm: null };
+  return { wgc: c.w, pm: 180 + c.o - 360 * Math.round((180 + c.o) / 360) };
+}
+export function compDesign(cs: CompSettings, st: State = S): CompDesign {
+  const tf = PLANTS[st.plant].tf(st),
+    P = (w: number) => cmul(evalPr(w, tf), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]),
+    G = (w: number): Complex => {
+      const p = P(w);
+      return [cs.kc * p[0], cs.kc * p[1]];
+    };
+  const g0 = compGrid(st, G),
+    c0 = crossDown(g0.W, g0.db, 0, g0.ph),
+    wgc0 = c0 ? c0.w : null,
+    pm0 = c0 ? 180 + c0.o - 360 * Math.round((180 + c0.o) / 360) : null,
+    out: CompDesign = { wgc0, pm0, wgc: null, pm: null };
+  const verify = (C: (w: number) => Complex) =>
+    Object.assign(
+      out,
+      crossover(st, w => cmul(C(w), P(w))),
+    );
+  if (pm0 === null) return { ...out, err: 'no-crossover' };
+  if (pm0 >= cs.pm) return { ...out, err: 'not-needed' };
+  if (cs.method === 'lead') {
+    const phiM = cs.pm - pm0 + cs.theta;
+    out.phiM = phiM;
+    if (phiM <= 0) return { ...out, err: 'not-needed' };
+    if (phiM > 80) return { ...out, err: 'too-much' };
+    const s = Math.sin((phiM * Math.PI) / 180),
+      alpha = (1 - s) / (1 + s),
+      m = crossDown(g0.W, g0.db, 10 * Math.log10(alpha), g0.ph);
+    out.alpha = alpha;
+    if (!m) return { ...out, err: 'no-frequency' };
+    out.wm = m.w;
+    const T1 = (out.T1 = 1 / (m.w * Math.sqrt(alpha)));
+    verify(w => cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])));
+  } else {
+    const phiT = (out.phiT = -180 + cs.pm + cs.theta),
+      c = crossDown(g0.W, g0.ph, phiT, g0.db);
+    if (!c) return { ...out, err: 'no-frequency' };
+    out.wg = c.w;
+    const beta = (out.beta = Math.pow(10, c.o / 20));
+    if (beta <= 1) return { ...out, err: 'not-needed' };
+    const T2 = (out.T2 = 10 / c.w);
+    verify(w => cmul([cs.kc, 0], cdiv([1, w * T2], [1, w * beta * T2])));
+  }
+  return out;
+}
