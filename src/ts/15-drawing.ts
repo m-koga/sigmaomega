@@ -7,7 +7,7 @@ import { PLOTS } from './05-definitions.ts';
 import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
 import { distMetrics, twoDof } from './07-frequency.ts';
 import { impulseMetrics, metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
-import { loopTFs, nyqCount } from './09-loop.ts';
+import { bodeAsymptote, loopTFs, nyqCount } from './09-loop.ts';
 import { evalSpecs, specIcon, specOn } from './11-specs.ts';
 import { sweepSeries } from './12-sweep.ts';
 import { $, ctx2d, savePNG } from './13-dom.ts';
@@ -290,6 +290,13 @@ export function drawPoints(f: PlotFrame, points: NonNullable<PlotOptions['points
     g.strokeStyle = p.color;
     g.lineWidth = 2;
     g.beginPath();
+    if (p.shape === 'o') {
+      g.arc(px, py, 4, 0, 2 * Math.PI);
+      g.fillStyle = COLORS.white;
+      g.fill();
+      g.stroke();
+      return;
+    }
     g.moveTo(px - 6, py - 6);
     g.lineTo(px + 6, py + 6);
     g.moveTo(px + 6, py - 6);
@@ -570,7 +577,26 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   const sw = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).mag })) : [],
     swp = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).ph })) : [],
     runs = showL ? (lastSweep || []).map(r => r.frB || r.fr) : [];
-  const named = sets.length > 0 || sw.length > 0; // a legend whenever a curve is shown, also a single one
+  // the straight-line approximation of the gain of L, with its break frequencies
+  const asym = $('bodeA').checked ? bodeAsymptote() : null,
+    asymSeries: PlotSeries[] = asym
+      ? [
+          {
+            x: frB.W,
+            y: frB.W.map(asym.gain),
+            color: COLORS.asymptote,
+            width: 1.6,
+            dash: [5, 4],
+            name: T('L asymptotes'),
+          },
+        ]
+      : [],
+    asymPts = asym
+      ? asym.breaks
+          .filter(b => b.w >= frB.W[0] && b.w <= frB.W[frB.W.length - 1])
+          .map(b => ({ x: b.w, y: asym.gain(b.w), color: COLORS.asymptote, shape: 'o' as const }))
+      : [];
+  const named = sets.length > 0 || sw.length > 0 || !!asym; // a legend whenever a curve is shown, also a single one
   const curves = (key: 'mag' | 'ph') =>
     sets.map(s => ({
       x: frB.W,
@@ -590,7 +616,8 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   // gain: whole multiples of 20 dB, at least −20 … 20 dB, at most ±120 dB
   const gr = { lo: Infinity, hi: -Infinity };
   sets.forEach(s => stretch(gr, s.mag));
-  if (!sets.length) Object.assign(gr, { lo: -20, hi: 20 });
+  asymSeries.forEach(s => stretch(gr, s.y));
+  if (!sets.length && !asym) Object.assign(gr, { lo: -20, hi: 20 });
   gr.lo = Math.max(gr.lo, -120);
   gr.hi = Math.min(gr.hi, 120);
   runs.forEach(r =>
@@ -603,7 +630,8 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   );
   plot($('cvG'), {
     ...common,
-    series: [...sw, ...curves('mag')],
+    series: [...sw, ...curves('mag'), ...asymSeries],
+    points: asymPts,
     ymin: Math.floor(Math.min(gr.lo, -20) / 20) * 20,
     ymax: Math.ceil(Math.max(gr.hi, 20) / 20) * 20,
     ylabel: T('Gain [dB]'),

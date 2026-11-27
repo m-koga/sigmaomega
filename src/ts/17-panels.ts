@@ -20,7 +20,9 @@ import { S, ctrlRational, lastPZ, lastSim, lastSweep } from './06-state.ts';
 import { spWeights } from './07-frequency.ts';
 import { metricWindow } from './08-simulation.ts';
 import {
+  bodeAsymptote,
   charPolyK,
+  evalLoopTF,
   errorConstants,
   hurwitzK,
   nyqCount,
@@ -689,6 +691,49 @@ export function renderRouth() {
       ? `<p class="note">${T('With a dead time, e^(−Ls) is replaced by its third-order Padé approximation, as in the pole-zero map: the results are approximate. The Nyquist plot and the margins use the exact delay.')}</p>`
       : '');
   if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(() => {});
+}
+/* ---- Break frequencies of the Bode gain asymptotes ---- */
+// The tab "Break frequencies" under the Bode plot: the low-frequency line K/ω^q, and for each break frequency the
+// poles and zeros there, the change of slope, the slope after it, and the true gain minus the asymptote there
+export function renderBodeAsym() {
+  const box = byId('bodeAsym'),
+    a = bodeAsymptote();
+  if (!a) {
+    box.innerHTML = `<p class="note">${T('No loop: the controller gain is zero.')}</p>`;
+    return;
+  }
+  const g = loopTFs().L,
+    trueDb = (w: number) => {
+      const v = evalLoopTF(g, w);
+      return 20 * Math.log10(Math.hypot(v[0], v[1]));
+    },
+    slope = (s: number) => `${s > 0 ? '+' : ''}${numStr(s)} dB/dec`,
+    root = (r: { z: Complex; mult: number }, what: string) => {
+      const [x, y] = r.z,
+        wn = Math.hypot(x, y),
+        m = r.mult > 1 ? ` (×${r.mult})` : '',
+        rhp = x > 0 ? ` ${T('(right half-plane)')}` : '';
+      return y > 0
+        ? `${T(what === 'pole' ? 'complex poles' : 'complex zeros')} ${numStr(x)} ± j${numStr(y)}${m}, ζ = ${numStr(-x / wn)}${rhp}`
+        : `${T(what === 'pole' ? 'pole' : 'zero')} s = ${numStr(x)}${m}${rhp}`;
+    };
+  const low =
+    a.q === 0
+      ? `|L(jω)| ≈ ${numStr(Math.abs(a.K))} (${numStr(20 * Math.log10(Math.abs(a.K)))} dB), ${slope(0)}`
+      : `|L(jω)| ≈ ${numStr(Math.abs(a.K))} / ω${a.q === 1 ? '' : `<sup>${a.q}</sup>`}, ${slope(-20 * a.q)}`;
+  const rows = a.breaks
+    .map(
+      b =>
+        `<tr><td>${numStr(b.w)}</td><td>${[...b.poles.map(r => root(r, 'pole')), ...b.zeros.map(r => root(r, 'zero'))].join('<br>')}</td>` +
+        `<td>${slope(b.dSlope)}</td><td>${slope(b.slope)}</td><td>${numStr(trueDb(b.w) - a.gain(b.w))} dB</td></tr>`,
+    )
+    .join('');
+  box.innerHTML =
+    `<p>${T('Low frequencies:')} ${low}</p>` +
+    (a.breaks.length
+      ? `<div class="pzwrap-tbl"><table class="pzt rules asym"><thead><tr><th>${T('Break frequency [rad/s]')}</th><th>${T('Poles and zeros')}</th><th>${T('Change of slope')}</th><th>${T('Slope after')}</th><th>${T('True − asymptote')}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p>${T('No break frequency: the asymptote is a single line.')}</p>`) +
+    `<p class="note">${T('Each pole changes the slope by −20 dB/dec and each zero by +20 dB/dec at its break frequency |s| (a complex pair by ±40 at ωn). At a real break the true gain differs by 3 dB; at a complex pair by −20 log10(2ζ) dB. The dead time does not change the gain.')}</p>`;
 }
 /* ---- Nyquist stability criterion ---- */
 // The tab "Nyquist criterion" under the Nyquist plot: P, N and Z = N + P with the verdict, and the crossings of the

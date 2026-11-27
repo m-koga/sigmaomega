@@ -32,6 +32,7 @@ export const COLORS = {
   locusAxis: 'rgba(123,79,163,.25)', // real-axis segments of the root locus
   locusRules: '#00838f', // asymptotes, breakaway points, imaginary-axis crossings, departure and arrival angles
   nyqCrossing: '#00838f', // crossings of the Nyquist plot with the real axis to the left of −1
+  asymptote: '#0d47a1', // straight-line approximation of the gain of L(jω) and its break frequencies
   dampingGrid: 'rgba(123,79,163,.35)', // ζ–ωn grid lines
   dampingLabel: 'rgba(123,79,163,.8)', // ζ–ωn grid labels
   // limits and specifications
@@ -248,6 +249,7 @@ export const INFO_AREAS: Record<string, { label: string; tabs: [string, string][
     tabs: [
       ['bodeopts', 'Curves'],
       ['margins', 'Stability margins'],
+      ['bodeasym', 'Break frequencies'],
       ['bodenote', 'Note'],
     ],
   },

@@ -37,6 +37,7 @@ Object.keys(INFO_AREAS).forEach(a =>
 export const ZOOM_AREAS: Record<string, string> = {
   bodeopts: 'bodeOpts',
   bodenote: 'bodeNote',
+  bodeasym: 'bodeAsym',
   nyqopts: 'nyqOpts',
   nyqcrit: 'nyqCrit',
   nyqnote: 'nyqNote',

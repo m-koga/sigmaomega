@@ -471,6 +471,7 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 #nyqCrit .verdict.bad{color:#c62828}
 table.pzt.rules th,table.pzt.rules td{text-align:left;vertical-align:top;white-space:normal}
 table.pzt.rules td:first-child{font-family:inherit;width:45%}
+table.pzt.rules.asym td:first-child{font-family:"JetBrains Mono",monospace;width:auto}
 table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"JetBrains Mono",monospace;font-size:.88em}
 .routh-box h4{margin:10px 0 4px;font-size:13px}
 .routh-box h4:first-child{margin-top:2px}

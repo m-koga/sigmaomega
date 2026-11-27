@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.84.0',
+    d: '2026-11-27',
+    en: [
+      'Bode plot: straight-line (asymptotic) approximation of the gain of L(jω). The new button "L asymptotes" (off at first) draws it with its break frequencies (○): K/ω^q at low frequencies and a change of slope of ±20 dB/dec per real pole or zero (±40 per complex pair) at |s|. The new tab "Break frequencies" lists each one with its poles and zeros, the change of slope, the slope after it and the gap to the true gain (3 dB at a real break, −20 log10(2ζ) at a complex pair), for checking a Bode plot drawn by hand',
+    ],
+    ja: [
+      'ボード線図：L(jω) のゲインの折れ線近似。新しいボタン「L の折れ線近似」（最初は非表示）で、折れ線と折れ点周波数（○）を描く。低周波では K/ω^q、|s| で実数の極・零点 1 つごとに ±20 dB/dec（複素の対は ±40）傾きが変わる。新しいタブ「折れ点周波数」に、各折れ点の極・零点、傾きの変化、その後の傾き、実際のゲインとの差（実数の折れ点で 3 dB、複素の対で −20 log10(2ζ)）を示す。手で描いたボード線図の確認に使える',
+    ],
+  },
+  {
     v: '1.83.0',
     d: '2026-11-27',
     en: [

@@ -189,7 +189,7 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
 // Options of the Bode and Nyquist plots: redraw when a check box changes; the description line of the Bode
 // curve buttons shows the hovered or focused one, otherwise the curves that are shown
 (() => {
-  (['bodeL', 'bodeP', 'bodeC', 'bodeS', 'bodeT', 'bodeD', 'bodeR'] as const).forEach(
+  (['bodeL', 'bodeP', 'bodeC', 'bodeS', 'bodeT', 'bodeD', 'bodeR', 'bodeA'] as const).forEach(
     id =>
       ($(id).onchange = () => {
         if (shownPanels.has('bode') && lastFr) drawBode(lastFr, lastFrB || lastFr);

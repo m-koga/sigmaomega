@@ -328,7 +328,8 @@ interface PlotOptions {
   circles?: { cx: number; cy: number; r: number; color: string; width?: number; dash?: number[] }[];
   bands?: { x0: number; x1: number; y0: number; y1: number; fill: string; stroke?: string }[];
   segs?: { x0: number; x1: number; y: number; color: string; dash?: number[] }[];
-  points?: { x: number; y: number; color: string }[];
+  /** marks: × (default) or a small circle */
+  points?: { x: number; y: number; color: string; shape?: 'x' | 'o' }[];
 }
 /** Label and value of a metric */
 type Metric = [string, string];

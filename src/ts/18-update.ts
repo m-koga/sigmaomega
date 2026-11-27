@@ -10,6 +10,7 @@ import { shownPanels } from './14-view.ts';
 import { drawBode, drawNyq, drawTime } from './15-drawing.ts';
 import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
+  renderBodeAsym,
   renderNyqCrit,
   renderPoles,
   scheduleRouth,
@@ -57,7 +58,10 @@ export function update() {
 export function redraw() {
   if (!lastSim) return;
   if (shownPanels.has('time')) drawTime(lastSim);
-  if (shownPanels.has('bode') && lastFr) drawBode(lastFr, lastFrB || lastFr);
+  if (shownPanels.has('bode') && lastFr) {
+    drawBode(lastFr, lastFrB || lastFr);
+    renderBodeAsym();
+  }
   if (shownPanels.has('nyq') && lastFr) {
     drawNyq(lastFr);
     renderNyqCrit();

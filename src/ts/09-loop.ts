@@ -349,6 +349,59 @@ export function positiveKRanges(ps: Poly[]): [number, number][] {
   }
   return out;
 }
+/* ---- Asymptotic (straight-line) approximation of the Bode gain plot ---- */
+/** The straight-line approximation of |L(jω)| in dB: K/ω^q at low frequencies (q: poles minus zeros at the origin,
+ *  K: the ratio of their lowest coefficients) and, at each break frequency ω_b = |root| of the other poles and zeros,
+ *  a change of slope of ±20 dB/dec per zero/pole (±40 for a complex pair). The dead time does not change the gain */
+export interface BodeAsymptote {
+  K: number;
+  q: number;
+  breaks: {
+    w: number;
+    poles: { z: Complex; mult: number }[];
+    zeros: { z: Complex; mult: number }[];
+    dSlope: number;
+    slope: number;
+  }[];
+  gain: (w: number) => number;
+}
+export function bodeAsymptote(st: State = S): BodeAsymptote | null {
+  const g = loopTFs(st).L;
+  if (g.num.every(v => v === 0)) return null;
+  const N = g.num,
+    D = g.den0,
+    zn = originOrder(N),
+    zd = originOrder(D),
+    K = N[N.length - 1 - zn] / D[D.length - 1 - zd],
+    q = zd - zn,
+    // the poles and zeros other than at the origin; a complex pair once, by its root with Im > 0
+    pick = (rs: Complex[]) =>
+      groupRoots(rs).filter(r => Math.hypot(r.z[0], r.z[1]) > 1e-9 * (1 + Math.hypot(r.z[0], r.z[1])) && r.z[1] >= 0),
+    ps = pick(polyRoots(D)),
+    zs = pick(polyRoots(N)),
+    weight = (r: { z: Complex; mult: number }) => r.mult * (r.z[1] > 0 ? 2 : 1),
+    mag = (r: { z: Complex }) => Math.hypot(r.z[0], r.z[1]);
+  const ws = [...ps, ...zs]
+    .map(mag)
+    .sort((a, b) => a - b)
+    .filter((w, i, a) => i === 0 || w - a[i - 1] > 1e-6 * w);
+  let slope = -20 * q;
+  const breaks = ws.map(w => {
+    const at = (r: { z: Complex }) => Math.abs(mag(r) - w) <= 1e-6 * w,
+      poles = ps.filter(at),
+      zeros = zs.filter(at),
+      dSlope = 20 * (zeros.reduce((s, r) => s + weight(r), 0) - poles.reduce((s, r) => s + weight(r), 0));
+    slope += dSlope;
+    return { w, poles, zeros, dSlope, slope };
+  });
+  const gain = (w: number) => {
+    let v = 20 * Math.log10(Math.abs(K)) - 20 * q * Math.log10(w);
+    zs.forEach(r => (v += 20 * weight(r) * Math.log10(Math.max(1, w / mag(r)))));
+    ps.forEach(r => (v -= 20 * weight(r) * Math.log10(Math.max(1, w / mag(r)))));
+    return v;
+  };
+  return { K, q, breaks, gain };
+}
 /* ---- Nyquist stability criterion ---- */
 /** Counting for the Nyquist criterion along the Nyquist contour (up the imaginary axis from −jW to +jW, around the
  *  poles of L(s) on the imaginary axis by small half circles on their right, closed by a large half circle on which

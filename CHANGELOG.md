@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.84.0 (2026-11-27)
+- Bode plot: straight-line (asymptotic) approximation of the gain of L(jω). The new button "L asymptotes" (off at first) draws it with its break frequencies (○): K/ω^q at low frequencies and a change of slope of ±20 dB/dec per real pole or zero (±40 per complex pair) at |s|. The new tab "Break frequencies" lists each one with its poles and zeros, the change of slope, the slope after it and the gap to the true gain (3 dB at a real break, −20 log10(2ζ) at a complex pair), for checking a Bode plot drawn by hand
+
 ## v1.83.0 (2026-11-27)
 - New reference type "Impulse" A δ(t − t0): applied in the simulation as a pulse of area A over one substep (the recorded r and u leave the impulse out; a vertical line marks t0). Its metrics: the peak of y and its time, the area ∫ y dt beside its theory A·T(0) (A·Gyr(0) with set-point weights), y at the end and the largest |u| without the impulse
 

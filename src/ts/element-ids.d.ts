@@ -8,6 +8,8 @@ interface ElementById {
   "ar": HTMLElementTagNameMap['marker'];
   "aw": HTMLInputElement;
   "binfo": HTMLDivElement;
+  "bodeA": HTMLInputElement;
+  "bodeAsym": HTMLDivElement;
   "bodeC": HTMLInputElement;
   "bodeD": HTMLInputElement;
   "bodeDesc": HTMLDivElement;
