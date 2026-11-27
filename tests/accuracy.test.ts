@@ -5,6 +5,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  ASYM_CASES,
+  CLOSED_CASES,
+  NYQ_PLANTS,
+  RULE_CASES,
+  STABLE_K_CASES,
+  STEADY_CASES,
+  asymptoteCase,
+  closedLoopCase,
+  nyquistAgreement,
+  rangeError,
+  rulesCase,
+  rulesError,
+  stableKCase,
+  steadyCase,
   DEAD_CASES,
   FREQ_CASES,
   TIME_CASES,
@@ -83,4 +97,49 @@ test('sine reference: amplitude ratio within 1 %, phase difference within 0.5°'
     const r = sineCase(Tp, Tsim);
     assert.ok(Math.abs(r.ratio) < 0.01 && Math.abs(r.phase) < 0.5, `period ${Tp}: ${r.ratio}, ${r.phase}°`);
   }
+});
+
+test('closed-loop frequency response: Mt and max|Gyd| within 1e-5, the bandwidth within 2e-4 (relative)', () => {
+  for (const [name, set] of CLOSED_CASES) {
+    const { got, ref } = closedLoopCase(set);
+    assert.ok(rel(got.mt, ref.mt) < 1e-5, `${name}: Mt ${got.mt} / ${ref.mt}`);
+    assert.ok(rel(got.wbw, ref.wbw) < 2e-4, `${name}: bandwidth ${got.wbw} / ${ref.wbw}`);
+    assert.ok(rel(got.dmax, ref.dmax) < 1e-5, `${name}: max|Gyd| ${got.dmax} / ${ref.dmax}`);
+  }
+});
+
+test('stable range of k: Routh–Hurwitz within 1e-9 and the root locus within 1e-6 of the exact boundaries; 2e-3 with the Padé approximation of a dead time', () => {
+  for (const [name, set] of STABLE_K_CASES) {
+    const r = stableKCase(set);
+    assert.ok(rangeError(r.routh, r.ref) < (r.approx ? 2e-3 : 1e-9), `${name}: Routh ${JSON.stringify(r.routh)}`);
+    assert.ok(rangeError(r.locus, r.ref) < (r.approx ? 2e-3 : 1e-6), `${name}: locus ${JSON.stringify(r.locus)}`);
+  }
+});
+
+test('steady-state error: the system type, the error constant and the errors equal the exact values', () => {
+  for (const [name, set, ex] of STEADY_CASES) {
+    const r = steadyCase(set);
+    assert.equal(r.type, ex.type, name);
+    assert.ok(Math.abs(r.K - ex.K) < 1e-9 && Math.abs(r.e - ex.e) < 1e-9, `${name}: ${r.K}, ${r.e}`);
+    assert.ok(Math.abs(r.dist - ex.dist) < 1e-9, `${name}: disturbance ${r.dist}`);
+  }
+});
+
+test('Nyquist criterion: Z = N + P equals the closed-loop poles in the right half-plane in every case', () => {
+  for (const [name, set] of NYQ_PLANTS) {
+    const r = nyquistAgreement(set);
+    assert.equal(r.agree, r.cases, name);
+    assert.ok(r.cases >= 20, `${name}: ${r.cases} cases`);
+  }
+});
+
+test('Bode asymptotes: break frequencies within 1e-6 (relative), gain and phase asymptotes within 1e-4', () => {
+  for (const [name, set, ex] of ASYM_CASES) {
+    const r = asymptoteCase(set, ex);
+    assert.ok(r.eb < 1e-6 && r.eg < 1e-4 && r.ep < 1e-4, `${name}: ${r.eb}, ${r.eg} dB, ${r.ep}°`);
+  }
+});
+
+test('root-locus rules: centroid, breakaway points, imaginary-axis crossings and departure angles within 1e-9', () => {
+  for (const [name, set, ex] of RULE_CASES) assert.ok(rulesError(rulesCase(set), ex) < 1e-9, name);
 });

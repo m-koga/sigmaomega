@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.98.1 (2026-11-27)
+- The peak of the disturbance gain max|Gyd| is refined between the frequency points, like Ms and Mt; it could be up to 1.6 % too small for a lightly damped loop (ζ = 0.05)
+- Numerical accuracy (ACCURACY.md and the manual): the evaluation also covers the closed-loop peaks and bandwidth, the stable range of k (Routh–Hurwitz and root locus), the steady-state errors, the Nyquist criterion (189 cases), the straight-line approximation of the Bode plot and the construction rules of the root locus, against exact values and independent references; the tests check these bounds
+
 ## v1.98.0 (2026-11-27)
 - User manual in every language of the page: besides English and Japanese, it is now written in Chinese, Korean, Thai, French, German, Spanish, Portuguese and Russian (no longer the English text with a note), with the names of the menus and buttons as the page shows them in that language, and the screenshots of the chapter "Trying the exercises" taken of the screen in that language; figures and tables are numbered in that language (for example "Abb. 8.1", "Рис. 8.1"). The page is about 1.4 MB compressed (0.5 MB before), mostly the screenshots
 - Development: the text of the manual is in src/help/<lang>.html, one file per language, which the build puts into the page like the dictionary; the tests check that every language has it, with the same chapters, figures, tables, references and structure as the English text, and a screenshot in each language for each figure

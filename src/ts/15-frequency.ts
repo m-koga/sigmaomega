@@ -220,6 +220,16 @@ export function freqResp(st: State = S, rng?: [number, number]) {
   const { Ss, Ts, Ds, Rs } = closedLoopSeries(W, Ls.cs, Ps.cs, st);
   // L(jω) with the dead time, for refining the peaks of |S| and |T| between the grid points
   const Lw = (w: number): Complex => cmul(evalCP(w, tf, st), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]);
+  // the peak of |Gyd| = |P/(1 + L)|, refined between the grid points like those of |S| and |T|
+  const dPeak = peakOf(W, Ds.mag);
+  if (dPeak.dmax !== null && dPeak.wdmax !== null) {
+    const absD = (w: number) => {
+      const p = cmul(evalPr(w, tf), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]),
+        l = Lw(w);
+      return Math.hypot(p[0], p[1]) / Math.hypot(1 + l[0], l[1]);
+    };
+    [dPeak.dmax, dPeak.wdmax] = refinePeak(W, W.indexOf(dPeak.wdmax), absD);
+  }
   return {
     W,
     Lc: Ls.cs,
@@ -231,7 +241,7 @@ export function freqResp(st: State = S, rng?: [number, number]) {
     T: Ts,
     D: Ds,
     Gyr: Rs,
-    ...peakOf(W, Ds.mag),
+    ...dPeak,
     ...sensMetrics(W, Ss.mag, Ts.mag, Lw),
     ...stabilityMargins(W, Ls.mag, Ls.ph),
     w0,

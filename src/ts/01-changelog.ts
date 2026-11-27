@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.98.1',
+    d: '2026-11-27',
+    en: [
+      'The peak of the disturbance gain max|Gyd| is refined between the frequency points, like Ms and Mt; it could be up to 1.6 % too small for a lightly damped loop (ζ = 0.05)',
+      'Numerical accuracy (ACCURACY.md and the manual): the evaluation also covers the closed-loop peaks and bandwidth, the stable range of k (Routh–Hurwitz and root locus), the steady-state errors, the Nyquist criterion (189 cases), the straight-line approximation of the Bode plot and the construction rules of the root locus, against exact values and independent references; the tests check these bounds',
+    ],
+    ja: [
+      '外乱ゲインのピーク max|Gyd| を、Ms・Mt と同じく周波数の点の間で詰めるようにした。減衰の小さいループ（ζ = 0.05）では最大 1.6 % 小さく表示されることがあった',
+      '数値精度（ACCURACY.md とマニュアル）：閉ループのピークと帯域幅、k の安定範囲（ラウス・フルビッツと根軌跡）、定常偏差、ナイキストの安定判別（189 例）、ボード線図の折れ線近似、根軌跡の作図規則も、厳密な値や独立な参照解と比べて評価した。テストがこれらの範囲を確かめる',
+    ],
+  },
+  {
     v: '1.98.0',
     d: '2026-11-27',
     en: [
