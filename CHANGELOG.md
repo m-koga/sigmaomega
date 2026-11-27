@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.98.0 (2026-11-27)
+- User manual in every language of the page: besides English and Japanese, it is now written in Chinese, Korean, Thai, French, German, Spanish, Portuguese and Russian (no longer the English text with a note), with the names of the menus and buttons as the page shows them in that language, and the screenshots of the chapter "Trying the exercises" taken of the screen in that language; figures and tables are numbered in that language (for example "Abb. 8.1", "Рис. 8.1"). The page is about 1.4 MB compressed (0.5 MB before), mostly the screenshots
+- Development: the text of the manual is in src/help/<lang>.html, one file per language, which the build puts into the page like the dictionary; the tests check that every language has it, with the same chapters, figures, tables, references and structure as the English text, and a screenshot in each language for each figure
+
 ## v1.97.0 (2026-11-27)
 - Portuguese and Russian: the language menu at the top right has Português and Русский, and a browser set to Portuguese or Russian opens the page in that language. Every text of the page is translated (the user manual and the change log are shown in English, with a note, as in the other languages but Japanese)
 

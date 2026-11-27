@@ -17,7 +17,7 @@ test('Help opens the user manual: sections, contents list, closing, languages', 
   await page.click('#helpBtn');
   await expect(back).toBeVisible();
   await expect(page.locator('#helpTitle')).toHaveText('利用者マニュアル');
-  const n = await page.evaluate(() => HELP.length);
+  const n = await page.evaluate(() => helpChapters().length);
   await expect(page.locator('#helpToc .hp-link')).toHaveCount(n);
   await expect(page.locator('#helpBody section')).toHaveCount(n);
   await expect(page.locator('#help-start h3')).toHaveText('1. はじめに');
@@ -43,14 +43,17 @@ test('Help opens the user manual: sections, contents list, closing, languages', 
   await page.click('#helpBtn');
   await page.mouse.click(5, 850);
   await expect(back).toBeHidden();
-  // Chinese, Korean, Thai: the English text with a note in that language
-  await page.selectOption('#langSel', 'ko');
-  await page.click('#helpBtn');
-  await expect(page.locator('#help-start h3')).toHaveText('1. Getting started');
-  await expect(page.locator('#helpBody > p.note')).toHaveText(
-    await page.evaluate(() => T('(The user manual is shown in English.)')),
-  );
-  await page.keyboard.press('Escape');
+  // every other language: the manual written in that language (src/help/<lang>.html), without a note
+  for (const lang of await page.evaluate(() => Object.keys(LANGUAGES).filter(l => l !== 'en' && l !== 'ja'))) {
+    await page.selectOption('#langSel', lang);
+    await page.click('#helpBtn');
+    const title = await page.evaluate(l => helpChapters(l)[0][1], lang);
+    expect(title, lang).not.toBe('Getting started');
+    await expect(page.locator('#help-start h3')).toHaveText(`1. ${title}`);
+    await expect(page.locator('#helpToc .hp-link')).toHaveCount(n);
+    await expect(page.locator('#helpBody > p.note')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+  }
 });
 
 test('Help on a phone: its icon only, the contents above the text', async ({ page }) => {
@@ -102,6 +105,19 @@ test('the chapter on the exercises shows its screenshots in the language of the 
   const ja = await pics();
   expect(ja.map(p => p.src)).not.toEqual(en.map(p => p.src));
   expect(ja[0].alt).toMatch(/保持/);
+  await page.keyboard.press('Escape');
+  // every other language: its own pictures too
+  for (const lang of ['zh', 'ko', 'th', 'fr', 'de', 'es', 'pt', 'ru']) {
+    await page.selectOption('#langSel', lang);
+    await page.click('#helpBtn');
+    await page.click('.hp-link[data-sec=examples]');
+    await figs.last().scrollIntoViewIfNeeded();
+    await expect.poll(async () => (await pics()).every(p => p.w > 0)).toBe(true);
+    const own = await pics();
+    expect(own, lang).toHaveLength(n);
+    for (let i = 0; i < n; i++) expect(own[i].src, `${lang} ${i}`).not.toBe(en[i].src);
+    await page.keyboard.press('Escape');
+  }
 });
 
 test('figures and tables are numbered by section, and a reference scrolls to its figure or table', async ({ page }) => {
@@ -109,6 +125,8 @@ test('figures and tables are numbered by section, and a reference scrolls to its
   for (const [lang, fig, tab] of [
     ['en', 'Fig. 8.1', 'Table 2.1'],
     ['ja', '図 8.1', '表 2.1'],
+    ['de', 'Abb. 8.1', 'Tab. 2.1'],
+    ['ru', 'Рис. 8.1', 'Таблица 2.1'],
   ]) {
     await page.selectOption('#langSel', lang);
     await page.click('#helpBtn');

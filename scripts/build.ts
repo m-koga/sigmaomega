@@ -28,6 +28,10 @@ const SRC = path.join(ROOT, 'src');
 const OUT = path.join(ROOT, 'index.html');
 const INIT_FILE = '99-init.ts';
 const I18N_MARK = '/*@@I18N@@*/{}';
+// The user manual, one file per language (src/help/<lang>.html: one <section id="…" title="…"> per chapter), put
+// into the script at this placeholder of src/ts/84-help.ts as {lang: [[id, title, HTML], …]}, one chapter per line
+const HELP_MARK = '/*@@HELP@@*/{}';
+const HELP_DIR = path.join(SRC, 'help');
 // Screenshots of the user manual (scripts/help-shots.ts), put into the page at the placeholder <!--@@HELPIMG@@-->
 // of src/index.html: one <script type="text/plain" data-help-img="<name>.<lang>"> per picture, holding the WebP
 // file in base64 on lines of 120 characters (so that a change elsewhere never touches a long line). data-w is the
@@ -165,9 +169,39 @@ function buildScript({ withInit = true, compact: small = false } = {}) {
   if (js.split(I18N_MARK).length !== 2)
     throw new Error(`the placeholder ${I18N_MARK} must appear exactly once in src/ts`);
   js = js.replace(I18N_MARK, () => i18n);
+  if (js.split(HELP_MARK).length !== 2)
+    throw new Error(`the placeholder ${HELP_MARK} must appear exactly once in src/ts`);
+  js = js.replace(HELP_MARK, () => helpText());
   const m = js.match(/const CHANGELOG = \[[\s\S]*?\bv: *'([^']+)'/); // first entry (any formatting)
   if (!m) throw new Error('the version number was not found in the first entry of CHANGELOG');
   return { js, files, version: m[1] };
+}
+
+// The chapters of the user manual in each language (src/help/<lang>.html), as the text of an object literal
+export function helpChapters(): Record<string, [string, string, string][]> {
+  const out: Record<string, [string, string, string][]> = {};
+  for (const f of fs
+    .readdirSync(HELP_DIR)
+    .filter(f => f.endsWith('.html'))
+    .sort()) {
+    const text = fs.readFileSync(path.join(HELP_DIR, f), 'utf8'),
+      ch = [...text.matchAll(/^<section id="([\w-]+)" title="([^"]+)">\n([\s\S]*?)\n<\/section>$/gm)].map(
+        m => [m[1], m[2], m[3]] as [string, string, string],
+      );
+    if (!ch.length) throw new Error(`src/help/${f}: no <section id="…" title="…"> found`);
+    out[f.replace(/\.html$/, '')] = ch;
+  }
+  return out;
+}
+function helpText(): string {
+  const h = helpChapters();
+  return (
+    '{\n' +
+    Object.entries(h)
+      .map(([l, ch]) => `${JSON.stringify(l)}: [\n${ch.map(c => JSON.stringify(c)).join(',\n')}\n]`)
+      .join(',\n') +
+    '\n}'
+  );
 }
 
 // Licenses known to the build (the SPDX id in package.json → its name and text)

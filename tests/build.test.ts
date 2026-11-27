@@ -18,16 +18,20 @@ test('the version number of the page is the first entry of CHANGELOG', () => {
   assert.ok(!/@@[A-Z0-9]+@@/.test(html), 'a placeholder is left in the built page');
 });
 
-test('the screenshots of the user manual: one in English and one in Japanese for each figure, all in the page', async () => {
+test('the screenshots of the user manual: one in each language for each figure, all in the page', async () => {
   const root = path.join(import.meta.dirname, '..'),
-    help = fs.readFileSync(path.join(root, 'src/ts/84-help.ts'), 'utf8'),
+    help = fs.readFileSync(path.join(root, 'src/help/en.html'), 'utf8'),
     figs = [...help.matchAll(/<figure class="hp-fig" data-img="([\w-]+)"/g)].map(m => m[1]),
-    names = [...new Set(figs)].sort();
-  // each figure is in the English and the Japanese text
-  for (const n of names) assert.equal(figs.filter(f => f === n).length, 2, `figure ${n}`);
-  // a picture in each language for each figure, and no other picture
+    names = [...new Set(figs)].sort(),
+    langs = fs
+      .readdirSync(path.join(root, 'src/help'))
+      .filter(f => f.endsWith('.html'))
+      .map(f => f.replace('.html', ''));
+  // each figure once in the manual (tests/help.test.ts checks that every language has the same ones)
+  for (const n of names) assert.equal(figs.filter(f => f === n).length, 1, `figure ${n}`);
+  // a picture in each language of the manual for each figure, and no other picture
   const files = fs.readdirSync(path.join(root, 'src/help-img')).sort();
-  assert.deepEqual(files, names.flatMap(n => [`${n}.en.webp`, `${n}.ja.webp`]).sort());
+  assert.deepEqual(files, names.flatMap(n => langs.map(l => `${n}.${l}.webp`)).sort());
   // scripts/help-shots.ts takes exactly these
   const { SHOTS } = await import('../scripts/help-shots.ts');
   assert.deepEqual(SHOTS.map(s => s.name).sort(), names);

@@ -2,7 +2,7 @@
 // Copyright 2026 Masanobu Koga
 // The numbers of the chapter "Trying the exercises" of the user manual (src/ts/84-help.ts): each step of the four
 // built-in exercises gives what the manual says (rounded as there). When one of these fails after a change of the
-// computation, correct the manual in English and Japanese together with this test.
+// computation, correct the manual in every language (src/help/<lang>.html) together with this test.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fresh, plain } from './harness.ts';

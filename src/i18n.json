@@ -4850,17 +4850,6 @@
 "pt": "Abrir o manual do usuário",
 "ru": "Открыть руководство пользователя"
 },
-"(The user manual is shown in English.)": {
-"ja": "（利用者マニュアルは英語で表示しています。）",
-"zh": "（用户手册以英文显示。）",
-"ko": "(사용자 설명서는 영어로 표시됩니다.)",
-"th": "(คู่มือผู้ใช้แสดงเป็นภาษาอังกฤษ)",
-"fr": "(Le manuel d’utilisation est affiché en anglais.)",
-"de": "(Das Benutzerhandbuch wird auf Englisch angezeigt.)",
-"es": "(El manual de usuario se muestra en inglés.)",
-"pt": "(O manual do usuário é mostrado em inglês.)",
-"ru": "(Руководство пользователя показано на английском языке.)"
-},
 "System": {
 "ja": "系",
 "zh": "系统",
@@ -6917,5 +6906,27 @@
 "es": "Ocultar este panel (vuelva a mostrarlo desde «Análisis y diseño»)",
 "pt": "Ocultar este painel (mostre-o novamente em “Análise e projeto”)",
 "ru": "Скрыть эту панель (снова показать можно в меню «Анализ и синтез»)"
+},
+"Fig. {n}": {
+"ja": "図 {n}",
+"zh": "图 {n}",
+"ko": "그림 {n}",
+"th": "รูปที่ {n}",
+"fr": "Fig. {n}",
+"de": "Abb. {n}",
+"es": "Fig. {n}",
+"pt": "Fig. {n}",
+"ru": "Рис. {n}"
+},
+"Table {n}": {
+"ja": "表 {n}",
+"zh": "表 {n}",
+"ko": "표 {n}",
+"th": "ตารางที่ {n}",
+"fr": "Tableau {n}",
+"de": "Tab. {n}",
+"es": "Tabla {n}",
+"pt": "Tabela {n}",
+"ru": "Таблица {n}"
 }
 }

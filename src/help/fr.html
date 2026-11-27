@@ -1,0 +1,208 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Masanobu Koga -->
+<!-- User manual in French: one <section> per chapter, with its id and title (scripts/build.ts puts it into the page; src/ts/84-help.ts shows it) -->
+<section id="start" title="Premiers pas">
+<p><b>SigmaOmega</b> (simulateur de commande en boucle fermée) permet d’essayer l’analyse et la conception d’un système asservi dans le navigateur. Choisissez un procédé et un correcteur et changez leurs valeurs : la réponse temporelle, les diagrammes de Bode et de Nyquist et la carte des pôles et zéros sont redessinés aussitôt. Tout est calculé dans votre navigateur, et le simulateur n’envoie ni vos réglages ni les résultats nulle part (le chapitre 9 indique ce que la page charge depuis Internet).</p>
+<p>Le nom vient de la variable complexe <i>s</i> = σ + <i>j</i>ω de la transformée de Laplace : la partie réelle σ d’un pôle fixe la vitesse à laquelle la réponse s’amortit (ou diverge), et la réponse fréquentielle correspond à <i>s</i> sur l’axe imaginaire, <i>s</i> = <i>j</i>ω. Le simulateur montre ensemble tout le plan <i>s</i> et ces deux points de vue.</p>
+<p>Le système est une boucle unique : la consigne <i>r</i> entre dans le correcteur <i>C</i>(<i>s</i>), dont la sortie <i>u</i> commande le procédé <i>P</i>(<i>s</i>) de sortie <i>y</i>. On peut ajouter une perturbation <i>d</i> à l’entrée du procédé et un bruit de mesure <i>n</i> à la sortie.</p>
+<h4>Un premier essai</h4>
+<ol>
+<li>Dans <b>Système › Procédé P(s)</b>, choisissez un procédé, par exemple <b>Troisième ordre (constantes de temps égales)</b>.</li>
+<li>Dans <b>Système › Correcteur C(s)</b>, choisissez <b>PID</b> et déplacez les curseurs de <i>K</i><sub>P</sub>, <i>K</i><sub>I</sub> et <i>K</i><sub>D</sub>.</li>
+<li>Observez la réponse indicielle et ses indicateurs (dépassement, temps de réponse, …) sous le graphique.</li>
+<li>Ouvrez <b>Graphiques</b> et ajoutez le <b>Diagramme de Bode</b> ou la <b>Carte des pôles et zéros</b> pour voir le même changement dans le domaine fréquentiel et sur les pôles.</li>
+</ol>
+<p>Pour des exemples pas à pas, voir le chapitre 8, <b>Faire les exercices</b>.</p>
+<p>Termes employés : <i>L</i> = <i>CP</i> est la fonction de transfert en boucle ouverte, <i>S</i> = 1/(1+<i>L</i>) la sensibilité et <i>T</i> = <i>L</i>/(1+<i>L</i>) la sensibilité complémentaire. Un <b>panneau</b> est un cadre contenant un graphique, une <b>carte</b> un groupe de champs du panneau des réglages, et un <b>scénario</b> une copie nommée de tous les réglages.</p>
+</section>
+<section id="screen" title="L’écran">
+<p>De haut en bas : l’<b>en-tête</b> (titre, langue, numéro de version), la <b>barre de menus</b> (ses menus sont listés dans le <a class="hp-ref" href="#" data-ref="menus"></a>), et en dessous le <b>panneau des réglages</b> (à gauche) à côté des <b>panneaux des graphiques</b> (à droite).</p>
+<table data-id="menus"><caption>Les menus de la barre de menus</caption>
+<tr><th>Menu</th><th>Rôle</th></tr>
+<tr><td>Fichier</td><td>Cartes <b>Enregistrer et charger</b> et <b>Comparer et réinitialiser</b></td></tr>
+<tr><td>Graphiques</td><td>Affiche ou masque les panneaux (plusieurs à la fois ; <b>Tous</b> affiche tous les panneaux de la liste)</td></tr>
+<tr><td>Système</td><td>Cartes du procédé, du correcteur, de la consigne, de la perturbation et du bruit, et de la saturation de l’actionneur</td></tr>
+<tr><td>Analyse et conception</td><td>Cartes <b>Cahier des charges</b>, <b>Réglage automatique</b>, <b>Conception de correcteurs à avance et retard de phase</b>, <b>Balayage de paramètre</b> et <b>Exercice d’estimation</b> ; en dessous, les panneaux <b>Critère de Routh–Hurwitz</b> et <b>Erreur statique</b> sont affichés ou masqués</td></tr>
+<tr><td>Disposition</td><td>Disposition des panneaux (chapitre 5)</td></tr>
+<tr><td>Indicateurs</td><td>Indicateurs sous forme de cartes ou de tableau</td></tr>
+<tr><td>Aide</td><td>Ce manuel</td></tr>
+</table>
+<ul>
+<li>Le panneau des réglages montre une seule carte à la fois, celle choisie dans un menu ; ce menu est souligné en rouge. Faites glisser le bord droit du panneau pour changer sa largeur, et utilisez <b>≪</b> pour le replier en une bande étroite.</li>
+<li>Le numéro de version en haut à droite ouvre l’historique des versions.</li>
+</ul>
+</section>
+<section id="system" title="Configurer le système asservi">
+<p>Les valeurs se règlent avec un curseur ou se saisissent dans le champ numérique à côté. Une valeur saisie hors de la plage du curseur est acceptée avec <kbd>Enter</kbd>.</p>
+<h4>Procédé P(s)</h4>
+<p>Premier ordre <i>K</i>/(<i>Ts</i>+1), second ordre, troisième ordre <i>K</i>/(<i>Ts</i>+1)<sup>3</sup>, premier ordre avec retard pur, intégrateur avec premier ordre, premier ordre instable <i>K</i>/(<i>Ts</i>−1), ou <b>Saisir une fonction de transfert</b>.</p>
+<p>Une fonction de transfert s’écrit sous forme de polynômes en <i>s</i>, comme <code>2*s + 1</code> ou <code>(s+1)^2(0.5s+1)</code> (le <code>*</code> peut être omis), ou de coefficients par puissances décroissantes comme <code>[1 3 2]</code>. Le dénominateur peut aller jusqu’au degré 10, et le degré du numérateur doit être inférieur (strictement propre). Un retard pur <i>L</i> peut être ajouté. Les pôles, les zéros, le gain statique et la stabilité s’affichent pendant la saisie, et une erreur est expliquée.</p>
+<h4>Correcteur C(s)</h4>
+<ul>
+<li><b>P, PI, PD, PID</b> avec les gains <i>K</i><sub>P</sub>, <i>K</i><sub>I</sub>, <i>K</i><sub>D</sub> ; la dérivée est filtrée avec le coefficient <i>N</i>.</li>
+<li><b>PI-D</b> (la dérivée n’agit que sur <i>y</i>) et le <b>PID à deux degrés de liberté</b> avec les pondérations de consigne <i>b</i> et <i>c</i> ; le schéma-bloc prend la forme <i>u</i> = <i>C</i><sub>r</sub>(<i>s</i>)<i>r</i> − <i>C</i>(<i>s</i>)<i>y</i>.</li>
+<li>Correcteurs à <b>avance</b>, à <b>retard</b> et à <b>avance-retard</b> de phase.</li>
+<li><b>Saisir une fonction de transfert</b> (propre ; les réglages PID actuels peuvent y être convertis).</li>
+<li><b>Anti-emballement</b> (intégration conditionnelle) pour les correcteurs de type PID quand l’actionneur sature.</li>
+</ul>
+<h4>Consigne, perturbation et bruit</h4>
+<p>La consigne peut être un échelon, une rampe, une parabole, un trapèze, une impulsion unique, un signal carré, une sinusoïde ou un Dirac, avec son instant de départ, sa taille et sa période. Une perturbation en échelon peut être ajoutée à l’entrée du procédé à un instant choisi, ainsi qu’un bruit de mesure d’écart type σ<sub>n</sub> (les mêmes réglages donnent toujours le même bruit).</p>
+<h4>Saturation de l’actionneur et durée de simulation</h4>
+<p>La saturation limite |<i>u</i>| ≤ <i>u</i><sub>max</sub>. La durée de simulation se règle sous la réponse temporelle (onglet <b>Durée de simulation</b>), de 0.01 à 10000 s.</p>
+</section>
+<section id="plots" title="Lire les graphiques">
+<p>Le <a class="hp-ref" href="#" data-ref="panels"></a> liste les panneaux que l’on peut afficher et ce que chacun montre.</p>
+<table data-id="panels"><caption>Les panneaux et ce qu’ils montrent</caption>
+<tr><th>Panneau</th><th>Ce qu’il montre</th></tr>
+<tr><td>Schéma-bloc</td><td>La boucle actuelle ; la saturation, la perturbation et le bruit ne sont dessinés que s’ils sont utilisés</td></tr>
+<tr><td>Réponse temporelle</td><td><i>r</i>, <i>y</i> et <i>u</i>, avec en dessous les indicateurs de réponse : temps de montée (10 → 90 %), dépassement, temps de réponse (±2 %), erreur statique, ainsi que l’écart maximal et le temps de rétablissement après une perturbation ; pour une consigne sinusoïdale, le rapport d’amplitudes et le déphasage. L’onglet <b>Affichage</b> sous le graphique ajoute la réponse du procédé seul à <i>r</i>(<i>t</i>) (boucle ouverte : <i>P</i>(<i>s</i>) attaqué par la consigne, sans correcteur ni rétroaction), pour la comparer à la boucle fermée. <b>Procédé seul uniquement</b> montre le procédé seul : ni consigne ni boucle de rétroaction, l’entrée réglée comme consigne attaque directement <i>P</i>(<i>s</i>) ; le graphique du bas montre cette entrée, et les indicateurs (valeur finale, temps de montée, dépassement, temps de réponse, gain statique) sont ceux de la réponse propre du procédé ; le schéma-bloc montre alors le procédé seul, <i>u</i> → <i>P</i>(<i>s</i>) → <i>y</i></td></tr>
+<tr><td>Fonctions de transfert</td><td><i>P</i>(<i>s</i>) et <i>C</i>(<i>s</i>) (et <i>C</i><sub>r</sub>(<i>s</i>)) sous forme de formules</td></tr>
+<tr><td>Fonctions de transfert de la boucle</td><td>Celles choisies avec les boutons du panneau parmi <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) et <i>G</i><sub>yd</sub>(<i>s</i>), chacune sous forme de définition et de fraction rationnelle avec les valeurs numériques (le retard pur gardé sous la forme e<sup>−<i>Ls</i></sup> ; facteurs communs non simplifiés)</td></tr>
+<tr><td>Pôles et zéros</td><td>Un tableau des pôles et zéros des fonctions de transfert choisies avec les boutons du panneau parmi <i>P</i>(<i>s</i>), <i>C</i>(<i>s</i>), <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) et <i>G</i><sub>yd</sub>(<i>s</i>) (écrites comme dans le panneau des fonctions de transfert de la boucle : facteurs communs non simplifiés) ; les pôles du demi-plan droit en rouge (avec un retard pur, les pôles en boucle fermée proviennent d’une approximation de Padé d’ordre trois)</td></tr>
+<tr><td>Critère de Routh–Hurwitz</td><td>L’équation caractéristique 1 + <i>L</i>(<i>s</i>) = 0 et son tableau de Routh pour le réglage actuel (la première colonne en gras, les valeurs négatives en rouge ; le nombre de changements de signe donne le nombre de pôles en boucle fermée dans le demi-plan droit ; un premier élément nul est remplacé par ε, et une ligne de zéros par la dérivée du polynôme auxiliaire). En dessous, avec le correcteur multiplié par un facteur de gain <i>k</i>, la première colonne en fonction de <i>k</i> et la plage de <i>k</i> (et de <i>K</i><sub>P</sub> pour un correcteur P) où elle est entièrement positive, comparée à la plage donnée par le lieu des racines (avec un retard pur, d’après une approximation de Padé d’ordre trois)</td></tr>
+<tr><td>Erreur statique</td><td>La classe de <i>L</i>(<i>s</i>) (ses pôles à l’origine) et les constantes d’erreur de position, de vitesse et d’accélération <i>K</i><sub>p</sub>, <i>K</i><sub>v</sub>, <i>K</i><sub>a</sub> ; les erreurs en régime permanent pour un échelon, une rampe et une parabole de consigne (par unité d’entrée et pour le réglage actuel) et pour une perturbation en échelon à l’entrée du procédé, à côté de l’erreur à la fin de la simulation. Avec des pondérations de consigne, les erreurs se déduisent de 1 − <i>G</i><sub>yr</sub>(<i>s</i>), et les valeurs des formules des manuels sont données en petits caractères. Ces valeurs ne valent que si la boucle fermée est stable</td></tr>
+<tr><td>Diagramme de Bode</td><td>Gain et phase de <i>L</i>, <i>P</i>, <i>C</i>, <i>S</i>, <i>T</i>, <i>G</i><sub>yd</sub> et <i>G</i><sub>yr</sub> (boutons sous le graphique, onglet <b>Courbes</b>), avec les marges de gain et de phase, Ms, Mt, la bande passante et le gain maximal de la perturbation. Le bouton <b>Asymptotes de L</b> ajoute les approximations asymptotiques du gain et de la phase de <i>L</i> avec les pulsations de cassure (○), et l’onglet <b>Pulsations de cassure</b> les liste avec les pôles et zéros correspondants, les pentes, l’écart au gain réel et le changement de phase ; le bouton <b>Facteurs des asymptotes</b> trace la droite de chaque facteur (<i>K</i>/<i>s</i><sup><i>q</i></sup>, chaque pôle et zéro, le retard pur), dont la somme est l’asymptote ; l’onglet <b>Remarque</b> décrit la construction de l’approximation (pour vérifier un diagramme de Bode tracé à la main)</td></tr>
+<tr><td>Diagramme de Nyquist</td><td><i>L</i>(<i>j</i>ω) autour du point −1, avec en option le cercle de rayon 1/Ms. L’onglet « Critère de Nyquist » compte les pôles en boucle ouverte dans le demi-plan droit <i>P</i>, les tours de −1 dans le sens horaire <i>N</i> (somme des croisements de l’axe réel à gauche de −1, listés un par un) et <i>Z</i> = <i>N</i> + <i>P</i>, les pôles en boucle fermée dans le demi-plan droit ; l’option « Croisements de l’axe réel à gauche de −1 » les marque sur le graphique (▲ +1, ▼ −1)</td></tr>
+<tr><td>Diagramme de Nichols</td><td>Le gain de <i>L</i>(<i>j</i>ω) [dB] en fonction de sa phase [deg], sur les contours M où le module en boucle fermée |<i>T</i>(<i>j</i>ω)| est constant (étiquetés en dB) et le point critique (−180°, 0 dB) : le plus grand M touché par la courbe est le pic de résonance <i>M</i><sub>t</sub>, et les marges se lisent là où la courbe croise −180° et 0 dB</td></tr>
+<tr><td>Carte des pôles et zéros</td><td>Les pôles en boucle fermée, les pôles et zéros du procédé et du correcteur, le lieu des racines, une grille de ζ et ω<sub>n</sub>, la stabilité, la plage de <i>k</i> assurant la stabilité et la liste des pôles. L’option « Règles de tracé du lieu des racines » dessine les segments de l’axe réel, les asymptotes et leur centre, les points de séparation et de rencontre, les croisements de l’axe imaginaire et les angles de départ et d’arrivée, et l’onglet « Règles du lieu » les liste avec la manière de les obtenir et leur valeur (pour vérifier un lieu tracé à la main)</td></tr>
+</table>
+<h4>Plage de fréquences du diagramme de Bode</h4>
+<p>La plage est choisie automatiquement d’après les pôles, les zéros, le retard pur et la durée de simulation. Saisissez d’autres limites dans <b>Plage de fréquences</b> sous le graphique pour la régler à la main ; <b>Auto</b> rétablit la plage automatique, qui revient aussi d’elle-même quand les pôles, les zéros, le retard pur ou la durée de simulation changent. Les marges sont toujours calculées sur la plage automatique.</p>
+<h4>Lieu des racines</h4>
+<p>Le lieu des racines montre les pôles en boucle fermée quand le gain de boucle est multiplié par <i>k</i> de 0 à ∞. Pointez le lieu pour voir <i>k</i>, le pôle, ζ et ω<sub>n</sub> à cet endroit ; cliquez pour appliquer ce <i>k</i> au gain du correcteur. Avec un retard pur, les pôles utilisent une approximation de Padé d’ordre trois, et la saturation n’est pas prise en compte.</p>
+<p>Quand la réponse diverge, aucun indicateur n’est affiché et la divergence est signalée.</p>
+</section>
+<section id="handling" title="Manipuler les graphiques">
+<h4>Afficher, masquer et zoomer</h4>
+<ul>
+<li>Choisissez les panneaux dans <b>Graphiques</b>, ou masquez-en un avec le <b>×</b> à droite de son titre (le dernier panneau reste).</li>
+<li>Sur un graphique, la <b>molette</b> zoome (<kbd>Shift</kbd> : horizontalement seulement, <kbd>Alt</kbd> : verticalement seulement), un <b>glisser</b> déplace la vue et un <b>double-clic</b> montre tout le graphique. Les boutons <b>＋</b>, <b>−</b>, <b>Ajuster</b> et <b>PNG</b> apparaissent quand le pointeur est sur le graphique. Le schéma-bloc se zoome de la même façon.</li>
+<li><b>Enregistrer les données (CSV)</b> dans le titre d’un graphique enregistre ses données ; <b>PNG</b> enregistre l’image. Là où l’on ne peut pas enregistrer de fichiers, les données sont copiées dans le presse-papiers.</li>
+</ul>
+<h4>Disposition et tailles</h4>
+<p>Le menu <b>Disposition</b> propose les dispositions du <a class="hp-ref" href="#" data-ref="arrange"></a>.</p>
+<table data-id="arrange"><caption>Les choix de Disposition</caption>
+<tr><th>Disposition</th><th>Agencement</th></tr>
+<tr><td>1 colonne, 2 colonnes, 1 rangée</td><td>Le schéma-bloc en haut sur toute la largeur, les autres panneaux en dessous</td></tr>
+<tr><td>Libre (glisser ⠿)</td><td>Jusqu’à 4 colonnes : faites glisser la poignée <b>⠿</b> (ou le titre) d’un panneau vers une autre place, une autre colonne ou une nouvelle colonne</td></tr>
+<tr><td>Rangées (glisser ⠿)</td><td>Rangées de 1 à 3 panneaux côte à côte ; faites glisser <b>⠿</b> vers une autre rangée ou une nouvelle rangée</td></tr>
+</table>
+<ul>
+<li>Le bord inférieur d’un panneau et les limites entre colonnes changent les tailles ; un double-clic rétablit la taille d’origine, et <kbd>Esc</kbd> annule un glisser. Les flèches du clavier agissent aussi sur une poignée qui a le focus.</li>
+<li>La zone sous chaque graphique (indicateurs, options, remarques) a des onglets ; sa poignée change sa taille ou la masque.</li>
+<li>La disposition est mémorisée dans le navigateur. <b>Fichier › Comparer et réinitialiser › Réinitialiser la disposition</b> rétablit la disposition initiale.</li>
+</ul>
+</section>
+<section id="design" title="Aides à la conception">
+<h4>Cahier des charges</h4>
+<p>Activez les exigences voulues : dépassement, temps de réponse, temps de montée, erreur statique, marge de phase, marge de gain, pic de sensibilité Ms et coefficient d’amortissement ζ. Chacune est vérifiée par ✓ ou ✗. Avec <b>Afficher le cahier des charges sur les graphiques</b>, les limites sont tracées sur les graphiques, et la carte des pôles et zéros montre la région où les pôles doivent se trouver et la plage de <i>k</i> sur le lieu des racines qui les y maintient.</p>
+<h4>Réglage automatique (règles de réglage)</h4>
+<p>Choisissez une règle (Ziegler–Nichols par la réponse indicielle ou par le pompage, CHR pour la réponse à la consigne ou à la perturbation, IMC) et le type de correcteur (P, PI, PID). Le modèle déduit du procédé et les gains calculés s’affichent ; <b>Appliquer au correcteur</b> les place dans le correcteur. Quand une règle n’est pas utilisable (par exemple pour un procédé instable), la raison est indiquée.</p>
+<h4>Conception de correcteurs à avance et retard de phase</h4>
+<p>Choisissez un correcteur à avance ou à retard de phase, la marge de phase visée MP*, le gain <i>K</i><sub>c</sub> (choisi pour l’erreur statique) et la marge supplémentaire θ. La carte déroule une à une les étapes classiques de la méthode fréquentielle pour <i>K</i><sub>c</sub><i>P</i>(<i>s</i>) — avance : la phase à ajouter φ<sub>m</sub>, α, la nouvelle pulsation de coupure ω<sub>m</sub> où |<i>K</i><sub>c</sub><i>P</i>| = √α, et <i>T</i><sub>1</sub> ; retard : la nouvelle pulsation de coupure où la phase vaut −180° + MP* + θ, β et <i>T</i><sub>2</sub> = 10/ω ; avance-retard : la nouvelle pulsation de coupure ω<sub>c</sub> (le croisement de phase de <i>K</i><sub>c</sub><i>P</i>, ou une valeur donnée), la phase à y ajouter φ<sub>m</sub>, α, <i>T</i><sub>1</sub> = 1/(ω<sub>c</sub>√α), β = |<i>K</i><sub>c</sub><i>P</i>(<i>j</i>ω<sub>c</sub>)|/√α et <i>T</i><sub>2</sub> = 10/ω<sub>c</sub> — et affiche la marge de phase obtenue. <b>Appliquer au correcteur</b> règle le correcteur. Si la marge est insuffisante (une avance déplace la pulsation de coupure là où la phase chute vite), augmentez θ.</p>
+<h4>Balayage de paramètre</h4>
+<p>Choisissez un paramètre du procédé ou du correcteur et donnez jusqu’à 8 valeurs séparées par des virgules. Les résultats de chaque valeur sont tracés sur tous les graphiques dans des couleurs différentes, et un tableau liste le dépassement, le temps de réponse, les marges, la stabilité et la vérification du cahier des charges. Cliquez sur une ligne pour utiliser cette valeur.</p>
+<h4>Exercice d’estimation</h4>
+<p>La carte montre la réponse indicielle unitaire d’un procédé caché <i>P</i>(<i>s</i>) = <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1) ; déplacer la souris sur le graphique lit <i>t</i> et <i>y</i>. Saisissez les estimations de <i>K</i>, <i>T</i> et <i>L</i> et appuyez sur <b>Vérifier</b> : la réponse estimée est tracée sur la vraie, et chaque estimation reçoit ✓ quand elle est à moins de 10 %. <b>Afficher la réponse</b> donne les vraies valeurs, et <b>Utiliser ce procédé</b> les applique au procédé. Le même <b>Numéro de l’exercice</b> donne toujours le même procédé ; un enseignant peut donc donner le même exercice à tous (ou l’enregistrer dans un scénario) ; <b>Nouvel exercice</b> tire un numéro au hasard.</p>
+<p>Avec <b>Lire à partir de</b> réglé sur <b>Diagramme de Bode</b>, la carte trace à la place le gain et la phase d’un procédé caché, et déplacer la souris lit ω, le gain et la phase. Le numéro de l’exercice décide lequel des trois procédés il s’agit : <i>K</i>/((<i>T</i><sub>1</sub><i>s</i> + 1)(<i>T</i><sub>2</sub><i>s</i> + 1)) (estimer <i>K</i>, <i>T</i><sub>1</sub> et <i>T</i><sub>2</sub>, dans n’importe quel ordre, d’après le gain aux basses fréquences et les pulsations de cassure), <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1) (<i>L</i> d’après le retard de phase supplémentaire ω<i>L</i>), ou <i>K</i>ω<sub><i>n</i></sub><sup>2</sup>/(<i>s</i><sup>2</sup> + 2ζω<sub><i>n</i></sub><i>s</i> + ω<sub><i>n</i></sub><sup>2</sup>) (ω<sub><i>n</i></sub> là où la phase vaut −90°, ζ d’après le pic de résonance). La carte indique la forme et les valeurs à saisir ; la vérification, la réponse et <b>Utiliser ce procédé</b> fonctionnent comme pour la réponse indicielle.</p>
+<h4>Comparer des réponses</h4>
+<p><b>Fichier › Comparer et réinitialiser › Garder la réponse actuelle</b> garde la réponse actuelle sous forme de ligne grise (4 au plus) pour la comparer à des réglages ultérieurs. <b>Effacer les réponses gardées</b> les supprime, et <b>Valeurs par défaut</b> rétablit les réglages initiaux.</p>
+</section>
+<section id="files" title="Enregistrer et partager">
+<p>La carte <b>Fichier › Enregistrer et charger</b> garde tous les réglages sous forme de <b>scénario</b> avec un nom et une tâche ou une remarque (affichée au chargement). La disposition peut être enregistrée avec, et appliquée ou non au chargement. Les boutons de la carte sont listés dans le <a class="hp-ref" href="#" data-ref="save"></a>.</p>
+<table data-id="save"><caption>Les boutons de Enregistrer et charger</caption>
+<tr><th>Bouton</th><th>Rôle</th></tr>
+<tr><td>Enregistrer dans ce navigateur</td><td>Garde le scénario dans ce navigateur ; il apparaît dans la liste en dessous, où il peut être chargé ou supprimé</td></tr>
+<tr><td>Enregistrer dans un fichier / Charger depuis un fichier</td><td>Un fichier .json à conserver ou à distribuer (un fichier contenant plusieurs scénarios peut aussi être chargé)</td></tr>
+<tr><td>Copier comme texte / Charger depuis un texte</td><td>Un texte à coller dans un message ou un document, et à recharger</td></tr>
+<tr><td>Copier le lien</td><td>Un lien qui ouvre la page avec le scénario (là où la page est servie directement)</td></tr>
+</table>
+<p>La liste <b>Exemples</b> contient des exercices, comme le réglage d’un PID pour un procédé du troisième ordre avec des limites sur le dépassement, le temps de réponse et la marge de phase. En charger un affiche sa tâche au-dessus des graphiques.</p>
+</section>
+<section id="examples" title="Faire les exercices">
+<p>Quatre exercices accompagnent le simulateur. Chargez-en un avec <b>Fichier › Enregistrer et charger</b>, liste <b>Exemples</b>, bouton <b>Charger</b> ; sa tâche s’affiche au-dessus des graphiques. Les nombres ci-dessous sont ceux qu’affiche le simulateur pour les réglages indiqués (arrondis).</p>
+<p>Avant de commencer, ouvrez <b>Analyse et conception › Cahier des charges</b> et cochez <b>Afficher le cahier des charges sur les graphiques</b>, puis choisissez les graphiques utiles dans <b>Graphiques</b>. Pour comparer un nouveau réglage à l’ancien, utilisez d’abord <b>Fichier › Comparer et réinitialiser › Garder la réponse actuelle</b>.</p>
+<h4>Exercice 1 : correcteur PID d’un procédé du troisième ordre</h4>
+<p>Procédé 1/(<i>s</i>+1)<sup>3</sup>, PID avec <i>K</i><sub>P</sub> = 1, <i>K</i><sub>I</sub> = 0.3, <i>K</i><sub>D</sub> = 0.5. Cahier des charges : dépassement ≤ 12 %, temps de réponse ≤ 10 s, marge de phase ≥ 45° (et marge de gain ≥ 6 dB).</p>
+<ol>
+<li>Ajoutez le <b>Diagramme de Bode</b>. Au départ, le dépassement est de 0 % et la marge de phase d’environ 88°, mais le temps de réponse est d’environ 15 s : ✗. La boucle est sûre mais lente.</li>
+<li>Augmentez <i>K</i><sub>I</sub> de 0.3 à 0.4. Le temps de réponse tombe à environ 8.4 s et toutes les exigences sont ✓ (marge de phase d’environ 76° ; <a class="hp-ref" href="#" data-ref="ex1-time"></a>).
+<figure class="hp-fig" data-img="ex1-time" data-id="ex1-time"><figcaption><i>K</i><sub>I</sub> = 0.4 (en bleu) comparé au premier réglage <i>K</i><sub>I</sub> = 0.3 (en gris, gardé). La ligne rouge en tirets est la limite de dépassement et les lignes vertes en pointillés la bande du temps de réponse ; les indicateurs sous le graphique montrent ✓.</figcaption></figure></li>
+<li>Comparez avec les règles de réglage (<b>Analyse et conception › Réglage automatique</b>, type de correcteur PID, <b>Appliquer au correcteur</b>) ; le <a class="hp-ref" href="#" data-ref="rules"></a> donne les résultats :
+<table data-id="rules"><caption>Exercice 1 : comparaison des règles de réglage du PID</caption>
+<tr><th>Règle</th><th>Dépassement</th><th>Temps de réponse</th><th>Marge de phase</th></tr>
+<tr><td>Ziegler–Nichols (réponse indicielle)</td><td>environ 55 %</td><td>environ 13 s</td><td>environ 21°</td></tr>
+<tr><td>CHR (consigne, 0 % de dépassement)</td><td>environ 11 %</td><td>environ 7.3 s</td><td>environ 52°</td></tr>
+<tr><td>IMC</td><td>environ 15 %</td><td>environ 11 s</td><td>environ 48°</td></tr>
+</table>
+Seule la règle CHR (consigne, 0 % de dépassement) satisfait tout le cahier des charges : son dépassement d’environ 11 % reste sous la limite de 12 %. Ziegler–Nichols vise une réponse rapide et oscillante (rapport d’amortissement d’un quart), d’où un dépassement important et une faible marge de phase.</li>
+</ol>
+<h4>Exercice 2 : correcteur PI d’un procédé avec retard pur</h4>
+<p>Procédé <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1), PI avec <i>K</i><sub>P</sub> = 0.5, <i>K</i><sub>I</sub> = 0.2. Cahier des charges : marge de phase ≥ 60°, marge de gain ≥ 6 dB, pic de sensibilité Ms ≤ 1.6.</p>
+<ol>
+<li>Ajoutez le <b>Diagramme de Bode</b> et le <b>Diagramme de Nyquist</b> (cochez le cercle 1/Ms). Les marges sont grandes (marge de phase d’environ 83°, Ms d’environ 1.22), mais la réponse est lente (temps de réponse d’environ 19 s).</li>
+<li>Réglez <i>K</i><sub>P</sub> = 0.7. Dans <b>Analyse et conception › Balayage de paramètre</b>, cochez la case, choisissez le paramètre <i>K</i><sub>I</sub> et saisissez les valeurs <code>0.2, 0.3, 0.4, 0.5, 0.6</code>. Chaque valeur est tracée dans sa propre couleur, et le tableau du balayage les compare (<a class="hp-ref" href="#" data-ref="ex2-table"></a>).
+<figure class="hp-fig" data-img="ex2-table" data-id="ex2-table"><figcaption>Le tableau du balayage (<i>K</i><sub>P</sub> = 0.7). PM est la marge de phase, GM la marge de gain ; la dernière colonne indique si tout le cahier des charges est satisfait.</figcaption></figure>
+Avec <i>K</i><sub>I</sub> = 0.4, le temps de réponse est d’environ 8.8 s, la marge de phase d’environ 64° et Ms de 1.41. À partir de 0.5, la marge de phase passe sous 60° (environ 55°), et à 0.6 Ms dépasse aussi 1.6 (1.70) ; avec 0.2 tout est satisfait, mais la réponse est lente (environ 22 s). Sur le diagramme de Nyquist, les courbes s’approchent de −1 quand <i>K</i><sub>I</sub> augmente (<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>). Cliquez sur la ligne 0.4 pour utiliser cette valeur : c’est la plus rapide qui respecte tout le cahier des charges.
+<figure class="hp-fig" data-img="ex2-nyq" data-id="ex2-nyq"><figcaption>Le diagramme de Nyquist près de −1 (zoomé avec la molette). Le cercle violet a le rayon 1/Ms du réglage actuel, le cercle vert en pointillés celui de l’exigence Ms = 1.6.</figcaption></figure></li>
+<li>À titre de comparaison, les règles pour le PI donnent : Ziegler–Nichols (réponse indicielle) Ms d’environ 2.3 et marge de gain d’environ 5.7 dB (✗), CHR (consigne, 0 % de dépassement) tout ✓ mais plus lent (environ 12 s), IMC Ms d’environ 2.0 (✗).</li>
+</ol>
+<h4>Exercice 3 : pondération de consigne (PID à deux degrés de liberté)</h4>
+<p>Procédé <i>e</i><sup>−0.5<i>s</i></sup>/(<i>s</i>+1), PID à deux degrés de liberté réglé pour le rejet de perturbation (<i>K</i><sub>P</sub> = 1.9, <i>K</i><sub>I</sub> = 1.583, <i>K</i><sub>D</sub> = 0.399) avec les pondérations <i>b</i> = <i>c</i> = 1, et une perturbation <i>d</i> = 0.5 à partir de <i>t</i> = 15 s. Cahier des charges : dépassement ≤ 10 %.</p>
+<ol>
+<li>La réponse indicielle présente un dépassement d’environ 19 % (✗ ; la ligne grise de la <a class="hp-ref" href="#" data-ref="ex3-time"></a>). Après <i>t</i> = 15 s, la perturbation provoque un écart maximal d’environ 0.21, résorbé en environ 3.2 s.</li>
+<li>Dans <b>Système › Correcteur C(s)</b>, réglez <i>b</i> = 0.7 et <i>c</i> = 0. Le dépassement tombe à environ 0.3 % (✓ ; la ligne bleue de la <a class="hp-ref" href="#" data-ref="ex3-time"></a>). Avec <i>b</i> = 0.5, il est presque nul, mais la réponse est plus lente (temps de réponse d’environ 3.6 s au lieu de 2.4 s).</li>
+<li>Regardez la réponse à la perturbation après <i>t</i> = 15 s : l’écart maximal et le temps de rétablissement ne changent pas, pas plus que les marges de stabilité. Les pondérations n’agissent que sur le chemin issu de la consigne (<i>C</i><sub>r</sub>), pas sur la rétroaction. Sur le diagramme de Bode, <i>G</i><sub>yr</sub> change tandis que <i>G</i><sub>yd</sub> reste le même.
+<figure class="hp-fig" data-img="ex3-time" data-id="ex3-time"><figcaption><i>b</i> = 0.7, <i>c</i> = 0 (en bleu) comparé à <i>b</i> = <i>c</i> = 1 (en gris, gardé). Le dépassement à la consigne a disparu, tandis qu’après <i>t</i> = 15 s les deux réponses à la perturbation se superposent.</figcaption></figure></li>
+<li>La marge de gain (environ 4.9 dB) reste sous 6 dB quels que soient <i>b</i> et <i>c</i> : elle dépend des gains de la rétroaction.</li>
+</ol>
+<h4>Exercice 4 : stabiliser un procédé instable</h4>
+<p>Procédé 1/(<i>s</i>−1), correcteur P avec <i>K</i><sub>P</sub> = 0.5. Cahier des charges : coefficient d’amortissement ζ ≥ 0.5.</p>
+<ol>
+<li>La sortie croît sans limite : la boucle fermée est instable. Ajoutez la <b>Carte des pôles et zéros</b> : le pôle en boucle fermée est dans le demi-plan droit (<a class="hp-ref" href="#" data-ref="ex4-pz"></a>), et la remarque donne la plage stable <i>k</i> &gt; 2 du facteur de gain, soit <i>K</i><sub>P</sub> &gt; 1.
+<figure class="hp-fig" data-img="ex4-pz" data-id="ex4-pz"><figcaption>Correcteur P avec <i>K</i><sub>P</sub> = 0.5 : le pôle en boucle fermée (●) est en +0.5, dans le demi-plan droit (grisé). L’onglet <b>Plages de gain</b> donne la plage stable <i>k</i> &gt; 2.</figcaption></figure></li>
+<li>Cliquez sur le lieu des racines à gauche de l’origine, ou réglez <i>K</i><sub>P</sub> = 2 : la boucle est stable, mais la sortie se stabilise à 2 au lieu de 1. Avec <i>K</i><sub>P</sub> = 5, elle se stabilise à 1.25. Avec un correcteur P, la valeur finale vaut <i>K</i><sub>P</sub>/(<i>K</i><sub>P</sub> − 1), jamais 1.</li>
+<li>Choisissez <b>PI</b> avec <i>K</i><sub>P</sub> = 3 et <i>K</i><sub>I</sub> = 2 : les pôles en boucle fermée sont −1 ± <i>j</i> (ζ ≈ 0.71, ✓), l’erreur statique est nulle et le temps de réponse d’environ 3.3 s (<a class="hp-ref" href="#" data-ref="ex4-time"></a>).
+<figure class="hp-fig" data-img="ex4-time" data-id="ex4-time"><figcaption>PI avec <i>K</i><sub>P</sub> = 3, <i>K</i><sub>I</sub> = 2 : la sortie se stabilise à 1. Le fort dépassement vient du zéro du correcteur (étape suivante).</figcaption></figure></li>
+<li>Essayez <i>K</i><sub>I</sub> = 1 : les pôles se rejoignent en −1 (ζ = 1), et pourtant le dépassement reste d’environ 45 %. Il vient du zéro du correcteur en −<i>K</i><sub>I</sub>/<i>K</i><sub>P</sub>, et non des pôles.</li>
+</ol>
+</section>
+<section id="other" title="Langue, smartphones, clavier et données">
+<ul>
+<li><b>Langue</b> : choisissez l’anglais, le japonais, le chinois, le coréen, le thaï, le français, l’allemand, l’espagnol, le portugais ou le russe en haut à droite ; le choix est mémorisé.</li>
+<li><b>Écrans étroits</b> : les panneaux sont affichés en une colonne et les menus sans leurs icônes. Sur un smartphone, la barre du bas bascule entre <b>Configuration</b> et <b>Graphiques</b>.</li>
+<li><b>Clavier</b> : tous les menus, poignées et boutons s’utilisent au clavier. Dans un menu, <kbd>↑</kbd> <kbd>↓</kbd> déplacent la sélection et <kbd>Enter</kbd> choisit ; <kbd>Esc</kbd> ferme un menu ou ce manuel.</li>
+<li><b>Données</b> : le calcul se fait dans votre navigateur, et le simulateur n’envoie ni vos réglages ni les résultats nulle part. Les scénarios enregistrés, la disposition et la langue sont gardés dans ce navigateur seulement. À l’ouverture de la page, le navigateur charge les polices depuis Google Fonts et l’affichage des formules (MathJax) depuis jsDelivr ; comme pour toute page web, ces services et le serveur de la page connaissent votre adresse IP et votre navigateur, mais pas vos réglages. Un lien créé avec <b>Copier le lien</b> porte les réglages après le <code>#</code> de l’adresse, une partie que le navigateur n’envoie pas au serveur.</li>
+</ul>
+</section>
+<section id="accuracy" title="Précision numérique">
+<p>Les résultats sont calculés numériquement et comportent de petites erreurs. Comparés à des solutions exactes et à des calculs indépendants beaucoup plus précis, ils restent dans ces limites :</p>
+<ul>
+<li><b>Réponse temporelle</b> : à environ 0.3 % près de l’amplitude de la réponse ; le dépassement à 0.1 point de pourcentage près, les temps de montée et de réponse à 0.5 % près.</li>
+<li><b>Diagrammes de Bode et de Nyquist</b> : calculés directement à partir des fonctions de transfert (le retard pur exactement) ; la marge de phase à 0.02° près, la marge de gain à 0.001 dB près, Ms à 10<sup>−6</sup> près (en relatif).</li>
+<li><b>Pôles et zéros</b> : à 10<sup>−9</sup> près quand ils sont distincts. Un pôle de multiplicité <i>k</i> ne peut être trouvé qu’à quelques fois 10<sup>−16/<i>k</i></sup> près (2×10<sup>−5</sup> pour un pôle triple) : une limite du problème lui-même, et non de la méthode.</li>
+<li><b>Retard pur</b> : les réponses temporelle et fréquentielle utilisent le retard exact ; les pôles et le lieu des racines utilisent une approximation de Padé d’ordre trois (les pôles dominants à environ 10<sup>−3</sup> près pour <i>L</i>/<i>T</i> ≤ 3).</li>
+</ul>
+<p>À retenir : la réponse est enregistrée en 4000 points sur la durée de simulation ; une variation beaucoup plus rapide que (durée de simulation)/4000 ne peut donc pas être résolue ; raccourcissez la durée de simulation pour la voir. Le <i>u</i> tracé est sa valeur en ces points ; un pic très bref (comme le coup de dérivée, qui dure environ 1/<i>N</i>) peut donc paraître plus faible qu’il n’est.</p>
+<p>Les méthodes et tous les résultats se trouvent dans <a href="https://github.com/m-koga/sigmaomega/blob/main/ACCURACY.md" target="_blank" rel="noopener">ACCURACY.md</a> sur GitHub.</p>
+</section>
+<section id="performance" title="Efficacité en temps">
+<p>Tout est calculé dans votre navigateur, à nouveau après chaque changement. Mesures faites dans Chrome sur un ordinateur ordinaire, et avec le processeur ralenti 4 fois (comme un téléphone) :</p>
+<ul>
+<li><b>Ouverture de la page</b> : les graphiques sont prêts après environ 0.25 s (0.8 s sur le processeur ralenti) et les formules un peu plus tard, une fois la page téléchargée (environ 1.4 MB, et 0.7 MB pour les formules à la première visite).</li>
+<li><b>Changement d’une valeur</b> : tout est recalculé et redessiné en 4–19 ms avec les panneaux affichés à la première visite, et en 22–43 ms avec tous les panneaux (0.1–0.2 s sur le processeur ralenti) : l’effet paraît immédiat.</li>
+<li><b>Déplacement d’un curseur</b> : les graphiques suivent environ 20–50 fois par seconde (6–11 sur le processeur ralenti), avec à chaque fois le résultat complet.</li>
+<li><b>Balayage de paramètre</b> : huit calculs complets par changement, 0.06–0.2 s (jusqu’à environ 1 s sur le processeur ralenti).</li>
+</ul>
+<p>Le travail pour un changement est borné (au plus 400 000 pas de temps, 2400 fréquences et 8 valeurs de balayage) ; la page ne reste donc jamais longtemps figée. Sur un appareil lent, masquez les panneaux inutiles (la carte des pôles et zéros avec son lieu des racines est la plus coûteuse) et désactivez le balayage pendant que vous déplacez des curseurs.</p>
+<p>La méthode de mesure et tous les résultats se trouvent dans <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> sur GitHub.</p>
+</section>
+<section id="faq" title="Quand quelque chose ne marche pas">
+<dl>
+<dt>Aucun indicateur n’est affiché et la courbe sort du graphique.</dt><dd>La boucle fermée est instable et la réponse a divergé. Diminuez les gains, ou regardez la carte des pôles et zéros et la plage stable de <i>k</i>.</dd>
+<dt>Le graphique ne montre qu’une partie de la courbe.</dt><dd>Il est peut-être zoomé : appuyez sur <b>Ajuster</b> ou double-cliquez sur le graphique. Pour le diagramme de Bode, vérifiez aussi si une plage de fréquences a été réglée à la main (<b>Auto</b> rétablit la plage automatique).</dd>
+<dt>Une fonction de transfert est refusée.</dt><dd>Lisez le message sous le champ. Le procédé doit être strictement propre et le correcteur propre ; une dérivée idéale <i>K</i><sub>D</sub><i>s</i> demande un filtre comme <i>K</i><sub>D</sub><i>s</i>/(τ<i>s</i>+1).</dd>
+<dt>Un fichier ou une image n’est pas enregistré.</dt><dd>Certaines visionneuses n’autorisent pas les téléchargements ; les données sont alors copiées dans le presse-papiers (ou affichées sélectionnées pour être copiées à la main).</dd>
+<dt>La disposition est en désordre.</dt><dd>Utilisez <b>Fichier › Comparer et réinitialiser › Réinitialiser la disposition</b> ; les réglages sont conservés.</dd>
+</dl>
+</section>

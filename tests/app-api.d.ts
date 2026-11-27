@@ -244,6 +244,7 @@ interface AppApi {
   groupRoots: typeof import('../src/ts/03-math.ts').groupRoots;
   hardRange: typeof import('../src/ts/10-definitions.ts').hardRange;
   hasTerm: typeof import('../src/ts/10-definitions.ts').hasTerm;
+  helpChapters: typeof import('../src/ts/84-help.ts').helpChapters;
   hurwitzK: typeof import('../src/ts/18-routh.ts').hurwitzK;
   i18nText: typeof import('../src/ts/40-dom.ts').i18nText;
   i18nTitle: typeof import('../src/ts/40-dom.ts').i18nTitle;
@@ -746,6 +747,7 @@ declare var ghosts: AppApi['ghosts'];
 declare var groupRoots: AppApi['groupRoots'];
 declare var hardRange: AppApi['hardRange'];
 declare var hasTerm: AppApi['hasTerm'];
+declare var helpChapters: AppApi['helpChapters'];
 declare var hurwitzK: AppApi['hurwitzK'];
 declare var i18nText: AppApi['i18nText'];
 declare var i18nTitle: AppApi['i18nTitle'];

@@ -36,7 +36,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep, Estimation exercise; below a separator, Routh–Hurwitz test, Steady-state error | A card: shows it in the settings panel. The last two show or hide their panels like the items of Plots to show (checked when shown; the list stays open) |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
 | Metrics display | Cards, Table | Changes how the response metrics are shown |
-| Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean, Thai, French, German, Spanish, Portuguese and Russian); × , Esc or a click beside it closes it. On phones the button shows only its icon |
+| Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the screen in the language of the page); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), written in every language of the page (src/help/<lang>.html); × , Esc or a click beside it closes it. On phones the button shows only its icon |
 
 A drop-down opens and closes with its button, and closes on a click outside the list or on Esc. While it is open, ↑ and ↓ move between items and Enter chooses one. Only one drop-down is open at a time.
 
@@ -333,7 +333,7 @@ The source is TypeScript in `src/` (57 script files in layers, one topic each, a
 | `80-scenarios`, `81-scenario-card` | Scenarios: what is saved and how it is applied; their card (save and load) |
 | `82-menubar` | Menu bar and the shared drop-down `dropdown()` |
 | `83-diagram-zoom` | Zoom, pan and PNG of the block diagram |
-| `84-help` | User manual (text in English and Japanese, its screenshots and its dialog) |
+| `84-help` | User manual (its dialog; the text of each language is in `src/help/<lang>.html` and the screenshots in `src/help-img/`) |
 | `85-language` | Switching the language |
 | `99-init` | Start-up |
 
@@ -355,6 +355,6 @@ The source is TypeScript in `src/` (57 script files in layers, one topic each, a
 | | i18n, leftovers | Missing translations, hard-coded UI strings, unused translations, CSS and stored items |
 | | build, version, publish-edits, tutorial, help, pages | `index.html` up to date, version number and change log consistent, the compact page script, publishing as text replacements, the numbers quoted in the manual's walkthrough of the exercises, the manual's figures, tables and references, the files of the GitHub Pages site |
 | Browser tests (`ui/`, Playwright, 11 files) | layout, plots, interaction, tiles, rows | Menus, panel arrangement and sizes, formula scaling, zoom and pan, smartphones |
-| | design, files, failures, details, i18n, help | Design support, scenarios, failure handling, rarely used operations, display in five languages, the user manual |
+| | design, files, failures, details, i18n, help | Design support, scenarios, failure handling, rarely used operations, display in every language, the user manual |
 
 Coverage is measured with `npm run coverage` (98.9% of lines and 1009 of 1018 functions as of version 1.73.6). Changes that should not alter the look of the page are checked by comparing screenshots before and after pixel by pixel.

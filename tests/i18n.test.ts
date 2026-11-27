@@ -65,7 +65,7 @@ test('no Japanese is written directly in the UI strings of index.html', () => {
   };
   cut('const I18N', 'const isLang'); // dictionary, and the language table (names of the languages in their scripts)
   cut('const CHANGELOG = [', '\n];'); // change log (ja items)
-  cut('const HELP = [', '\n];'); // user manual (ja text)
+  cut('const HELP =', 'const helpChapters'); // user manual (src/help/<lang>.html)
   src = src
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/(^|[^:])\/\/.*$/gm, '$1')

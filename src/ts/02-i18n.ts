@@ -11,7 +11,8 @@ export const I18N: I18nDict = /*@@I18N@@*/{}; // the build puts the dictionary (
  * src/i18n.json (the key of the entry; tests/i18n.test.ts asks for every string), its type in I18nDict
  * (types.d.ts), and its font in the Google Fonts link of src/index.html.
  *   tag: lang attribute of the page; name: its name in the menu, in that language; font: font of the plots;
- *   docs: language of the user manual and the change log ('en' shows a note that they are in English) */
+ *   docs: language of the change log ('en' shows a note that it is in English; the user manual is in every
+ *   language: src/help/<lang>.html) */
 export const LANGUAGES = {
   ja: { tag: 'ja', name: '日本語', font: '"Noto Sans JP",sans-serif', docs: 'ja' },
   en: { tag: 'en', name: 'English', font: '"Noto Sans JP",sans-serif', docs: 'en' },

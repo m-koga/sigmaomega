@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.98.0',
+    d: '2026-11-27',
+    en: [
+      'User manual in every language of the page: besides English and Japanese, it is now written in Chinese, Korean, Thai, French, German, Spanish, Portuguese and Russian (no longer the English text with a note), with the names of the menus and buttons as the page shows them in that language, and the screenshots of the chapter "Trying the exercises" taken of the screen in that language; figures and tables are numbered in that language (for example "Abb. 8.1", "Рис. 8.1"). The page is about 1.4 MB compressed (0.5 MB before), mostly the screenshots',
+      'Development: the text of the manual is in src/help/<lang>.html, one file per language, which the build puts into the page like the dictionary; the tests check that every language has it, with the same chapters, figures, tables, references and structure as the English text, and a screenshot in each language for each figure',
+    ],
+    ja: [
+      '利用者マニュアルをページのすべての言語に：英語と日本語に加え、中国語・韓国語・タイ語・フランス語・ドイツ語・スペイン語・ポルトガル語・ロシア語で書いた（これまでは注記付きの英語）。メニューやボタンの名前はその言語の画面の表示どおりにし、章「例題で試す」のスクリーンショットもその言語の画面で撮った。図と表の番号もその言語で付ける（例：「Abb. 8.1」「Рис. 8.1」）。ページは圧縮して約 1.4 MB（以前は 0.5 MB）になった。増えた分の多くはスクリーンショット',
+      '開発：マニュアルの本文を言語ごとのファイル src/help/<言語>.html にし、ビルドが辞書と同じようにページに入れる。テストは、すべての言語にマニュアルがあり、英語版と同じ章・図・表・参照・構造を持つこと、各図に各言語のスクリーンショットがあることを確かめる',
+    ],
+  },
+  {
     v: '1.97.0',
     d: '2026-11-27',
     en: [

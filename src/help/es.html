@@ -1,0 +1,208 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Masanobu Koga -->
+<!-- User manual in Spanish: one <section> per chapter, with its id and title (scripts/build.ts puts it into the page; src/ts/84-help.ts shows it) -->
+<section id="start" title="Primeros pasos">
+<p><b>SigmaOmega</b> (simulador de control realimentado) permite probar el análisis y el diseño de un sistema de control realimentado en el navegador. Elija una planta y un controlador y cambie sus valores: la respuesta temporal, los diagramas de Bode y de Nyquist y el mapa de polos y ceros se vuelven a dibujar al instante. Todo se calcula en su navegador, y el simulador no envía sus ajustes ni los resultados a ninguna parte (el capítulo 9 indica qué carga la página desde Internet).</p>
+<p>El nombre procede de la variable compleja <i>s</i> = σ + <i>j</i>ω de la transformada de Laplace: la parte real σ de un polo fija la rapidez con que la respuesta se extingue (o crece), y la respuesta en frecuencia es <i>s</i> sobre el eje imaginario, <i>s</i> = <i>j</i>ω. El simulador muestra juntos todo el plano <i>s</i> y estas dos vistas.</p>
+<p>El sistema es un lazo único: la referencia <i>r</i> entra en el controlador <i>C</i>(<i>s</i>), cuya salida <i>u</i> excita la planta <i>P</i>(<i>s</i>) con salida <i>y</i>. Se puede añadir una perturbación <i>d</i> a la entrada de la planta y ruido de medida <i>n</i> a la salida.</p>
+<h4>Una primera prueba</h4>
+<ol>
+<li>En <b>Sistema › Planta P(s)</b>, elija una planta, por ejemplo <b>Tercer orden (constantes de tiempo iguales)</b>.</li>
+<li>En <b>Sistema › Controlador C(s)</b>, elija <b>PID</b> y mueva los deslizadores de <i>K</i><sub>P</sub>, <i>K</i><sub>I</sub> y <i>K</i><sub>D</sub>.</li>
+<li>Observe la respuesta al escalón y sus indicadores (sobreimpulso, tiempo de establecimiento, …) bajo la gráfica.</li>
+<li>Abra <b>Gráficas</b> y añada el <b>Diagrama de Bode</b> o el <b>Mapa de polos y ceros</b> para ver el mismo cambio en el dominio de la frecuencia y en los polos.</li>
+</ol>
+<p>Para ejemplos paso a paso, vea el capítulo 8, <b>Probar los ejercicios</b>.</p>
+<p>Términos usados: <i>L</i> = <i>CP</i> es la función de transferencia en lazo abierto, <i>S</i> = 1/(1+<i>L</i>) la sensibilidad y <i>T</i> = <i>L</i>/(1+<i>L</i>) la sensibilidad complementaria. Un <b>panel</b> es un marco con una gráfica, una <b>tarjeta</b> un grupo de campos del panel de ajustes, y un <b>escenario</b> una copia con nombre de todos los ajustes.</p>
+</section>
+<section id="screen" title="La pantalla">
+<p>De arriba abajo: la <b>cabecera</b> (título, idioma, número de versión), la <b>barra de menús</b> (sus menús aparecen en la <a class="hp-ref" href="#" data-ref="menus"></a>) y, debajo, el <b>panel de ajustes</b> (izquierda) junto a los <b>paneles de gráficas</b> (derecha).</p>
+<table data-id="menus"><caption>Los menús de la barra de menús</caption>
+<tr><th>Menú</th><th>Qué hace</th></tr>
+<tr><td>Archivo</td><td>Tarjetas <b>Guardar y cargar</b> y <b>Comparar y restablecer</b></td></tr>
+<tr><td>Gráficas</td><td>Muestra u oculta los paneles (varios a la vez; <b>Todas</b> muestra todos los paneles de la lista)</td></tr>
+<tr><td>Sistema</td><td>Tarjetas de la planta, el controlador, la referencia, la perturbación y el ruido, y la saturación del actuador</td></tr>
+<tr><td>Análisis y diseño</td><td>Tarjetas <b>Especificaciones de diseño</b>, <b>Sintonía automática</b>, <b>Diseño de compensadores de adelanto y atraso</b>, <b>Barrido de parámetro</b> y <b>Ejercicio de estimación</b>; debajo se muestran u ocultan los paneles <b>Criterio de Routh–Hurwitz</b> y <b>Error en estado estacionario</b></td></tr>
+<tr><td>Disposición</td><td>Cómo se disponen los paneles (capítulo 5)</td></tr>
+<tr><td>Indicadores</td><td>Indicadores como tarjetas o como tabla</td></tr>
+<tr><td>Ayuda</td><td>Este manual</td></tr>
+</table>
+<ul>
+<li>El panel de ajustes muestra una sola tarjeta a la vez, la elegida en un menú; ese menú se subraya en rojo. Arrastre el borde derecho del panel para cambiar su ancho, y use <b>≪</b> para plegarlo en una franja estrecha.</li>
+<li>El número de versión arriba a la derecha abre el historial de cambios.</li>
+</ul>
+</section>
+<section id="system" title="Configurar el sistema de control">
+<p>Los valores se fijan con un deslizador o se escriben en el campo numérico de al lado. Un valor escrito fuera del rango del deslizador se acepta al pulsar <kbd>Enter</kbd>.</p>
+<h4>Planta P(s)</h4>
+<p>Primer orden <i>K</i>/(<i>Ts</i>+1), segundo orden, tercer orden <i>K</i>/(<i>Ts</i>+1)<sup>3</sup>, primer orden con tiempo muerto, integrador con primer orden, primer orden inestable <i>K</i>/(<i>Ts</i>−1), o <b>Introducir función de transferencia</b>.</p>
+<p>Una función de transferencia se escribe como polinomios en <i>s</i>, por ejemplo <code>2*s + 1</code> o <code>(s+1)^2(0.5s+1)</code> (el <code>*</code> puede omitirse), o como coeficientes en potencias decrecientes, como <code>[1 3 2]</code>. El denominador puede ser de grado hasta 10, y el grado del numerador debe ser menor (estrictamente propia). Se puede añadir un tiempo muerto <i>L</i>. Los polos, ceros, ganancia estática y estabilidad se muestran mientras escribe, y se explica cualquier error.</p>
+<h4>Controlador C(s)</h4>
+<ul>
+<li><b>P, PI, PD, PID</b> con ganancias <i>K</i><sub>P</sub>, <i>K</i><sub>I</sub>, <i>K</i><sub>D</sub>; la derivada se filtra con el coeficiente <i>N</i>.</li>
+<li><b>PI-D</b> (la derivada actúa solo sobre <i>y</i>) y el <b>PID de 2 grados de libertad</b> con pesos de referencia <i>b</i> y <i>c</i>; el diagrama de bloques pasa a la forma <i>u</i> = <i>C</i><sub>r</sub>(<i>s</i>)<i>r</i> − <i>C</i>(<i>s</i>)<i>y</i>.</li>
+<li>Compensadores de <b>adelanto</b>, de <b>atraso</b> y de <b>adelanto-atraso</b>.</li>
+<li><b>Introducir función de transferencia</b> (propia; los ajustes PID actuales pueden convertirse a ella).</li>
+<li><b>Antiwindup</b> (integración condicional) para los tipos PID cuando el actuador se satura.</li>
+</ul>
+<h4>Referencia, perturbación y ruido</h4>
+<p>La referencia puede ser un escalón, una rampa, una parábola, un trapecio, un pulso único, una onda cuadrada, una onda senoidal o un impulso, con su instante inicial, tamaño y periodo. Se puede añadir una perturbación escalón a la entrada de la planta en un instante elegido, y ruido de medida con una desviación típica σ<sub>n</sub> (los mismos ajustes dan siempre el mismo ruido).</p>
+<h4>Saturación del actuador y tiempo de simulación</h4>
+<p>La saturación limita |<i>u</i>| ≤ <i>u</i><sub>max</sub>. El tiempo de simulación se fija bajo la respuesta temporal (pestaña <b>Tiempo de simulación</b>), de 0.01 a 10000 s.</p>
+</section>
+<section id="plots" title="Leer las gráficas">
+<p>La <a class="hp-ref" href="#" data-ref="panels"></a> enumera los paneles que se pueden mostrar y lo que muestra cada uno.</p>
+<table data-id="panels"><caption>Los paneles y lo que muestran</caption>
+<tr><th>Panel</th><th>Qué muestra</th></tr>
+<tr><td>Diagrama de bloques</td><td>El lazo actual; la saturación, la perturbación y el ruido solo se dibujan cuando se usan</td></tr>
+<tr><td>Respuesta temporal</td><td><i>r</i>, <i>y</i> y <i>u</i>, con los indicadores de respuesta debajo: tiempo de subida (10 → 90 %), sobreimpulso, tiempo de establecimiento (±2 %), error en estado estacionario, y la desviación máxima y el tiempo de recuperación tras una perturbación; para una referencia senoidal, la razón de amplitudes y la diferencia de fase. La pestaña <b>Visualización</b> bajo la gráfica añade la respuesta de la planta sola a <i>r</i>(<i>t</i>) (lazo abierto: <i>P</i>(<i>s</i>) excitada por la referencia, sin el controlador ni la realimentación), para compararla con el lazo cerrado. <b>Solo la planta</b> muestra la planta por sí misma: sin referencia ni lazo de realimentación, la entrada fijada como referencia excita directamente <i>P</i>(<i>s</i>); la gráfica inferior muestra esa entrada, y los indicadores (valor final, tiempo de subida, sobreimpulso, tiempo de establecimiento, ganancia estática) son los de la propia respuesta de la planta; el diagrama de bloques muestra entonces la planta sola, <i>u</i> → <i>P</i>(<i>s</i>) → <i>y</i></td></tr>
+<tr><td>Funciones de transferencia</td><td><i>P</i>(<i>s</i>) y <i>C</i>(<i>s</i>) (y <i>C</i><sub>r</sub>(<i>s</i>)) como fórmulas</td></tr>
+<tr><td>Funciones de transferencia del lazo</td><td>Las elegidas con los botones del panel entre <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) y <i>G</i><sub>yd</sub>(<i>s</i>), cada una como su definición y como función racional con los valores numéricos (el tiempo muerto se mantiene como e<sup>−<i>Ls</i></sup>; los factores comunes no se cancelan)</td></tr>
+<tr><td>Polos y ceros</td><td>Una tabla de los polos y ceros de las funciones de transferencia elegidas con los botones del panel entre <i>P</i>(<i>s</i>), <i>C</i>(<i>s</i>), <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) y <i>G</i><sub>yd</sub>(<i>s</i>) (escritas como en el panel de funciones de transferencia del lazo: factores comunes sin cancelar); los polos del semiplano derecho en rojo (con tiempo muerto, los polos en lazo cerrado proceden de una aproximación de Padé de tercer orden)</td></tr>
+<tr><td>Criterio de Routh–Hurwitz</td><td>La ecuación característica 1 + <i>L</i>(<i>s</i>) = 0 y su tabla de Routh para el ajuste actual (la primera columna en negrita, los valores negativos en rojo; el número de cambios de signo da el número de polos en lazo cerrado en el semiplano derecho; un cero en la primera columna se sustituye por ε, y una fila de ceros por la derivada del polinomio auxiliar). Debajo, con el controlador multiplicado por un factor de ganancia <i>k</i>, la primera columna como funciones de <i>k</i> y el rango de <i>k</i> (y de <i>K</i><sub>P</sub> con control P) en que todos son positivos, comparado con el rango del lugar de las raíces (con tiempo muerto, según una aproximación de Padé de tercer orden)</td></tr>
+<tr><td>Error en estado estacionario</td><td>El tipo de sistema de <i>L</i>(<i>s</i>) (sus polos en el origen) y las constantes de error de posición, velocidad y aceleración <i>K</i><sub>p</sub>, <i>K</i><sub>v</sub>, <i>K</i><sub>a</sub>; los errores en estado estacionario ante un escalón, una rampa y una parábola de referencia (por unidad de entrada y para el ajuste actual) y ante una perturbación escalón a la entrada de la planta, junto al error al final de la simulación. Con pesos de referencia, los errores se obtienen de 1 − <i>G</i><sub>yr</sub>(<i>s</i>), y los valores de las fórmulas de los libros de texto se muestran en letra pequeña. Los valores solo son válidos cuando el lazo cerrado es estable</td></tr>
+<tr><td>Diagrama de Bode</td><td>Ganancia y fase de <i>L</i>, <i>P</i>, <i>C</i>, <i>S</i>, <i>T</i>, <i>G</i><sub>yd</sub> y <i>G</i><sub>yr</sub> (botones bajo la gráfica, pestaña <b>Curvas</b>), con los márgenes de ganancia y de fase, Ms, Mt, el ancho de banda y la ganancia máxima de la perturbación. El botón <b>Asíntotas de L</b> añade las aproximaciones por rectas de la ganancia y la fase de <i>L</i> con las frecuencias de corte (○), y la pestaña <b>Frecuencias de corte</b> las enumera con los polos y ceros correspondientes, las pendientes, la diferencia con la ganancia real y el cambio de fase; el botón <b>Factores de las asíntotas</b> dibuja la recta de cada factor (<i>K</i>/<i>s</i><sup><i>q</i></sup>, cada polo y cero, el tiempo muerto), cuya suma es la asíntota; la pestaña <b>Nota</b> describe cómo se construye la aproximación (para comprobar un diagrama de Bode dibujado a mano)</td></tr>
+<tr><td>Diagrama de Nyquist</td><td><i>L</i>(<i>j</i>ω) alrededor del punto −1, opcionalmente con el círculo de radio 1/Ms. La pestaña «Criterio de Nyquist» cuenta los polos en lazo abierto del semiplano derecho <i>P</i>, los rodeos de −1 en sentido horario <i>N</i> (como suma de los cruces del eje real a la izquierda de −1, enumerados uno a uno) y <i>Z</i> = <i>N</i> + <i>P</i>, los polos en lazo cerrado del semiplano derecho; la opción «Cruces del eje real a la izquierda de −1» los marca en la gráfica (▲ +1, ▼ −1)</td></tr>
+<tr><td>Diagrama de Nichols</td><td>La ganancia de <i>L</i>(<i>j</i>ω) [dB] frente a su fase [grados], sobre los contornos M donde el lazo cerrado |<i>T</i>(<i>j</i>ω)| es constante (etiquetados en dB) y el punto crítico (−180°, 0 dB): el mayor M que toca la curva es el pico de resonancia <i>M</i><sub>t</sub>, y los márgenes se leen donde la curva cruza −180° y 0 dB</td></tr>
+<tr><td>Mapa de polos y ceros</td><td>Polos en lazo cerrado, polos y ceros de la planta y del controlador, el lugar de las raíces, una rejilla de ζ y ω<sub>n</sub>, la estabilidad, el rango de <i>k</i> para la estabilidad y la lista de polos. La opción «Reglas de construcción del lugar de las raíces» dibuja los segmentos del eje real, las asíntotas y su centroide, los puntos de ruptura y de llegada, los cruces del eje imaginario y los ángulos de salida y de llegada, y la pestaña «Reglas del lugar» los enumera con cómo se obtiene cada uno y su valor (para comprobar un lugar trazado a mano)</td></tr>
+</table>
+<h4>Rango de frecuencias del diagrama de Bode</h4>
+<p>El rango se elige automáticamente a partir de los polos, los ceros, el tiempo muerto y el tiempo de simulación. Escriba otros límites en <b>Rango de frecuencias</b> bajo la gráfica para fijarlo a mano; <b>Auto</b> recupera el rango automático, que también vuelve por sí solo cuando cambian los polos, los ceros, el tiempo muerto o el tiempo de simulación. Los márgenes siempre se calculan en el rango automático.</p>
+<h4>Lugar de las raíces</h4>
+<p>El lugar de las raíces muestra los polos en lazo cerrado cuando la ganancia del lazo se multiplica por <i>k</i> de 0 a ∞. Señale el lugar para ver <i>k</i>, el polo, ζ y ω<sub>n</sub> en ese punto; haga clic para aplicar ese <i>k</i> a la ganancia del controlador. Con tiempo muerto los polos usan una aproximación de Padé de tercer orden, y la saturación no se incluye.</p>
+<p>Cuando la respuesta diverge, no se muestran indicadores y se informa de la divergencia.</p>
+</section>
+<section id="handling" title="Trabajar con las gráficas">
+<h4>Mostrar, ocultar y hacer zoom</h4>
+<ul>
+<li>Elija los paneles en <b>Gráficas</b>, u oculte uno con la <b>×</b> del extremo derecho de su título (el último panel se mantiene).</li>
+<li>Sobre una gráfica, la <b>rueda</b> hace zoom (<kbd>Shift</kbd>: solo horizontal, <kbd>Alt</kbd>: solo vertical), <b>arrastrar</b> desplaza y un <b>doble clic</b> muestra toda la gráfica. Los botones <b>＋</b>, <b>−</b>, <b>Ajustar</b> y <b>PNG</b> aparecen mientras el puntero está sobre la gráfica. El diagrama de bloques se amplía de la misma forma.</li>
+<li><b>Guardar datos (CSV)</b> en el título de una gráfica guarda sus datos; <b>PNG</b> guarda la imagen. Donde no se pueden guardar archivos, los datos se copian al portapapeles.</li>
+</ul>
+<h4>Disposición y tamaños</h4>
+<p>El menú <b>Disposición</b> ofrece las disposiciones de la <a class="hp-ref" href="#" data-ref="arrange"></a>.</p>
+<table data-id="arrange"><caption>Las opciones de Disposición</caption>
+<tr><th>Disposición</th><th>Distribución</th></tr>
+<tr><td>1 columna, 2 columnas, 1 fila</td><td>El diagrama de bloques ocupando toda la parte superior, los demás paneles debajo</td></tr>
+<tr><td>Libre (arrastrar ⠿)</td><td>Hasta 4 columnas: arrastre el asa <b>⠿</b> (o el título) de un panel a otro lugar, a otra columna o a una columna nueva</td></tr>
+<tr><td>Filas (arrastrar ⠿)</td><td>Filas de 1 a 3 paneles lado a lado; arrastre <b>⠿</b> a otra fila o a una fila nueva</td></tr>
+</table>
+<ul>
+<li>El borde inferior de un panel y los límites entre columnas cambian los tamaños; un doble clic recupera el tamaño original, y <kbd>Esc</kbd> cancela un arrastre. Las teclas de flecha también actúan sobre un asa con el foco.</li>
+<li>El área bajo cada gráfica (indicadores, opciones, notas) tiene pestañas; su asa cambia su tamaño o la oculta.</li>
+<li>La disposición se recuerda en el navegador. <b>Archivo › Comparar y restablecer › Restablecer la disposición</b> recupera la primera.</li>
+</ul>
+</section>
+<section id="design" title="Ayudas al diseño">
+<h4>Especificaciones de diseño</h4>
+<p>Active las especificaciones que desee: sobreimpulso, tiempo de establecimiento, tiempo de subida, error en estado estacionario, margen de fase, margen de ganancia, pico de sensibilidad Ms y coeficiente de amortiguamiento ζ. Cada una se comprueba con ✓ o ✗. Con <b>Mostrar las especificaciones en las gráficas</b>, los límites se dibujan en las gráficas, y el mapa de polos y ceros muestra la región donde deben estar los polos y el rango de <i>k</i> en el lugar de las raíces que los mantiene allí.</p>
+<h4>Sintonía automática (reglas de sintonía)</h4>
+<p>Elija una regla (Ziegler–Nichols por la respuesta al escalón o por la ganancia última, CHR para la respuesta a la referencia o a la perturbación, IMC) y el tipo de controlador (P, PI, PID). Se muestran el modelo obtenido de la planta y las ganancias calculadas; <b>Aplicar al controlador</b> las pone en el controlador. Cuando una regla no se puede usar (por ejemplo, con una planta inestable), se indica el motivo.</p>
+<h4>Diseño de compensadores de adelanto y atraso</h4>
+<p>Elija un compensador de adelanto o de atraso, el margen de fase objetivo MF*, la ganancia <i>K</i><sub>c</sub> (elegida por el error en estado estacionario) y la holgura θ. La tarjeta recorre uno a uno los pasos clásicos de la respuesta en frecuencia para <i>K</i><sub>c</sub><i>P</i>(<i>s</i>) — adelanto: la fase que añadir φ<sub>m</sub>, α, el nuevo cruce ω<sub>m</sub> donde |<i>K</i><sub>c</sub><i>P</i>| = √α, y <i>T</i><sub>1</sub>; atraso: el nuevo cruce donde la fase es −180° + MF* + θ, β y <i>T</i><sub>2</sub> = 10/ω; adelanto-atraso: el nuevo cruce ω<sub>c</sub> (el cruce de fase de <i>K</i><sub>c</sub><i>P</i>, o un valor dado), la fase que añadir allí φ<sub>m</sub>, α, <i>T</i><sub>1</sub> = 1/(ω<sub>c</sub>√α), β = |<i>K</i><sub>c</sub><i>P</i>(<i>j</i>ω<sub>c</sub>)|/√α y <i>T</i><sub>2</sub> = 10/ω<sub>c</sub> — y muestra el margen de fase alcanzado. <b>Aplicar al controlador</b> fija el compensador. Si el margen queda corto (un adelanto desplaza el cruce a donde la fase cae rápido), aumente θ.</p>
+<h4>Barrido de parámetro</h4>
+<p>Elija un parámetro de la planta o del controlador y dé hasta 8 valores separados por comas. Los resultados de cada valor se dibujan en todas las gráficas con colores distintos, y una tabla enumera el sobreimpulso, el tiempo de establecimiento, los márgenes, la estabilidad y la comprobación de las especificaciones. Haga clic en una fila para usar ese valor.</p>
+<h4>Ejercicio de estimación</h4>
+<p>La tarjeta muestra la respuesta al escalón unitario de una planta oculta <i>P</i>(<i>s</i>) = <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1); al mover el ratón sobre la gráfica se leen <i>t</i> e <i>y</i>. Introduzca las estimaciones de <i>K</i>, <i>T</i> y <i>L</i> y pulse <b>Comprobar</b>: la respuesta estimada se dibuja sobre la verdadera, y cada estimación recibe ✓ si está dentro del 10 %. <b>Mostrar la solución</b> da los valores verdaderos, y <b>Usar esta planta</b> los fija como planta. El mismo <b>Número de ejercicio</b> da siempre la misma planta, así que un docente puede dar a todos el mismo ejercicio (o guardarlo en un escenario); <b>Nuevo ejercicio</b> elige un número al azar.</p>
+<p>Con <b>Leer de</b> en <b>Diagrama de Bode</b>, la tarjeta dibuja en su lugar la ganancia y la fase de una planta oculta, y al mover el ratón se leen ω, la ganancia y la fase. El número de ejercicio decide cuál de tres plantas es: <i>K</i>/((<i>T</i><sub>1</sub><i>s</i> + 1)(<i>T</i><sub>2</sub><i>s</i> + 1)) (estimar <i>K</i>, <i>T</i><sub>1</sub> y <i>T</i><sub>2</sub>, en cualquier orden, a partir de la ganancia a bajas frecuencias y las frecuencias de corte), <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1) (<i>L</i> a partir del atraso de fase adicional ω<i>L</i>), o <i>K</i>ω<sub><i>n</i></sub><sup>2</sup>/(<i>s</i><sup>2</sup> + 2ζω<sub><i>n</i></sub><i>s</i> + ω<sub><i>n</i></sub><sup>2</sup>) (ω<sub><i>n</i></sub> donde la fase es −90°, ζ a partir del pico de resonancia). La tarjeta indica la forma y los valores que introducir; la comprobación, la solución y <b>Usar esta planta</b> funcionan como para la respuesta al escalón.</p>
+<h4>Comparar respuestas</h4>
+<p><b>Archivo › Comparar y restablecer › Conservar la respuesta actual</b> guarda la respuesta actual como una línea gris (hasta 4) para compararla con ajustes posteriores. <b>Borrar las conservadas</b> las elimina, y <b>Restablecer valores predeterminados</b> recupera los ajustes iniciales.</p>
+</section>
+<section id="files" title="Guardar y compartir">
+<p>La tarjeta <b>Archivo › Guardar y cargar</b> guarda todos los ajustes como un <b>escenario</b> con un nombre y una tarea o nota (que se muestra al cargarlo). La disposición puede guardarse con él, y aplicarse o no al cargarlo. Los botones de la tarjeta aparecen en la <a class="hp-ref" href="#" data-ref="save"></a>.</p>
+<table data-id="save"><caption>Los botones de Guardar y cargar</caption>
+<tr><th>Botón</th><th>Qué hace</th></tr>
+<tr><td>Guardar en este navegador</td><td>Guarda el escenario en este navegador; aparece en la lista de abajo, donde se puede cargar o eliminar</td></tr>
+<tr><td>Guardar en un archivo / Cargar desde un archivo</td><td>Un archivo .json para conservar o repartir (también se puede cargar un archivo con varios escenarios)</td></tr>
+<tr><td>Copiar como texto / Cargar desde texto</td><td>Texto para pegar en un mensaje o documento, y volver a cargar</td></tr>
+<tr><td>Copiar enlace</td><td>Un enlace que abre la página con el escenario (donde la página se sirve directamente)</td></tr>
+</table>
+<p>La lista <b>Ejemplos</b> contiene ejercicios, como el control PID de una planta de tercer orden con límites de sobreimpulso, tiempo de establecimiento y margen de fase. Al cargar uno, su tarea aparece sobre las gráficas.</p>
+</section>
+<section id="examples" title="Probar los ejercicios">
+<p>El simulador incluye cuatro ejercicios. Cargue uno con <b>Archivo › Guardar y cargar</b>, lista <b>Ejemplos</b>, botón <b>Cargar</b>; su tarea aparece sobre las gráficas. Los números de abajo son los que muestra el simulador para los ajustes indicados (redondeados).</p>
+<p>Antes de empezar, abra <b>Análisis y diseño › Especificaciones de diseño</b> y marque <b>Mostrar las especificaciones en las gráficas</b>, y elija las gráficas necesarias en <b>Gráficas</b>. Para comparar un ajuste nuevo con el anterior, use primero <b>Archivo › Comparar y restablecer › Conservar la respuesta actual</b>.</p>
+<h4>Ejercicio 1: control PID de una planta de tercer orden</h4>
+<p>Planta 1/(<i>s</i>+1)<sup>3</sup>, PID con <i>K</i><sub>P</sub> = 1, <i>K</i><sub>I</sub> = 0.3, <i>K</i><sub>D</sub> = 0.5. Especificaciones: sobreimpulso ≤ 12 %, tiempo de establecimiento ≤ 10 s, margen de fase ≥ 45° (y margen de ganancia ≥ 6 dB).</p>
+<ol>
+<li>Añada el <b>Diagrama de Bode</b>. Al principio el sobreimpulso es del 0 % y el margen de fase de unos 88°, pero el tiempo de establecimiento es de unos 15 s: ✗. El lazo es seguro pero lento.</li>
+<li>Suba <i>K</i><sub>I</sub> de 0.3 a 0.4. El tiempo de establecimiento baja a unos 8.4 s y todas las especificaciones quedan en ✓ (margen de fase de unos 76°; <a class="hp-ref" href="#" data-ref="ex1-time"></a>).
+<figure class="hp-fig" data-img="ex1-time" data-id="ex1-time"><figcaption><i>K</i><sub>I</sub> = 0.4 (azul) frente al primer ajuste <i>K</i><sub>I</sub> = 0.3 (gris, conservado). La línea roja discontinua es el límite de sobreimpulso y las líneas verdes punteadas la banda de establecimiento; los indicadores bajo la gráfica muestran ✓.</figcaption></figure></li>
+<li>Compare con las reglas de sintonía (<b>Análisis y diseño › Sintonía automática</b>, tipo de controlador PID, <b>Aplicar al controlador</b>); la <a class="hp-ref" href="#" data-ref="rules"></a> da los resultados:
+<table data-id="rules"><caption>Ejercicio 1: comparación de las reglas de sintonía del PID</caption>
+<tr><th>Regla</th><th>Sobreimpulso</th><th>Tiempo de establecimiento</th><th>Margen de fase</th></tr>
+<tr><td>Ziegler–Nichols (respuesta al escalón)</td><td>unos 55 %</td><td>unos 13 s</td><td>unos 21°</td></tr>
+<tr><td>CHR (referencia, 0 % de sobreimpulso)</td><td>unos 11 %</td><td>unos 7.3 s</td><td>unos 52°</td></tr>
+<tr><td>IMC</td><td>unos 15 %</td><td>unos 11 s</td><td>unos 48°</td></tr>
+</table>
+Solo CHR (referencia, 0 % de sobreimpulso) cumple todas las especificaciones: su sobreimpulso de un 11 % está dentro del límite del 12 %. Ziegler–Nichols busca una respuesta rápida y oscilante (razón de decaimiento de un cuarto), por lo que su sobreimpulso es grande y su margen de fase pequeño.</li>
+</ol>
+<h4>Ejercicio 2: control PI de una planta con tiempo muerto</h4>
+<p>Planta <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1), PI con <i>K</i><sub>P</sub> = 0.5, <i>K</i><sub>I</sub> = 0.2. Especificaciones: margen de fase ≥ 60°, margen de ganancia ≥ 6 dB, pico de sensibilidad Ms ≤ 1.6.</p>
+<ol>
+<li>Añada el <b>Diagrama de Bode</b> y el <b>Diagrama de Nyquist</b> (marque el círculo 1/Ms). Los márgenes son grandes (margen de fase de unos 83°, Ms de unos 1.22), pero la respuesta es lenta (tiempo de establecimiento de unos 19 s).</li>
+<li>Fije <i>K</i><sub>P</sub> = 0.7. En <b>Análisis y diseño › Barrido de parámetro</b>, marque la casilla, elija el parámetro <i>K</i><sub>I</sub> y escriba los valores <code>0.2, 0.3, 0.4, 0.5, 0.6</code>. Cada valor se dibuja con su propio color, y la tabla del barrido los compara (<a class="hp-ref" href="#" data-ref="ex2-table"></a>).
+<figure class="hp-fig" data-img="ex2-table" data-id="ex2-table"><figcaption>La tabla del barrido (<i>K</i><sub>P</sub> = 0.7). PM es el margen de fase y GM el margen de ganancia; la última columna indica si se cumplen todas las especificaciones.</figcaption></figure>
+Con <i>K</i><sub>I</sub> = 0.4 el tiempo de establecimiento es de unos 8.8 s, el margen de fase de unos 64° y Ms de 1.41. A partir de 0.5 el margen de fase cae por debajo de 60° (unos 55°), y con 0.6 Ms también supera 1.6 (1.70); con 0.2 se cumplen todas las especificaciones, pero la respuesta es lenta (unos 22 s). En el diagrama de Nyquist, las curvas se acercan a −1 a medida que crece <i>K</i><sub>I</sub> (<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>). Haga clic en la fila 0.4 para usar ese valor: es el más rápido que cumple todas las especificaciones.
+<figure class="hp-fig" data-img="ex2-nyq" data-id="ex2-nyq"><figcaption>El diagrama de Nyquist cerca de −1 (ampliado con la rueda). El círculo morado tiene el radio 1/Ms del ajuste actual, el verde punteado el de la especificación Ms = 1.6.</figcaption></figure></li>
+<li>Como comparación, las reglas para PI dan: Ziegler–Nichols (respuesta al escalón) Ms de unos 2.3 y margen de ganancia de unos 5.7 dB (✗), CHR (referencia, 0 % de sobreimpulso) todo ✓ pero más lento (unos 12 s), IMC Ms de unos 2.0 (✗).</li>
+</ol>
+<h4>Ejercicio 3: ponderación de la referencia (PID de 2 grados de libertad)</h4>
+<p>Planta <i>e</i><sup>−0.5<i>s</i></sup>/(<i>s</i>+1), PID de 2 grados de libertad sintonizado para rechazar perturbaciones (<i>K</i><sub>P</sub> = 1.9, <i>K</i><sub>I</sub> = 1.583, <i>K</i><sub>D</sub> = 0.399) con pesos <i>b</i> = <i>c</i> = 1, y una perturbación <i>d</i> = 0.5 desde <i>t</i> = 15 s. Especificación: sobreimpulso ≤ 10 %.</p>
+<ol>
+<li>La respuesta al escalón tiene un sobreimpulso de un 19 % (✗; la línea gris de la <a class="hp-ref" href="#" data-ref="ex3-time"></a>). Tras <i>t</i> = 15 s la perturbación produce una desviación máxima de unos 0.21, recuperada en unos 3.2 s.</li>
+<li>En <b>Sistema › Controlador C(s)</b>, fije <i>b</i> = 0.7 y <i>c</i> = 0. El sobreimpulso baja a un 0.3 % (✓; la línea azul de la <a class="hp-ref" href="#" data-ref="ex3-time"></a>). Con <i>b</i> = 0.5 es casi del 0 %, pero la respuesta es más lenta (tiempo de establecimiento de unos 3.6 s en lugar de 2.4 s).</li>
+<li>Observe la respuesta a la perturbación después de <i>t</i> = 15 s: la desviación máxima y el tiempo de recuperación no cambian, ni tampoco los márgenes de estabilidad. Los pesos solo actúan sobre el camino desde la referencia (<i>C</i><sub>r</sub>), no sobre la realimentación. En el diagrama de Bode, <i>G</i><sub>yr</sub> cambia mientras que <i>G</i><sub>yd</sub> sigue igual.
+<figure class="hp-fig" data-img="ex3-time" data-id="ex3-time"><figcaption><i>b</i> = 0.7, <i>c</i> = 0 (azul) frente a <i>b</i> = <i>c</i> = 1 (gris, conservado). El sobreimpulso ante la referencia desaparece, mientras que después de <i>t</i> = 15 s las dos respuestas a la perturbación coinciden.</figcaption></figure></li>
+<li>El margen de ganancia (unos 4.9 dB) sigue por debajo de 6 dB sean cuales sean <i>b</i> y <i>c</i>: pertenece a las ganancias de realimentación.</li>
+</ol>
+<h4>Ejercicio 4: estabilizar una planta inestable</h4>
+<p>Planta 1/(<i>s</i>−1), control P con <i>K</i><sub>P</sub> = 0.5. Especificación: coeficiente de amortiguamiento ζ ≥ 0.5.</p>
+<ol>
+<li>La salida crece sin límite: el lazo cerrado es inestable. Añada el <b>Mapa de polos y ceros</b>: el polo en lazo cerrado está en el semiplano derecho (<a class="hp-ref" href="#" data-ref="ex4-pz"></a>), y la nota da el rango estable <i>k</i> &gt; 2 del factor de ganancia, es decir, <i>K</i><sub>P</sub> &gt; 1.
+<figure class="hp-fig" data-img="ex4-pz" data-id="ex4-pz"><figcaption>Control P con <i>K</i><sub>P</sub> = 0.5: el polo en lazo cerrado (●) está en +0.5, en el semiplano derecho (sombreado). La pestaña <b>Rangos de ganancia</b> da el rango estable <i>k</i> &gt; 2.</figcaption></figure></li>
+<li>Haga clic en el lugar de las raíces a la izquierda del origen, o fije <i>K</i><sub>P</sub> = 2: el lazo es estable, pero la salida se establece en 2 en vez de en 1. Con <i>K</i><sub>P</sub> = 5 se establece en 1.25. Con control P el valor final es <i>K</i><sub>P</sub>/(<i>K</i><sub>P</sub> − 1), nunca 1.</li>
+<li>Elija <b>PI</b> con <i>K</i><sub>P</sub> = 3 y <i>K</i><sub>I</sub> = 2: los polos en lazo cerrado son −1 ± <i>j</i> (ζ ≈ 0.71, ✓), el error en estado estacionario es 0 y el tiempo de establecimiento de unos 3.3 s (<a class="hp-ref" href="#" data-ref="ex4-time"></a>).
+<figure class="hp-fig" data-img="ex4-time" data-id="ex4-time"><figcaption>PI con <i>K</i><sub>P</sub> = 3, <i>K</i><sub>I</sub> = 2: la salida se establece en 1. El gran sobreimpulso se debe al cero del controlador (paso siguiente).</figcaption></figure></li>
+<li>Pruebe <i>K</i><sub>I</sub> = 1: los polos se juntan en −1 (ζ = 1), y aun así el sobreimpulso sigue en un 45 %. Se debe al cero del controlador en −<i>K</i><sub>I</sub>/<i>K</i><sub>P</sub>, no a los polos.</li>
+</ol>
+</section>
+<section id="other" title="Idioma, teléfonos, teclado y datos">
+<ul>
+<li><b>Idioma</b>: elija inglés, japonés, chino, coreano, tailandés, francés, alemán, español, portugués o ruso arriba a la derecha; la elección se recuerda.</li>
+<li><b>Pantallas estrechas</b>: los paneles se muestran en una columna y los menús sin sus iconos. En un teléfono, la barra inferior cambia entre <b>Configuración</b> y <b>Gráficas</b>.</li>
+<li><b>Teclado</b>: todos los menús, asas y botones se pueden usar con el teclado. En un menú, <kbd>↑</kbd> <kbd>↓</kbd> se desplazan y <kbd>Enter</kbd> elige; <kbd>Esc</kbd> cierra un menú o este manual.</li>
+<li><b>Datos</b>: el cálculo se hace en su navegador, y el simulador no envía sus ajustes ni los resultados a ninguna parte. Los escenarios guardados, la disposición y el idioma se conservan solo en este navegador. Al abrir la página, el navegador carga las fuentes desde Google Fonts y la visualización de fórmulas (MathJax) desde jsDelivr; como en cualquier página web, estos servicios y el servidor de la página conocen su dirección IP y su navegador, pero no sus ajustes. Un enlace creado con <b>Copiar enlace</b> lleva los ajustes tras el <code>#</code> de la dirección, una parte que el navegador no envía al servidor.</li>
+</ul>
+</section>
+<section id="accuracy" title="Precisión numérica">
+<p>Los resultados se calculan numéricamente y tienen pequeños errores. Comparados con soluciones exactas y con cálculos independientes mucho más precisos, quedan dentro de estos límites:</p>
+<ul>
+<li><b>Respuesta temporal</b>: dentro de un 0.3 % del tamaño de la respuesta; el sobreimpulso dentro de 0.1 puntos porcentuales, los tiempos de subida y de establecimiento dentro del 0.5 %.</li>
+<li><b>Diagramas de Bode y de Nyquist</b>: calculados directamente a partir de las funciones de transferencia (el tiempo muerto de forma exacta); el margen de fase dentro de 0.02°, el margen de ganancia dentro de 0.001 dB, Ms dentro de 10<sup>−6</sup> (relativo).</li>
+<li><b>Polos y ceros</b>: dentro de 10<sup>−9</sup> cuando son distintos. Un polo repetido <i>k</i> veces solo puede hallarse con un error de unas pocas veces 10<sup>−16/<i>k</i></sup> (2×10<sup>−5</sup> para un polo triple): un límite del propio problema, no del método.</li>
+<li><b>Tiempo muerto</b>: las respuestas temporal y en frecuencia usan el retardo exacto; los polos y el lugar de las raíces usan una aproximación de Padé de tercer orden (los polos dominantes dentro de unos 10<sup>−3</sup> para <i>L</i>/<i>T</i> ≤ 3).</li>
+</ul>
+<p>Tenga en cuenta: la respuesta se registra en 4000 puntos a lo largo del tiempo de simulación, así que un cambio mucho más rápido que (tiempo de simulación)/4000 no se puede resolver; acorte el tiempo de simulación para verlo. La <i>u</i> dibujada es su valor en esos puntos, así que un pico muy breve (como el golpe derivativo, que dura aproximadamente 1/<i>N</i>) puede parecer más bajo de lo que es.</p>
+<p>Los métodos y todos los resultados están en <a href="https://github.com/m-koga/sigmaomega/blob/main/ACCURACY.md" target="_blank" rel="noopener">ACCURACY.md</a> en GitHub.</p>
+</section>
+<section id="performance" title="Eficiencia en tiempo">
+<p>Todo se calcula en su navegador, de nuevo tras cada cambio. Medido en Chrome en un ordenador corriente, y con el procesador ralentizado 4 veces (como un teléfono):</p>
+<ul>
+<li><b>Abrir la página</b>: las gráficas están listas tras unos 0.25 s (0.8 s con el procesador más lento) y las fórmulas un poco después, una vez descargada la página (unos 1.4 MB, y 0.7 MB para las fórmulas en la primera visita).</li>
+<li><b>Cambiar un valor</b>: todo se recalcula y se redibuja en 4–19 ms con los paneles de la primera visita, y en 22–43 ms con todos los paneles (0.1–0.2 s con el procesador más lento): se percibe como inmediato.</li>
+<li><b>Arrastrar un deslizador</b>: las gráficas siguen unas 20–50 veces por segundo (6–11 con el procesador más lento), cada vez con el resultado completo.</li>
+<li><b>Barrido de parámetro</b>: ocho cálculos completos por cambio, 0.06–0.2 s (hasta 1 s aproximadamente con el procesador más lento).</li>
+</ul>
+<p>El trabajo de un cambio tiene un límite superior (como máximo 400 000 pasos de tiempo, 2400 frecuencias y 8 valores de barrido), así que la página nunca se queda bloqueada mucho tiempo. En un dispositivo lento, oculte los paneles que no necesite (el mapa de polos y ceros con su lugar de las raíces es el que más carga) y desactive el barrido mientras arrastra deslizadores.</p>
+<p>Cómo se midió y todos los resultados están en <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> en GitHub.</p>
+</section>
+<section id="faq" title="Cuando algo no funciona">
+<dl>
+<dt>No se muestran indicadores y la curva se sale de la gráfica.</dt><dd>El lazo cerrado es inestable y la respuesta divergió. Baje las ganancias, o mire el mapa de polos y ceros y el rango estable de <i>k</i>.</dd>
+<dt>La gráfica muestra solo una parte de la curva.</dt><dd>Puede estar ampliada: pulse <b>Ajustar</b> o haga doble clic en la gráfica. En el diagrama de Bode, compruebe también si se fijó un rango de frecuencias a mano (<b>Auto</b> recupera el automático).</dd>
+<dt>No se acepta una función de transferencia.</dt><dd>Lea el mensaje bajo el campo. La planta debe ser estrictamente propia y el controlador propio; una derivada ideal <i>K</i><sub>D</sub><i>s</i> necesita un filtro como <i>K</i><sub>D</sub><i>s</i>/(τ<i>s</i>+1).</dd>
+<dt>No se guarda un archivo o una imagen.</dt><dd>Algunos visores no permiten descargas; los datos se copian entonces al portapapeles (o se muestran seleccionados para copiarlos a mano).</dd>
+<dt>La disposición está desordenada.</dt><dd>Use <b>Archivo › Comparar y restablecer › Restablecer la disposición</b>; los ajustes se conservan.</dd>
+</dl>
+</section>

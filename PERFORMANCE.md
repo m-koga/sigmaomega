@@ -8,7 +8,7 @@ SigmaOmega computes everything in your browser, again after every change. This d
 
 | What you do | How long it takes (this computer / processor 4× slower) | Judged against the guidelines below |
 | --- | --- | --- |
-| Open the page | Plots drawn and usable after 0.24 s / 0.78 s, formulas after 0.39 s / 1.4 s, plus the download (about 0.4 MB for the page, 0.7 MB for the formulas, compressed) | Fast; on a slow mobile connection the download takes a few seconds on the first visit |
+| Open the page | Plots drawn and usable after 0.24 s / 0.78 s, formulas after 0.39 s / 1.4 s, plus the download (about 1.4 MB for the page, 0.7 MB for the formulas, compressed) | Fast; on a slow mobile connection the download takes a few seconds on the first visit |
 | Move a slider or type a value | Everything computed and drawn again in 4–19 ms with the panels of a first visit, 22–43 ms with every panel / 0.1–0.2 s | Feels immediate (under 0.1 s) on this computer; about at the limit of a "good" response (0.2 s) on the slower processor |
 | Drag a slider | The plots follow about 20–50 times a second / 6–11 times a second | Smooth enough to follow on this computer; jerky but usable on the slower processor |
 | Use a parameter sweep of 8 values | 61–204 ms / 0.3–1.0 s per change | Noticeable with the heaviest settings, especially on a slow device |
@@ -53,7 +53,7 @@ Measured on 2026-11-26: Intel(R) Xeon(R) Processor @ 2.10GHz, 2 cores; Chrome 15
 
 | File | Size | Compressed (gzip) | From |
 |---|---|---|---|
-| The page (index.html, with the manual's pictures) | 860 KB | 373 KB | the site |
+| The page (index.html, with the manual's pictures) | 2728 KB | 1407 KB | the site |
 | MathJax (tex-svg.js, for the formulas) | 2059 KB | 659 KB | cdn.jsdelivr.net |
 
 At 10 Mbit/s this is about 0.3 s for the page and 0.5 s more for MathJax; on a slow mobile connection (1.6 Mbit/s, Lighthouse's mobile setting) about 2 s and 3.3 s. MathJax loads in the background: the plots do not wait for it. The browser keeps both, so later visits do not download them again.

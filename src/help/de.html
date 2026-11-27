@@ -1,0 +1,208 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- Copyright 2026 Masanobu Koga -->
+<!-- User manual in German: one <section> per chapter, with its id and title (scripts/build.ts puts it into the page; src/ts/84-help.ts shows it) -->
+<section id="start" title="Erste Schritte">
+<p><b>SigmaOmega</b> (Regelkreis-Simulator) lässt Sie Analyse und Entwurf eines Regelkreises im Browser ausprobieren. Wählen Sie eine Regelstrecke und einen Regler und ändern Sie ihre Werte: Zeitantwort, Bode- und Nyquist-Diagramm und das Pol-Nullstellen-Diagramm werden sofort neu gezeichnet. Alles wird in Ihrem Browser berechnet, und der Simulator sendet weder Ihre Einstellungen noch die Ergebnisse irgendwohin (Kapitel 9 nennt, was die Seite aus dem Internet lädt).</p>
+<p>Der Name kommt von der komplexen Variablen <i>s</i> = σ + <i>j</i>ω der Laplace-Transformation: Der Realteil σ eines Pols bestimmt, wie schnell die Antwort abklingt (oder anwächst), und der Frequenzgang ist <i>s</i> auf der imaginären Achse, <i>s</i> = <i>j</i>ω. Der Simulator zeigt die ganze <i>s</i>-Ebene und diese beiden Sichtweisen zusammen.</p>
+<p>Das System ist ein einschleifiger Regelkreis: Die Führungsgröße <i>r</i> geht in den Regler <i>C</i>(<i>s</i>), dessen Ausgang <i>u</i> die Strecke <i>P</i>(<i>s</i>) mit dem Ausgang <i>y</i> ansteuert. Am Streckeneingang kann eine Störung <i>d</i> und am Ausgang ein Messrauschen <i>n</i> hinzukommen.</p>
+<h4>Ein erster Versuch</h4>
+<ol>
+<li>Wählen Sie unter <b>Systemaufbau › Regelstrecke P(s)</b> eine Strecke, zum Beispiel <b>PT3-Glied (gleiche Zeitkonstanten)</b>.</li>
+<li>Wählen Sie unter <b>Systemaufbau › Regler C(s)</b> den <b>PID</b> und bewegen Sie die Schieberegler von <i>K</i><sub>P</sub>, <i>K</i><sub>I</sub> und <i>K</i><sub>D</sub>.</li>
+<li>Beobachten Sie die Sprungantwort und ihre Kennwerte (Überschwingen, Ausregelzeit, …) unter dem Diagramm.</li>
+<li>Öffnen Sie <b>Diagramme</b> und fügen Sie das <b>Bode-Diagramm</b> oder das <b>Pol-Nullstellen-Diagramm</b> hinzu, um dieselbe Änderung im Frequenzbereich und an den Polen zu sehen.</li>
+</ol>
+<p>Beispiele Schritt für Schritt finden Sie in Kapitel 8, <b>Die Übungen ausprobieren</b>.</p>
+<p>Verwendete Begriffe: <i>L</i> = <i>CP</i> ist die Übertragungsfunktion des offenen Kreises, <i>S</i> = 1/(1+<i>L</i>) die Empfindlichkeit und <i>T</i> = <i>L</i>/(1+<i>L</i>) die komplementäre Empfindlichkeit. Ein <b>Feld</b> ist ein Rahmen mit einem Diagramm, eine <b>Karte</b> eine Gruppe von Eingaben im Einstellungsbereich und ein <b>Szenario</b> eine benannte Kopie aller Einstellungen.</p>
+</section>
+<section id="screen" title="Der Bildschirm">
+<p>Von oben nach unten: die <b>Kopfzeile</b> (Titel, Sprache, Versionsnummer), die <b>Menüleiste</b> (ihre Menüs stehen in <a class="hp-ref" href="#" data-ref="menus"></a>) und darunter der <b>Einstellungsbereich</b> (links) neben den <b>Diagrammfeldern</b> (rechts).</p>
+<table data-id="menus"><caption>Die Menüs der Menüleiste</caption>
+<tr><th>Menü</th><th>Funktion</th></tr>
+<tr><td>Datei</td><td>Karten <b>Speichern und laden</b> und <b>Vergleichen und zurücksetzen</b></td></tr>
+<tr><td>Diagramme</td><td>Blendet die Felder ein oder aus (mehrere zugleich; <b>Alle</b> zeigt alle Felder der Liste)</td></tr>
+<tr><td>Systemaufbau</td><td>Karten für Strecke, Regler, Führungsgröße/Störung/Rauschen und Stellgrößenbegrenzung</td></tr>
+<tr><td>Analyse &amp; Entwurf</td><td>Karten <b>Entwurfsvorgaben</b>, <b>Automatische Einstellung</b>, <b>Entwurf von Lead- und Lag-Gliedern</b>, <b>Parametervariation</b> und <b>Schätzübung</b>; darunter werden die Felder <b>Routh–Hurwitz-Kriterium</b> und <b>Bleibende Regelabweichung</b> ein- oder ausgeblendet</td></tr>
+<tr><td>Anordnung</td><td>Wie die Felder angeordnet sind (Kapitel 5)</td></tr>
+<tr><td>Kennwerte</td><td>Kennwerte als Karten oder als Tabelle</td></tr>
+<tr><td>Hilfe</td><td>Dieses Handbuch</td></tr>
+</table>
+<ul>
+<li>Der Einstellungsbereich zeigt jeweils eine Karte, die aus einem Menü gewählte; dieses Menü ist rot unterstrichen. Ziehen Sie den rechten Rand des Bereichs, um seine Breite zu ändern, und klappen Sie ihn mit <b>≪</b> zu einem schmalen Streifen zusammen.</li>
+<li>Die Versionsnummer oben rechts öffnet das Änderungsprotokoll.</li>
+</ul>
+</section>
+<section id="system" title="Den Regelkreis einrichten">
+<p>Werte werden mit einem Schieberegler eingestellt oder in das Zahlenfeld daneben eingegeben. Ein eingegebener Wert außerhalb des Schiebereglers wird mit <kbd>Enter</kbd> übernommen.</p>
+<h4>Regelstrecke P(s)</h4>
+<p>PT1-Glied <i>K</i>/(<i>Ts</i>+1), PT2-Glied, PT3-Glied <i>K</i>/(<i>Ts</i>+1)<sup>3</sup>, PT1-Glied mit Totzeit, Integrator mit PT1-Glied, instabiles PT1-Glied <i>K</i>/(<i>Ts</i>−1) oder <b>Übertragungsfunktion eingeben</b>.</p>
+<p>Eine Übertragungsfunktion wird als Polynome in <i>s</i> geschrieben, etwa <code>2*s + 1</code> oder <code>(s+1)^2(0.5s+1)</code> (das <code>*</code> kann entfallen), oder als Koeffizienten in absteigenden Potenzen wie <code>[1 3 2]</code>. Der Nenner darf bis Grad 10 haben, der Zählergrad muss kleiner sein (streng proper). Eine Totzeit <i>L</i> kann hinzugefügt werden. Pole, Nullstellen, statische Verstärkung und Stabilität werden schon beim Tippen angezeigt, und ein Fehler wird erklärt.</p>
+<h4>Regler C(s)</h4>
+<ul>
+<li><b>P, PI, PD, PID</b> mit den Parametern <i>K</i><sub>P</sub>, <i>K</i><sub>I</sub>, <i>K</i><sub>D</sub>; der D-Anteil wird mit dem Koeffizienten <i>N</i> gefiltert.</li>
+<li><b>PI-D</b> (der D-Anteil wirkt nur auf <i>y</i>) und der <b>PID mit zwei Freiheitsgraden</b> mit den Sollwertgewichten <i>b</i> und <i>c</i>; das Blockschaltbild geht dann in die Form <i>u</i> = <i>C</i><sub>r</sub>(<i>s</i>)<i>r</i> − <i>C</i>(<i>s</i>)<i>y</i> über.</li>
+<li><b>Lead</b>-, <b>Lag</b>- und <b>Lead-Lag</b>-Glieder.</li>
+<li><b>Übertragungsfunktion eingeben</b> (proper; die aktuellen PID-Einstellungen können übernommen werden).</li>
+<li><b>Anti-Windup</b> (bedingte Integration) für die PID-Typen, wenn das Stellglied in die Begrenzung geht.</li>
+</ul>
+<h4>Führungsgröße, Störung und Rauschen</h4>
+<p>Die Führungsgröße kann ein Sprung, eine Rampe, eine Parabel, ein Trapez, ein einzelner Rechteckimpuls, ein Rechtecksignal, ein Sinus oder ein Dirac-Impuls sein, mit Startzeit, Größe und Periode. Am Streckeneingang kann zu einer gewählten Zeit eine sprungförmige Störung hinzugefügt werden, dazu Messrauschen mit der Standardabweichung σ<sub>n</sub> (gleiche Einstellungen ergeben immer dasselbe Rauschen).</p>
+<h4>Stellgrößenbegrenzung und Simulationsdauer</h4>
+<p>Die Begrenzung beschränkt |<i>u</i>| ≤ <i>u</i><sub>max</sub>. Die Simulationsdauer wird unter der Zeitantwort eingestellt (Reiter <b>Simulationsdauer</b>), von 0.01 bis 10000 s.</p>
+</section>
+<section id="plots" title="Die Diagramme lesen">
+<p><a class="hp-ref" href="#" data-ref="panels"></a> zeigt die verfügbaren Felder und was jedes davon darstellt.</p>
+<table data-id="panels"><caption>Die Felder und was sie zeigen</caption>
+<tr><th>Feld</th><th>Was es zeigt</th></tr>
+<tr><td>Blockschaltbild</td><td>Den aktuellen Regelkreis; Begrenzung, Störung und Rauschen werden nur gezeichnet, wenn sie verwendet werden</td></tr>
+<tr><td>Zeitantwort</td><td><i>r</i>, <i>y</i> und <i>u</i>, darunter die Kennwerte: Anstiegszeit (10 → 90 %), Überschwingen, Ausregelzeit (±2 %), bleibende Regelabweichung sowie maximale Abweichung und Erholzeit nach einer Störung; bei sinusförmiger Führungsgröße Amplitudenverhältnis und Phasendifferenz. Der Reiter <b>Anzeige</b> unter dem Diagramm fügt die Antwort der Strecke allein auf <i>r</i>(<i>t</i>) hinzu (offener Kreis: <i>P</i>(<i>s</i>) von der Führungsgröße angeregt, ohne Regler und Rückführung), zum Vergleich mit dem geschlossenen Kreis. <b>Nur die Strecke allein</b> zeigt die Strecke für sich: keine Führungsgröße und keine Rückführung, das als Führungsgröße eingestellte Signal regt <i>P</i>(<i>s</i>) direkt an; das untere Diagramm zeigt dieses Eingangssignal, und die Kennwerte (Endwert, Anstiegszeit, Überschwingen, Ausregelzeit, statische Verstärkung) sind die der Strecke selbst; das Blockschaltbild zeigt dann die Strecke allein, <i>u</i> → <i>P</i>(<i>s</i>) → <i>y</i></td></tr>
+<tr><td>Übertragungsfunktionen</td><td><i>P</i>(<i>s</i>) und <i>C</i>(<i>s</i>) (und <i>C</i><sub>r</sub>(<i>s</i>)) als Formeln</td></tr>
+<tr><td>Übertragungsfunktionen des Regelkreises</td><td>Die mit den Schaltflächen des Felds aus <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) und <i>G</i><sub>yd</sub>(<i>s</i>) gewählten, jeweils als Definition und als gebrochen rationale Funktion mit den Zahlenwerten (die Totzeit bleibt als e<sup>−<i>Ls</i></sup>; gemeinsame Faktoren werden nicht gekürzt)</td></tr>
+<tr><td>Pole und Nullstellen</td><td>Eine Tabelle der Pole und Nullstellen der mit den Schaltflächen des Felds aus <i>P</i>(<i>s</i>), <i>C</i>(<i>s</i>), <i>L</i>(<i>s</i>), <i>S</i>(<i>s</i>), <i>T</i>(<i>s</i>), <i>G</i><sub>yr</sub>(<i>s</i>) und <i>G</i><sub>yd</sub>(<i>s</i>) gewählten Übertragungsfunktionen (wie im Feld der Übertragungsfunktionen des Regelkreises geschrieben: gemeinsame Faktoren nicht gekürzt); Pole in der rechten Halbebene rot (mit Totzeit stammen die Pole des geschlossenen Kreises aus einer Padé-Approximation dritter Ordnung)</td></tr>
+<tr><td>Routh–Hurwitz-Kriterium</td><td>Die charakteristische Gleichung 1 + <i>L</i>(<i>s</i>) = 0 und ihr Routh-Schema für die aktuelle Einstellung (die erste Spalte fett, negative Einträge rot; die Zahl der Vorzeichenwechsel ist die Zahl der Pole des geschlossenen Kreises in der rechten Halbebene; eine Null in der ersten Spalte wird durch ε ersetzt, eine Nullzeile durch die Ableitung des Hilfspolynoms). Darunter, mit dem Regler multipliziert mit einem Verstärkungsfaktor <i>k</i>, die erste Spalte als Funktionen von <i>k</i> und der Bereich von <i>k</i> (und von <i>K</i><sub>P</sub> bei P-Regelung), in dem alle positiv sind, verglichen mit dem Bereich aus der Wurzelortskurve (mit Totzeit nach einer Padé-Approximation dritter Ordnung)</td></tr>
+<tr><td>Bleibende Regelabweichung</td><td>Der Systemtyp von <i>L</i>(<i>s</i>) (seine Pole im Ursprung) und die Lage-, Geschwindigkeits- und Beschleunigungsfehlerkonstanten <i>K</i><sub>p</sub>, <i>K</i><sub>v</sub>, <i>K</i><sub>a</sub>; die bleibenden Regelabweichungen bei Sprung, Rampe und Parabel der Führungsgröße (je Einheit und für die aktuelle Einstellung) und bei einer sprungförmigen Störung am Streckeneingang, neben der Abweichung am Ende der Simulation. Mit Sollwertgewichten ergeben sich die Abweichungen aus 1 − <i>G</i><sub>yr</sub>(<i>s</i>), und die Werte der Lehrbuchformeln stehen klein daneben. Die Werte gelten nur, wenn der geschlossene Kreis stabil ist</td></tr>
+<tr><td>Bode-Diagramm</td><td>Betrag und Phase von <i>L</i>, <i>P</i>, <i>C</i>, <i>S</i>, <i>T</i>, <i>G</i><sub>yd</sub> und <i>G</i><sub>yr</sub> (Schaltflächen unter dem Diagramm, Reiter <b>Kurven</b>), mit Amplituden- und Phasenreserve, Ms, Mt, Bandbreite und maximaler Störverstärkung. Die Schaltfläche <b>Asymptoten von L</b> fügt die asymptotischen Näherungen von Betrag und Phase von <i>L</i> mit den Knickfrequenzen (○) hinzu, und der Reiter <b>Knickfrequenzen</b> listet sie mit den zugehörigen Polen und Nullstellen, den Steigungen, dem Abstand zum wahren Betrag und der Phasenänderung; die Schaltfläche <b>Faktoren der Asymptoten</b> zeichnet die Gerade jedes Faktors (<i>K</i>/<i>s</i><sup><i>q</i></sup>, jeder Pol und jede Nullstelle, die Totzeit), deren Summe die Asymptote ist; der Reiter <b>Hinweis</b> beschreibt, wie die Näherung entsteht (zur Kontrolle eines von Hand gezeichneten Bode-Diagramms)</td></tr>
+<tr><td>Nyquist-Diagramm</td><td><i>L</i>(<i>j</i>ω) um den Punkt −1, wahlweise mit dem Kreis vom Radius 1/Ms. Der Reiter „Nyquist-Kriterium“ zählt die Pole des offenen Kreises in der rechten Halbebene <i>P</i>, die Umläufe um −1 im Uhrzeigersinn <i>N</i> (als Summe der Schnittpunkte mit der reellen Achse links von −1, einzeln aufgeführt) und <i>Z</i> = <i>N</i> + <i>P</i>, die Pole des geschlossenen Kreises in der rechten Halbebene; die Option „Schnittpunkte mit der reellen Achse links von −1“ markiert sie im Diagramm (▲ +1, ▼ −1)</td></tr>
+<tr><td>Nichols-Diagramm</td><td>Der Betrag von <i>L</i>(<i>j</i>ω) [dB] über seiner Phase [Grad], über den M-Kurven, auf denen der Betrag des geschlossenen Kreises |<i>T</i>(<i>j</i>ω)| konstant ist (in dB beschriftet), und dem kritischen Punkt (−180°, 0 dB): Das größte M, das die Kurve berührt, ist die Resonanzüberhöhung <i>M</i><sub>t</sub>, und die Reserven werden dort abgelesen, wo die Kurve −180° und 0 dB kreuzt</td></tr>
+<tr><td>Pol-Nullstellen-Diagramm</td><td>Pole des geschlossenen Kreises, Pole und Nullstellen von Strecke und Regler, die Wurzelortskurve, ein Raster von ζ und ω<sub>n</sub>, die Stabilität, der stabile Bereich von <i>k</i> und die Polliste. Die Option „Konstruktionsregeln der Wurzelortskurve“ zeichnet die Abschnitte auf der reellen Achse, die Asymptoten und ihren Schwerpunkt, die Verzweigungs- und Vereinigungspunkte, die Schnittpunkte mit der imaginären Achse sowie die Austritts- und Eintrittswinkel, und der Reiter „WOK-Regeln“ listet sie mit ihrer Bestimmung und ihrem Wert auf (zur Kontrolle einer von Hand skizzierten Wurzelortskurve)</td></tr>
+</table>
+<h4>Frequenzbereich des Bode-Diagramms</h4>
+<p>Der Bereich wird automatisch aus Polen, Nullstellen, Totzeit und Simulationsdauer gewählt. Geben Sie unter <b>Frequenzbereich</b> unter dem Diagramm andere Grenzen ein, um ihn von Hand einzustellen; <b>Auto</b> stellt den automatischen Bereich wieder her, der auch von selbst zurückkehrt, wenn sich Pole, Nullstellen, Totzeit oder Simulationsdauer ändern. Die Reserven werden immer im automatischen Bereich bestimmt.</p>
+<h4>Wurzelortskurve</h4>
+<p>Die Wurzelortskurve zeigt die Pole des geschlossenen Kreises, wenn die Kreisverstärkung mit <i>k</i> von 0 bis ∞ multipliziert wird. Zeigen Sie auf die Kurve, um dort <i>k</i>, den Pol, ζ und ω<sub>n</sub> zu sehen; ein Klick überträgt dieses <i>k</i> auf die Reglerverstärkung. Mit Totzeit verwenden die Pole eine Padé-Approximation dritter Ordnung, und die Begrenzung wird nicht berücksichtigt.</p>
+<p>Wenn die Antwort divergiert, werden keine Kennwerte angezeigt, und die Divergenz wird gemeldet.</p>
+</section>
+<section id="handling" title="Mit den Diagrammen arbeiten">
+<h4>Einblenden, ausblenden und zoomen</h4>
+<ul>
+<li>Wählen Sie die Felder unter <b>Diagramme</b>, oder blenden Sie eines mit dem <b>×</b> am rechten Ende seines Titels aus (das letzte Feld bleibt).</li>
+<li>Über einem Diagramm zoomt das <b>Mausrad</b> (<kbd>Shift</kbd>: nur waagerecht, <kbd>Alt</kbd>: nur senkrecht), <b>Ziehen</b> verschiebt und ein <b>Doppelklick</b> zeigt das ganze Diagramm. Die Schaltflächen <b>＋</b>, <b>−</b>, <b>Einpassen</b> und <b>PNG</b> erscheinen, solange der Zeiger über dem Diagramm ist. Das Blockschaltbild lässt sich ebenso zoomen.</li>
+<li><b>Daten speichern (CSV)</b> im Titel eines Diagramms speichert seine Daten; <b>PNG</b> speichert das Bild. Wo keine Dateien gespeichert werden können, werden die Daten stattdessen in die Zwischenablage kopiert.</li>
+</ul>
+<h4>Anordnung und Größen</h4>
+<p>Das Menü <b>Anordnung</b> bietet die Layouts aus <a class="hp-ref" href="#" data-ref="arrange"></a>.</p>
+<table data-id="arrange"><caption>Die Möglichkeiten der Anordnung</caption>
+<tr><th>Anordnung</th><th>Layout</th></tr>
+<tr><td>1 Spalte, 2 Spalten, 1 Zeile</td><td>Das Blockschaltbild oben über die ganze Breite, die anderen Felder darunter</td></tr>
+<tr><td>Frei (ziehen ⠿)</td><td>Bis zu 4 Spalten: Ziehen Sie den Griff <b>⠿</b> (oder den Titel) eines Felds an eine andere Stelle, in eine andere Spalte oder eine neue Spalte</td></tr>
+<tr><td>Zeilen (ziehen ⠿)</td><td>Zeilen mit 1 bis 3 Feldern nebeneinander; ziehen Sie <b>⠿</b> in eine andere oder eine neue Zeile</td></tr>
+</table>
+<ul>
+<li>Der untere Rand eines Felds und die Grenzen zwischen Spalten ändern die Größen; ein Doppelklick stellt die ursprüngliche Größe wieder her, und <kbd>Esc</kbd> bricht das Ziehen ab. Die Pfeiltasten wirken auch auf einen Griff mit Fokus.</li>
+<li>Der Bereich unter jedem Diagramm (Kennwerte, Optionen, Hinweise) hat Reiter; sein Griff ändert seine Größe oder blendet ihn aus.</li>
+<li>Die Anordnung wird im Browser gespeichert. <b>Datei › Vergleichen und zurücksetzen › Anordnung zurücksetzen</b> stellt die erste wieder her.</li>
+</ul>
+</section>
+<section id="design" title="Entwurfshilfen">
+<h4>Entwurfsvorgaben</h4>
+<p>Schalten Sie die gewünschten Vorgaben ein: Überschwingen, Ausregelzeit, Anstiegszeit, bleibende Regelabweichung, Phasenreserve, Amplitudenreserve, maximale Empfindlichkeit Ms und Dämpfungsgrad ζ. Jede wird mit ✓ oder ✗ geprüft. Mit <b>Vorgaben in den Diagrammen anzeigen</b> werden die Grenzen in die Diagramme gezeichnet, und das Pol-Nullstellen-Diagramm zeigt den Bereich, in dem die Pole liegen sollen, und den Bereich von <i>k</i> auf der Wurzelortskurve, der sie dort hält.</p>
+<h4>Automatische Einstellung (Einstellregeln)</h4>
+<p>Wählen Sie eine Regel (Ziegler–Nichols nach der Sprungantwort oder nach der Stabilitätsgrenze, CHR für Führungs- oder Störverhalten, IMC) und den Reglertyp (P, PI, PID). Das aus der Strecke bestimmte Modell und die berechneten Parameter werden angezeigt; <b>Auf den Regler anwenden</b> überträgt sie in den Regler. Ist eine Regel nicht anwendbar (etwa bei einer instabilen Strecke), wird der Grund angegeben.</p>
+<h4>Entwurf von Lead- und Lag-Gliedern</h4>
+<p>Wählen Sie ein Lead- oder Lag-Glied, die Ziel-Phasenreserve PM*, die Verstärkung <i>K</i><sub>c</sub> (gewählt für die bleibende Regelabweichung) und den Zuschlag θ. Die Karte führt die klassischen Schritte des Frequenzkennlinienverfahrens für <i>K</i><sub>c</sub><i>P</i>(<i>s</i>) einzeln durch — Lead: die hinzuzufügende Phase φ<sub>m</sub>, α, die neue Durchtrittsfrequenz ω<sub>m</sub> bei |<i>K</i><sub>c</sub><i>P</i>| = √α und <i>T</i><sub>1</sub>; Lag: die neue Durchtrittsfrequenz, bei der die Phase −180° + PM* + θ beträgt, β und <i>T</i><sub>2</sub> = 10/ω; Lead-Lag: die neue Durchtrittsfrequenz ω<sub>c</sub> (die Phasenschnittfrequenz von <i>K</i><sub>c</sub><i>P</i> oder ein vorgegebener Wert), die dort hinzuzufügende Phase φ<sub>m</sub>, α, <i>T</i><sub>1</sub> = 1/(ω<sub>c</sub>√α), β = |<i>K</i><sub>c</sub><i>P</i>(<i>j</i>ω<sub>c</sub>)|/√α und <i>T</i><sub>2</sub> = 10/ω<sub>c</sub> — und zeigt die erreichte Phasenreserve. <b>Auf den Regler anwenden</b> setzt das Korrekturglied. Reicht die Reserve nicht (ein Lead-Glied verschiebt die Durchtrittsfrequenz dorthin, wo die Phase schnell fällt), erhöhen Sie θ.</p>
+<h4>Parametervariation</h4>
+<p>Wählen Sie einen Parameter der Strecke oder des Reglers und geben Sie bis zu 8 durch Kommas getrennte Werte an. Die Ergebnisse aller Werte werden in allen Diagrammen in verschiedenen Farben gezeichnet, und eine Tabelle listet Überschwingen, Ausregelzeit, Reserven, Stabilität und die Prüfung der Vorgaben. Klicken Sie auf eine Zeile, um diesen Wert zu übernehmen.</p>
+<h4>Schätzübung</h4>
+<p>Die Karte zeigt die Einheitssprungantwort einer verborgenen Strecke <i>P</i>(<i>s</i>) = <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1); beim Bewegen der Maus über das Diagramm werden <i>t</i> und <i>y</i> abgelesen. Geben Sie die Schätzwerte von <i>K</i>, <i>T</i> und <i>L</i> ein und drücken Sie <b>Prüfen</b>: Die geschätzte Antwort wird über die wahre gezeichnet, und jeder Schätzwert erhält ✓, wenn er innerhalb von 10 % liegt. <b>Lösung anzeigen</b> nennt die wahren Werte, und <b>Diese Strecke verwenden</b> übernimmt sie als Strecke. Dieselbe <b>Nummer der Übung</b> ergibt immer dieselbe Strecke, sodass Lehrende allen dieselbe Übung geben (oder sie in einem Szenario speichern) können; <b>Neue Übung</b> wählt eine Nummer zufällig.</p>
+<p>Ist <b>Ablesen aus</b> auf <b>Bode-Diagramm</b> gestellt, zeichnet die Karte stattdessen Betrag und Phase einer verborgenen Strecke, und die Maus liest ω, Betrag und Phase ab. Die Nummer der Übung bestimmt, welche von drei Strecken es ist: <i>K</i>/((<i>T</i><sub>1</sub><i>s</i> + 1)(<i>T</i><sub>2</sub><i>s</i> + 1)) (<i>K</i>, <i>T</i><sub>1</sub> und <i>T</i><sub>2</sub> in beliebiger Reihenfolge aus der Verstärkung bei tiefen Frequenzen und den Knickfrequenzen schätzen), <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1) (<i>L</i> aus der zusätzlichen Phasennacheilung ω<i>L</i>) oder <i>K</i>ω<sub><i>n</i></sub><sup>2</sup>/(<i>s</i><sup>2</sup> + 2ζω<sub><i>n</i></sub><i>s</i> + ω<sub><i>n</i></sub><sup>2</sup>) (ω<sub><i>n</i></sub> dort, wo die Phase −90° beträgt, ζ aus der Resonanzüberhöhung). Die Karte nennt die Form und die einzugebenden Werte; Prüfung, Lösung und <b>Diese Strecke verwenden</b> funktionieren wie bei der Sprungantwort.</p>
+<h4>Antworten vergleichen</h4>
+<p><b>Datei › Vergleichen und zurücksetzen › Aktuelle Antwort festhalten</b> behält die aktuelle Antwort als graue Linie (höchstens 4) zum Vergleich mit späteren Einstellungen. <b>Festgehaltene löschen</b> entfernt sie, und <b>Auf Standardwerte zurücksetzen</b> stellt die ersten Einstellungen wieder her.</p>
+</section>
+<section id="files" title="Speichern und teilen">
+<p>Die Karte <b>Datei › Speichern und laden</b> bewahrt alle Einstellungen als <b>Szenario</b> mit einem Namen und einer Aufgabe oder Notiz (beim Laden angezeigt) auf. Die Anordnung kann mitgespeichert und beim Laden wahlweise übernommen werden. Die Schaltflächen der Karte stehen in <a class="hp-ref" href="#" data-ref="save"></a>.</p>
+<table data-id="save"><caption>Die Schaltflächen von Speichern und laden</caption>
+<tr><th>Schaltfläche</th><th>Funktion</th></tr>
+<tr><td>In diesem Browser speichern</td><td>Bewahrt das Szenario in diesem Browser auf; es erscheint in der Liste darunter, wo es geladen oder gelöscht werden kann</td></tr>
+<tr><td>In Datei speichern / Aus Datei laden</td><td>Eine .json-Datei zum Aufbewahren oder Weitergeben (auch eine Datei mit mehreren Szenarien kann geladen werden)</td></tr>
+<tr><td>Als Text kopieren / Aus Text laden</td><td>Text zum Einfügen in eine Nachricht oder ein Dokument und zum erneuten Laden</td></tr>
+<tr><td>Link kopieren</td><td>Ein Link, der die Seite mit dem Szenario öffnet (wo die Seite direkt bereitgestellt wird)</td></tr>
+</table>
+<p>Die Liste <b>Beispiele</b> enthält Übungen, etwa die PID-Regelung einer Strecke dritter Ordnung mit Grenzen für Überschwingen, Ausregelzeit und Phasenreserve. Beim Laden erscheint die Aufgabe über den Diagrammen.</p>
+</section>
+<section id="examples" title="Die Übungen ausprobieren">
+<p>Der Simulator enthält vier Übungen. Laden Sie eine über <b>Datei › Speichern und laden</b>, Liste <b>Beispiele</b>, Schaltfläche <b>Laden</b>; die Aufgabe erscheint über den Diagrammen. Die Zahlen unten sind die, die der Simulator für die angegebenen Einstellungen anzeigt (gerundet).</p>
+<p>Öffnen Sie vorher <b>Analyse &amp; Entwurf › Entwurfsvorgaben</b>, kreuzen Sie <b>Vorgaben in den Diagrammen anzeigen</b> an und wählen Sie die benötigten Diagramme unter <b>Diagramme</b>. Um eine neue Einstellung mit der alten zu vergleichen, verwenden Sie zuerst <b>Datei › Vergleichen und zurücksetzen › Aktuelle Antwort festhalten</b>.</p>
+<h4>Übung 1: PID-Regelung einer Strecke dritter Ordnung</h4>
+<p>Strecke 1/(<i>s</i>+1)<sup>3</sup>, PID mit <i>K</i><sub>P</sub> = 1, <i>K</i><sub>I</sub> = 0.3, <i>K</i><sub>D</sub> = 0.5. Vorgaben: Überschwingen ≤ 12 %, Ausregelzeit ≤ 10 s, Phasenreserve ≥ 45° (und Amplitudenreserve ≥ 6 dB).</p>
+<ol>
+<li>Fügen Sie das <b>Bode-Diagramm</b> hinzu. Anfangs beträgt das Überschwingen 0 % und die Phasenreserve etwa 88°, aber die Ausregelzeit etwa 15 s: ✗. Der Kreis ist sicher, aber langsam.</li>
+<li>Erhöhen Sie <i>K</i><sub>I</sub> von 0.3 auf 0.4. Die Ausregelzeit sinkt auf etwa 8.4 s, und alle Vorgaben sind ✓ (Phasenreserve etwa 76°; <a class="hp-ref" href="#" data-ref="ex1-time"></a>).
+<figure class="hp-fig" data-img="ex1-time" data-id="ex1-time"><figcaption><i>K</i><sub>I</sub> = 0.4 (blau) gegenüber der ersten Einstellung <i>K</i><sub>I</sub> = 0.3 (grau, festgehalten). Die rote Strichlinie ist die Grenze des Überschwingens, die grünen Punktlinien das Toleranzband; die Kennwerte unter dem Diagramm zeigen ✓.</figcaption></figure></li>
+<li>Vergleichen Sie mit den Einstellregeln (<b>Analyse &amp; Entwurf › Automatische Einstellung</b>, Reglertyp PID, <b>Auf den Regler anwenden</b>); <a class="hp-ref" href="#" data-ref="rules"></a> zeigt die Ergebnisse:
+<table data-id="rules"><caption>Übung 1: die PID-Einstellregeln im Vergleich</caption>
+<tr><th>Regel</th><th>Überschwingen</th><th>Ausregelzeit</th><th>Phasenreserve</th></tr>
+<tr><td>Ziegler–Nichols (Sprungantwort)</td><td>etwa 55 %</td><td>etwa 13 s</td><td>etwa 21°</td></tr>
+<tr><td>CHR (Führung, 0 % Überschwingen)</td><td>etwa 11 %</td><td>etwa 7.3 s</td><td>etwa 52°</td></tr>
+<tr><td>IMC</td><td>etwa 15 %</td><td>etwa 11 s</td><td>etwa 48°</td></tr>
+</table>
+Nur CHR (Führung, 0 % Überschwingen) erfüllt alle Vorgaben: Sein Überschwingen von etwa 11 % liegt innerhalb der Grenze von 12 %. Ziegler–Nichols zielt auf eine schnelle, schwingende Antwort (Abklingverhältnis ein Viertel), daher ist das Überschwingen groß und die Phasenreserve klein.</li>
+</ol>
+<h4>Übung 2: PI-Regelung einer Strecke mit Totzeit</h4>
+<p>Strecke <i>e</i><sup>−<i>s</i></sup>/(2<i>s</i>+1), PI mit <i>K</i><sub>P</sub> = 0.5, <i>K</i><sub>I</sub> = 0.2. Vorgaben: Phasenreserve ≥ 60°, Amplitudenreserve ≥ 6 dB, maximale Empfindlichkeit Ms ≤ 1.6.</p>
+<ol>
+<li>Fügen Sie das <b>Bode-Diagramm</b> und das <b>Nyquist-Diagramm</b> hinzu (den 1/Ms-Kreis ankreuzen). Die Reserven sind groß (Phasenreserve etwa 83°, Ms etwa 1.22), aber die Antwort ist langsam (Ausregelzeit etwa 19 s).</li>
+<li>Stellen Sie <i>K</i><sub>P</sub> = 0.7 ein. Kreuzen Sie unter <b>Analyse &amp; Entwurf › Parametervariation</b> das Kästchen an, wählen Sie den Parameter <i>K</i><sub>I</sub> und geben Sie die Werte <code>0.2, 0.3, 0.4, 0.5, 0.6</code> ein. Jeder Wert wird in eigener Farbe gezeichnet, und die Tabelle der Variation vergleicht sie (<a class="hp-ref" href="#" data-ref="ex2-table"></a>).
+<figure class="hp-fig" data-img="ex2-table" data-id="ex2-table"><figcaption>Die Tabelle der Variation (<i>K</i><sub>P</sub> = 0.7). PM ist die Phasenreserve, GM die Amplitudenreserve; die letzte Spalte zeigt, ob alle Vorgaben erfüllt sind.</figcaption></figure>
+Mit <i>K</i><sub>I</sub> = 0.4 beträgt die Ausregelzeit etwa 8.8 s, die Phasenreserve etwa 64° und Ms 1.41. Ab 0.5 fällt die Phasenreserve unter 60° (etwa 55°), und bei 0.6 überschreitet auch Ms den Wert 1.6 (1.70); mit 0.2 sind alle Vorgaben erfüllt, aber die Antwort ist langsam (etwa 22 s). Im Nyquist-Diagramm kommen die Kurven mit wachsendem <i>K</i><sub>I</sub> näher an −1 (<a class="hp-ref" href="#" data-ref="ex2-nyq"></a>). Klicken Sie auf die Zeile 0.4, um diesen Wert zu übernehmen: Er ist der schnellste, der alle Vorgaben einhält.
+<figure class="hp-fig" data-img="ex2-nyq" data-id="ex2-nyq"><figcaption>Das Nyquist-Diagramm in der Nähe von −1 (mit dem Mausrad vergrößert). Der violette Kreis hat den Radius 1/Ms der aktuellen Einstellung, der grün gepunktete den der Vorgabe Ms = 1.6.</figcaption></figure></li>
+<li>Zum Vergleich ergeben die PI-Regeln: Ziegler–Nichols (Sprungantwort) Ms etwa 2.3 und Amplitudenreserve etwa 5.7 dB (✗), CHR (Führung, 0 % Überschwingen) alles ✓, aber langsamer (etwa 12 s), IMC Ms etwa 2.0 (✗).</li>
+</ol>
+<h4>Übung 3: Sollwertgewichtung (PID mit zwei Freiheitsgraden)</h4>
+<p>Strecke <i>e</i><sup>−0.5<i>s</i></sup>/(<i>s</i>+1), PID mit zwei Freiheitsgraden, auf Störunterdrückung eingestellt (<i>K</i><sub>P</sub> = 1.9, <i>K</i><sub>I</sub> = 1.583, <i>K</i><sub>D</sub> = 0.399), mit den Gewichten <i>b</i> = <i>c</i> = 1 und einer Störung <i>d</i> = 0.5 ab <i>t</i> = 15 s. Vorgabe: Überschwingen ≤ 10 %.</p>
+<ol>
+<li>Die Sprungantwort schwingt um etwa 19 % über (✗; die graue Linie in <a class="hp-ref" href="#" data-ref="ex3-time"></a>). Nach <i>t</i> = 15 s verursacht die Störung eine maximale Abweichung von etwa 0.21, die nach etwa 3.2 s ausgeregelt ist.</li>
+<li>Stellen Sie unter <b>Systemaufbau › Regler C(s)</b> <i>b</i> = 0.7 und <i>c</i> = 0 ein. Das Überschwingen sinkt auf etwa 0.3 % (✓; die blaue Linie in <a class="hp-ref" href="#" data-ref="ex3-time"></a>). Mit <i>b</i> = 0.5 ist es fast 0 %, aber die Antwort ist langsamer (Ausregelzeit etwa 3.6 s statt 2.4 s).</li>
+<li>Betrachten Sie die Störantwort nach <i>t</i> = 15 s: Maximale Abweichung und Erholzeit ändern sich nicht, ebenso wenig die Stabilitätsreserven. Die Gewichte wirken nur auf den Pfad von der Führungsgröße (<i>C</i><sub>r</sub>), nicht auf die Rückführung. Im Bode-Diagramm ändert sich <i>G</i><sub>yr</sub>, während <i>G</i><sub>yd</sub> gleich bleibt.
+<figure class="hp-fig" data-img="ex3-time" data-id="ex3-time"><figcaption><i>b</i> = 0.7, <i>c</i> = 0 (blau) gegenüber <i>b</i> = <i>c</i> = 1 (grau, festgehalten). Das Überschwingen auf den Sollwert ist verschwunden, während die beiden Störantworten nach <i>t</i> = 15 s übereinanderliegen.</figcaption></figure></li>
+<li>Die Amplitudenreserve (etwa 4.9 dB) bleibt unabhängig von <i>b</i> und <i>c</i> unter 6 dB: Sie gehört zu den Rückführparametern.</li>
+</ol>
+<h4>Übung 4: Stabilisierung einer instabilen Strecke</h4>
+<p>Strecke 1/(<i>s</i>−1), P-Regelung mit <i>K</i><sub>P</sub> = 0.5. Vorgabe: Dämpfungsgrad ζ ≥ 0.5.</p>
+<ol>
+<li>Der Ausgang wächst unbegrenzt: Der geschlossene Kreis ist instabil. Fügen Sie das <b>Pol-Nullstellen-Diagramm</b> hinzu: Der Pol des geschlossenen Kreises liegt in der rechten Halbebene (<a class="hp-ref" href="#" data-ref="ex4-pz"></a>), und der Hinweis nennt den stabilen Bereich <i>k</i> &gt; 2 des Verstärkungsfaktors, also <i>K</i><sub>P</sub> &gt; 1.
+<figure class="hp-fig" data-img="ex4-pz" data-id="ex4-pz"><figcaption>P-Regelung mit <i>K</i><sub>P</sub> = 0.5: Der Pol des geschlossenen Kreises (●) liegt bei +0.5, in der rechten Halbebene (schattiert). Der Reiter <b>Verstärkungsbereiche</b> nennt den stabilen Bereich <i>k</i> &gt; 2.</figcaption></figure></li>
+<li>Klicken Sie auf die Wurzelortskurve links vom Ursprung oder stellen Sie <i>K</i><sub>P</sub> = 2 ein: Der Kreis ist stabil, aber der Ausgang stellt sich auf 2 statt auf 1 ein. Mit <i>K</i><sub>P</sub> = 5 stellt er sich auf 1.25 ein. Bei P-Regelung ist der Endwert <i>K</i><sub>P</sub>/(<i>K</i><sub>P</sub> − 1), nie 1.</li>
+<li>Wählen Sie <b>PI</b> mit <i>K</i><sub>P</sub> = 3 und <i>K</i><sub>I</sub> = 2: Die Pole des geschlossenen Kreises sind −1 ± <i>j</i> (ζ ≈ 0.71, ✓), die bleibende Regelabweichung ist 0 und die Ausregelzeit etwa 3.3 s (<a class="hp-ref" href="#" data-ref="ex4-time"></a>).
+<figure class="hp-fig" data-img="ex4-time" data-id="ex4-time"><figcaption>PI mit <i>K</i><sub>P</sub> = 3, <i>K</i><sub>I</sub> = 2: Der Ausgang stellt sich auf 1 ein. Das große Überschwingen kommt von der Nullstelle des Reglers (nächster Schritt).</figcaption></figure></li>
+<li>Versuchen Sie <i>K</i><sub>I</sub> = 1: Die Pole treffen sich bei −1 (ζ = 1), und doch bleibt das Überschwingen bei etwa 45 %. Es kommt von der Nullstelle des Reglers bei −<i>K</i><sub>I</sub>/<i>K</i><sub>P</sub>, nicht von den Polen.</li>
+</ol>
+</section>
+<section id="other" title="Sprache, Smartphones, Tastatur und Daten">
+<ul>
+<li><b>Sprache</b>: Wählen Sie oben rechts Englisch, Japanisch, Chinesisch, Koreanisch, Thai, Französisch, Deutsch, Spanisch, Portugiesisch oder Russisch; die Wahl wird gespeichert.</li>
+<li><b>Schmale Bildschirme</b>: Die Felder werden in einer Spalte gezeigt und die Menüs ohne Symbole. Auf einem Smartphone wechselt die Leiste unten zwischen <b>Aufbau</b> und <b>Diagramme</b>.</li>
+<li><b>Tastatur</b>: Alle Menüs, Griffe und Schaltflächen lassen sich mit der Tastatur bedienen. In einem Menü bewegen <kbd>↑</kbd> <kbd>↓</kbd> die Auswahl und <kbd>Enter</kbd> wählt; <kbd>Esc</kbd> schließt ein Menü oder dieses Handbuch.</li>
+<li><b>Daten</b>: Die Berechnung läuft in Ihrem Browser, und der Simulator sendet weder Ihre Einstellungen noch die Ergebnisse irgendwohin. Gespeicherte Szenarien, die Anordnung und die Sprache werden nur in diesem Browser aufbewahrt. Beim Öffnen der Seite lädt der Browser die Schriften von Google Fonts und die Formeldarstellung (MathJax) von jsDelivr; wie bei jeder Webseite erfahren diese Dienste und der Server der Seite Ihre IP-Adresse und Ihren Browser, aber nicht Ihre Einstellungen. Ein mit <b>Link kopieren</b> erzeugter Link trägt die Einstellungen hinter dem <code>#</code> der Adresse, einem Teil, den der Browser nicht an den Server sendet.</li>
+</ul>
+</section>
+<section id="accuracy" title="Numerische Genauigkeit">
+<p>Die Ergebnisse werden numerisch berechnet und haben kleine Fehler. Verglichen mit exakten Lösungen und mit unabhängigen, weit genaueren Berechnungen bleiben sie in diesen Grenzen:</p>
+<ul>
+<li><b>Zeitantwort</b>: innerhalb von etwa 0.3 % der Größe der Antwort; das Überschwingen innerhalb von 0.1 Prozentpunkten, Anstiegs- und Ausregelzeit innerhalb von 0.5 %.</li>
+<li><b>Bode- und Nyquist-Diagramm</b>: direkt aus den Übertragungsfunktionen berechnet (die Totzeit exakt); die Phasenreserve innerhalb von 0.02°, die Amplitudenreserve innerhalb von 0.001 dB, Ms innerhalb von 10<sup>−6</sup> (relativ).</li>
+<li><b>Pole und Nullstellen</b>: innerhalb von 10<sup>−9</sup>, wenn sie verschieden sind. Ein <i>k</i>-facher Pol lässt sich nur auf einige Male 10<sup>−16/<i>k</i></sup> genau bestimmen (2×10<sup>−5</sup> bei einem dreifachen Pol): eine Grenze des Problems selbst, nicht des Verfahrens.</li>
+<li><b>Totzeit</b>: Zeit- und Frequenzantworten verwenden die exakte Verzögerung; Pole und Wurzelortskurve verwenden eine Padé-Approximation dritter Ordnung (die dominanten Pole auf etwa 10<sup>−3</sup> genau für <i>L</i>/<i>T</i> ≤ 3).</li>
+</ul>
+<p>Zu beachten: Die Antwort wird an 4000 Punkten über die Simulationsdauer aufgezeichnet; eine Änderung, die viel schneller als (Simulationsdauer)/4000 ist, kann daher nicht aufgelöst werden; verkürzen Sie die Simulationsdauer, um sie zu sehen. Das gezeichnete <i>u</i> ist sein Wert an diesen Punkten; eine sehr kurze Spitze (etwa der Stoß des D-Anteils, der etwa 1/<i>N</i> dauert) kann daher niedriger aussehen, als sie ist.</p>
+<p>Die Verfahren und alle Ergebnisse stehen in <a href="https://github.com/m-koga/sigmaomega/blob/main/ACCURACY.md" target="_blank" rel="noopener">ACCURACY.md</a> auf GitHub.</p>
+</section>
+<section id="performance" title="Zeiteffizienz">
+<p>Alles wird in Ihrem Browser berechnet, nach jeder Änderung erneut. Gemessen in Chrome auf einem gewöhnlichen Computer und mit 4-fach verlangsamtem Prozessor (wie ein Telefon):</p>
+<ul>
+<li><b>Öffnen der Seite</b>: Die Diagramme sind nach etwa 0.25 s bereit (0.8 s mit dem langsameren Prozessor) und die Formeln etwas später, sobald die Seite heruntergeladen ist (etwa 1.4 MB, beim ersten Besuch 0.7 MB für die Formeln).</li>
+<li><b>Ändern eines Werts</b>: Alles wird in 4–19 ms neu berechnet und gezeichnet mit den beim ersten Besuch gezeigten Feldern und in 22–43 ms mit allen Feldern (0.1–0.2 s mit dem langsameren Prozessor): Es wirkt sofort.</li>
+<li><b>Ziehen eines Schiebereglers</b>: Die Diagramme folgen etwa 20–50-mal pro Sekunde (6–11-mal mit dem langsameren Prozessor), jedes Mal mit dem vollständigen Ergebnis.</li>
+<li><b>Parametervariation</b>: acht vollständige Berechnungen pro Änderung, 0.06–0.2 s (bis etwa 1 s mit dem langsameren Prozessor).</li>
+</ul>
+<p>Der Aufwand für eine Änderung ist nach oben begrenzt (höchstens 400 000 Zeitschritte, 2400 Frequenzen und 8 Variationswerte), sodass die Seite nie lange hängt. Blenden Sie auf einem langsamen Gerät nicht benötigte Felder aus (das Pol-Nullstellen-Diagramm mit seiner Wurzelortskurve kostet am meisten) und schalten Sie die Variation ab, während Sie Schieberegler ziehen.</p>
+<p>Wie gemessen wurde und alle Ergebnisse stehen in <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> auf GitHub.</p>
+</section>
+<section id="faq" title="Wenn etwas nicht funktioniert">
+<dl>
+<dt>Es werden keine Kennwerte gezeigt, und die Kurve läuft aus dem Diagramm.</dt><dd>Der geschlossene Kreis ist instabil, und die Antwort divergiert. Verringern Sie die Verstärkungen, oder sehen Sie sich das Pol-Nullstellen-Diagramm und den stabilen Bereich von <i>k</i> an.</dd>
+<dt>Das Diagramm zeigt nur einen Teil der Kurve.</dt><dd>Es ist vielleicht vergrößert: Drücken Sie <b>Einpassen</b> oder doppelklicken Sie auf das Diagramm. Prüfen Sie beim Bode-Diagramm auch, ob ein Frequenzbereich von Hand eingestellt wurde (<b>Auto</b> stellt den automatischen wieder her).</dd>
+<dt>Eine Übertragungsfunktion wird nicht angenommen.</dt><dd>Lesen Sie die Meldung unter der Eingabe. Die Strecke muss streng proper und der Regler proper sein; ein idealer D-Anteil <i>K</i><sub>D</sub><i>s</i> braucht ein Filter wie <i>K</i><sub>D</sub><i>s</i>/(τ<i>s</i>+1).</dd>
+<dt>Eine Datei oder ein Bild wird nicht gespeichert.</dt><dd>Manche Betrachter erlauben keine Downloads; die Daten werden dann in die Zwischenablage kopiert (oder markiert angezeigt, damit sie von Hand kopiert werden können).</dd>
+<dt>Die Anordnung ist durcheinander.</dt><dd>Verwenden Sie <b>Datei › Vergleichen und zurücksetzen › Anordnung zurücksetzen</b>; die Einstellungen bleiben erhalten.</dd>
+</dl>
+</section>

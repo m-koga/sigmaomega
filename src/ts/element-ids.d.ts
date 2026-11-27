@@ -5,6 +5,7 @@
 
 /** Element type of every id in the page: $(id) accepts these ids only */
 interface ElementById {
+  "…": HTMLElement;
   "ar": HTMLElementTagNameMap['marker'];
   "aw": HTMLInputElement;
   "binfo": HTMLDivElement;

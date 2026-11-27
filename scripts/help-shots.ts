@@ -2,7 +2,7 @@
 // Copyright 2026 Masanobu Koga
 // Take the screenshots of the user manual (chapter "Trying the exercises") from the built index.html.
 // Each shot loads an exercise, changes the settings the manual describes and captures one panel or card,
-// in English and in Japanese. The pictures are written to src/help-img/<name>.<lang>.webp and the build puts them
+// in every language of the manual. The pictures are written to src/help-img/<name>.<lang>.webp and the build puts them
 // into the page (scripts/build.ts). Run again after a change that alters what the pictures show:
 //   npm run build && npm run shots && npm run build
 // Uses CHROME_PATH, or /usr/bin/google-chrome when it exists, or Playwright's own Chromium. Needs Python 3 with
@@ -116,7 +116,14 @@ if (process.argv[1] === import.meta.filename) {
     process.env.CHROME_PATH || (fs.existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' : undefined);
   const browser = await chromium.launch(chrome ? { executablePath: chrome } : {});
   fs.mkdirSync(OUT, { recursive: true });
-  for (const lang of ['en', 'ja']) {
+  // every language that has the manual (src/help/<lang>.html), or those given: npm run shots -- fr de
+  const langs = process.argv.slice(2).length
+    ? process.argv.slice(2)
+    : fs
+        .readdirSync(path.join(root, 'src', 'help'))
+        .filter(f => f.endsWith('.html'))
+        .map(f => f.replace('.html', ''));
+  for (const lang of langs) {
     for (const s of SHOTS) {
       // a fresh page for each shot, so that no setting is left from the one before
       const page = await browser.newPage({ viewport: { width: 1400, height: 1000 }, deviceScaleFactor: 2 });
