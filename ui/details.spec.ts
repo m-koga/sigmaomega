@@ -110,7 +110,13 @@ test('time response: only the plant alone (no reference, no feedback loop), with
   page,
 }) => {
   await page.click('#tinfo [data-itab=tdisp]');
+  // the first option of the tab
+  await expect(page.locator('#timeOpts input').first()).toHaveAttribute('id', 'timePlantOnly');
+  await expect(page.locator('#diagBox')).toContainText('C(s)');
   await page.check('#timePlantOnly');
+  // the block diagram follows: the plant alone, u -> P(s) -> y, without the controller
+  await expect(page.locator('#diagBox')).toContainText('P(s)');
+  await expect(page.locator('#diagBox')).not.toContainText('C(s)');
   await expect(page.locator('#tTitleP')).toBeVisible();
   await expect(page.locator('#tTitleCL')).toBeHidden();
   await expect(page.locator('#uTitleP')).toBeVisible();
@@ -135,6 +141,7 @@ test('time response: only the plant alone (no reference, no feedback loop), with
   // back to the closed loop
   await page.uncheck('#timePlantOnly');
   await expect(page.locator('#tTitleCL')).toBeVisible();
+  await expect(page.locator('#diagBox')).toContainText('C(s)');
   await expect(page.locator('#plantBanner')).toBeHidden();
   expect(await page.evaluate(() => viewOptions().timePlantOnly)).toBe(false);
 });

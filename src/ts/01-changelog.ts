@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.91.1',
+    d: '2026-11-27',
+    en: [
+      'Time response: "Only the plant alone" is now the first option of the tab "Display", and while it is chosen the block diagram shows the plant alone, u → P(s) → y',
+    ],
+    ja: [
+      '時間応答：「制御対象単体のみ」をタブ「表示」の先頭に置き、選んでいる間はブロック線図も制御対象単体（u → P(s) → y）を表示するようにした',
+    ],
+  },
+  {
     v: '1.91.0',
     d: '2026-11-27',
     en: [

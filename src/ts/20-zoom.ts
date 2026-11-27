@@ -8,6 +8,7 @@ import { $, byId, i18nText, i18nTitle, must } from './13-dom.ts';
 import { KEEP_ASPECT, PLOT_IDS, PLOT_VIEWS, fromU, resetPlotView, setPlotView, shownPanels, toU } from './14-view.ts';
 import { bodeDescDefault, drawBode, drawNyq, drawTime, saveCanvasPNG } from './15-drawing.ts';
 import { PZM, drawPZ, pzCurrentView, pzHover, pzZoomAt, resetPZView } from './16-pole-zero.ts';
+import { syncBlockDiagram } from './17-panels.ts';
 import { scheduleRedraw, update } from './18-update.ts';
 import { applyLoopGain } from './19-controls.ts';
 
@@ -236,6 +237,7 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     id =>
       ($(id).onchange = () => {
         if (shownPanels.has('time') && lastSim) drawTime(lastSim);
+        syncBlockDiagram(); // the block diagram shows the plant alone with the time response
       }),
   );
   $('nyqMs').onchange = () => {

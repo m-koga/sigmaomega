@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.91.1 (2026-11-27)
+- Time response: "Only the plant alone" is now the first option of the tab "Display", and while it is chosen the block diagram shows the plant alone, u → P(s) → y
+
 ## v1.91.0 (2026-11-27)
 - Time response: the option "Only the plant alone" (tab "Display") shows the plant by itself, with no reference and no feedback loop: the input set as the reference drives P(s) directly, the upper plot shows only the plant's output and the lower one its input, the metrics are the plant's own (final value, rise time, overshoot and settling time relative to the final value, steady-state gain y/u), an unstable plant gets its own banner, and the CSV holds t, u and y of the plant
 

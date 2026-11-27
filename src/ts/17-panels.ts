@@ -132,6 +132,8 @@ export interface DiagramParts {
   n: boolean;
   /** 2-DOF form */
   two: boolean;
+  /** the plant alone (option "Only the plant alone" of the time response): u -> P(s) -> y */
+  plant?: boolean;
 }
 const DIAG_H = 165, // height of the drawing (the scale is kept when its width changes)
   DIAG_W_FULL = 680; // width with every part (the width of the area it is drawn for)
@@ -162,6 +164,27 @@ export function diagramSVG(p: DiagramParts): { svg: string; w: number } {
     mid = ' text-anchor="middle"',
     Y = 60, // top row
     FB = 135; // feedback path
+  if (p.plant) {
+    // the plant alone: its input u, the plant and its output y, without the controller and the feedback
+    line(20, Y, 98, Y);
+    text(18, 50, 'u', it);
+    rect(100, 38, 100, 44);
+    text(150, 66, 'P(s)', mid + it);
+    text(150, 97, '', ' text-anchor="middle" font-size="11" fill="#666b75" id="lbl-Pnote"');
+    line(200, Y, 280, Y);
+    text(288, 65, 'y', it);
+    text(150, 22, T('Plant alone'), ' text-anchor="middle" font-size="11" fill="#666b75"');
+    const w = 310;
+    return {
+      w,
+      svg:
+        `<svg viewBox="0 0 ${w} ${DIAG_H}" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">` +
+        '<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+        '<path d="M0,0 L10,5 L0,10 z" fill="#1b1d22"/></marker></defs>' +
+        `<g stroke="#1b1d22" stroke-width="1.6" fill="none">${L.join('')}</g>` +
+        `<g font-size="15" fill="#1b1d22">${X.join('')}</g></svg>`,
+    };
+  }
   // reference to the control input u (the same in both forms up to x = 283)
   text(18, 50, 'r', it);
   if (p.two) {
@@ -249,7 +272,8 @@ export function diagramSVG(p: DiagramParts): { svg: string; w: number } {
 let diagKey = '';
 // Draws the block diagram again when its parts or the language changed, then its labels
 export function syncBlockDiagram() {
-  const p = diagramParts(),
+  const plant = $('timePlantOnly').checked,
+    p: DiagramParts = plant ? { sat: false, d: false, n: false, two: false, plant } : diagramParts(),
     key = JSON.stringify(p) + LANG,
     box = $('diagBox');
   if (key !== diagKey) {
