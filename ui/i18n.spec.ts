@@ -7,10 +7,10 @@ const test = base;
 const JP = /[぀-ヿ一-鿿]/,
   KANA = /[぀-ヿ]/,
   EN_WORD = /\b[A-Za-z][a-z]{3,}\b/g,
-  // in French and German (written in the same letters), untranslated text shows as common English words
+  // in French, German and Spanish (written in the same letters), untranslated text shows as common English words
   EN_SMALL = /\b(?:the|of|and|with|from|this|when|which|is|are|to|by)\b/i;
 // languages written in Latin letters, checked by EN_SMALL rather than by any English word
-const LATIN = ['fr', 'de'];
+const LATIN = ['fr', 'de', 'es'];
 // English words that may appear in every language: names, keys, and technical terms given in parentheses
 const ALLOWED = new Set([
   'English',
@@ -91,7 +91,8 @@ test('the default language follows the browser (English if not supported)', asyn
     ['th-TH', 'th'],
     ['fr-FR', 'fr'],
     ['de-DE', 'de'],
-    ['es-ES', 'en'],
+    ['es-ES', 'es'],
+    ['it-IT', 'en'],
   ]) {
     const ctx = await browser.newContext({ locale });
     const page = await ctx.newPage();
@@ -102,7 +103,7 @@ test('the default language follows the browser (English if not supported)', asyn
   }
 });
 
-for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de']) {
+for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de', 'es']) {
   test(`no untranslated text in ${lang}`, async ({ page }) => {
     await page.selectOption('#langSel', lang);
     const bad = new Set();
