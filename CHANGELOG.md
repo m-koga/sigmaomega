@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.88.0 (2026-11-27)
+- Bode plot: the button "L asymptotes" also draws the straight-line approximation of the phase of L(jω): a real pole changes it by −90° and a zero by +90° along a straight line from ω_b/10 to 10ω_b, a complex pair by ∓180° from ωn·10^(−ζ) to ωn·10^ζ, with the exact −ωL of the dead time. The tab "Break frequencies" adds the change of phase of each break with its frequency range
+
 ## v1.87.1 (2026-11-27)
 - Fix: the Bode gain asymptotes (button "L asymptotes") were drawn in a blue close to that of L(jω) and hidden under its curve away from the break frequencies, so that they looked missing; they are now drawn in magenta, thicker, with larger circles at the break frequencies
 

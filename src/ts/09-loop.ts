@@ -364,6 +364,11 @@ export interface BodeAsymptote {
     slope: number;
   }[];
   gain: (w: number) => number;
+  /** straight-line approximation of the phase [deg] (up to a multiple of 360°): −90°·q at low frequencies (+180° for
+   *  K < 0); a real pole or zero changes it by ∓90° (left half-plane; ±90° in the right half-plane) linearly in log ω
+   *  from ω_b/10 to 10 ω_b, a complex pair by ∓180° from ω_n·10^(−ζ) to ω_n·10^(ζ) (a step when ζ = 0); the dead
+   *  time adds its exact −ωL */
+  phase: (w: number) => number;
 }
 export function bodeAsymptote(st: State = S): BodeAsymptote | null {
   const g = loopTFs(st).L;
@@ -400,7 +405,30 @@ export function bodeAsymptote(st: State = S): BodeAsymptote | null {
     ps.forEach(r => (v -= 20 * weight(r) * Math.log10(Math.max(1, w / mag(r)))));
     return v;
   };
-  return { K, q, breaks, gain };
+  // phase: each factor's change, its two ends in log10 ω; a left half-plane pole −90° (a pair −180°), a zero +90°;
+  // the right half-plane reverses the sign
+  const ramps: { a: number; b: number; d: number }[] = [];
+  const addRamps = (rs: { z: Complex; mult: number }[], sgn: number) =>
+    rs.forEach(r => {
+      const w0 = mag(r),
+        lhp = r.z[0] < 0 ? 1 : -1;
+      if (r.z[1] > 0) {
+        const zeta = Math.abs(r.z[0]) / w0,
+          l = Math.log10(w0);
+        ramps.push({ a: l - zeta, b: l + zeta, d: sgn * lhp * 180 * r.mult });
+      } else ramps.push({ a: Math.log10(w0) - 1, b: Math.log10(w0) + 1, d: sgn * lhp * 90 * r.mult });
+    });
+  addRamps(ps, -1);
+  addRamps(zs, 1);
+  const phase = (w: number) => {
+    const lw = Math.log10(w);
+    let v = -90 * q + (K < 0 ? 180 : 0) - (w * g.L * 180) / Math.PI;
+    ramps.forEach(
+      r => (v += r.d * (r.b <= r.a ? (lw >= r.a ? 1 : 0) : Math.min(1, Math.max(0, (lw - r.a) / (r.b - r.a))))),
+    );
+    return v;
+  };
+  return { K, q, breaks, gain, phase };
 }
 /* ---- Nyquist stability criterion ---- */
 /** Counting for the Nyquist criterion along the Nyquist contour (up the imaginary axis from −jW to +jW, around the

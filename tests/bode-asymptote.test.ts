@@ -58,3 +58,32 @@ test('Bode asymptotes: textbook examples', () => {
   assert.equal(as.q, 1);
   assert.equal(as.breaks[0].slope, -40);
 });
+
+test('the phase approximation meets the true phase far from the breaks (also with a dead time); textbook values', () => {
+  const ph = (a: ReturnType<typeof fresh>, w: number) => {
+    const v = a.evalLoopTF(a.loopTFs().L, w);
+    return (Math.atan2(v[1], v[0]) * 180) / Math.PI;
+  };
+  const dAng = (x: number, y: number) => Math.abs(((x - y + 540) % 360) - 180);
+  for (const set of [
+    { plant: 'first', mode: 'P', Kp: 2 },
+    { plant: 'second', zeta: 0.2, wn: 2, mode: 'PI', Kp: 1, Ki: 0.5 },
+    { plant: 'third', mode: 'PID', Kp: 2, Ki: 0.5, Kd: 1 },
+    { plant: 'dead', L: 0.5, mode: 'PI', Kp: 1, Ki: 1 },
+    { plant: 'unstable', mode: 'P', Kp: 2 },
+    { plant: 'third', mode: 'lead' },
+  ] as Record<string, unknown>[]) {
+    const a = fresh();
+    Object.assign(a.S, set);
+    const as = a.bodeAsymptote()!,
+      ws = as.breaks.map((b: { w: number }) => b.w);
+    for (const w of [ws[0] / 1e3, ws[ws.length - 1] * 1e3])
+      assert.ok(dAng(ph(a, w), as.phase(w)) < 1, `${JSON.stringify(set)} at ω = ${w}: ${ph(a, w)} / ${as.phase(w)}`);
+  }
+  // K/(Ts + 1): 0° up to ω_b/10, −45° at ω_b (exact there), −90° from 10ω_b
+  const a = fresh();
+  Object.assign(a.S, { plant: 'first', K: 1, T: 0.5, mode: 'P', Kp: 2 });
+  const as = a.bodeAsymptote()!;
+  assert.ok(Math.abs(as.phase(0.2)) < 1e-9 && Math.abs(as.phase(2) + 45) < 1e-9 && Math.abs(as.phase(20) + 90) < 1e-9);
+  assert.ok(Math.abs(ph(a, 2) + 45) < 1e-9);
+});

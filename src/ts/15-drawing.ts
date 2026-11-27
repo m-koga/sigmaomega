@@ -596,6 +596,21 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
           .filter(b => b.w >= frB.W[0] && b.w <= frB.W[frB.W.length - 1])
           .map(b => ({ x: b.w, y: asym.gain(b.w), color: COLORS.asymptote, shape: 'o' as const }))
       : [];
+  // the phase approximation, shifted by a multiple of 360° onto the branch of the plotted phase of L
+  const phOff = asym ? 360 * Math.round((frB.ph[0] - asym.phase(frB.W[0])) / 360) : 0,
+    phAsym: PlotSeries[] = asym
+      ? [
+          {
+            x: frB.W,
+            y: frB.W.map(w => asym.phase(w) + phOff),
+            color: COLORS.asymptote,
+            width: 2,
+            dash: [6, 4],
+            name: T('L asymptotes'),
+          },
+        ]
+      : [],
+    phPts = asymPts.map(p => ({ ...p, y: asym!.phase(p.x) + phOff }));
   const named = sets.length > 0 || sw.length > 0 || !!asym; // a legend whenever a curve is shown, also a single one
   const curves = (key: 'mag' | 'ph') =>
     sets.map(s => ({
@@ -647,13 +662,15 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   // phase: whole multiples of 90°, at least −180 … 0°, at most ±720°
   const pr = { lo: Infinity, hi: -Infinity };
   sets.forEach(s => stretch(pr, s.ph));
+  phAsym.forEach(s => stretch(pr, s.y));
   if (!sets.length) Object.assign(pr, { lo: -180, hi: 0 });
   runs.forEach(r => stretch(pr, r.ph));
   pr.lo = Math.max(pr.lo, -720);
   pr.hi = Math.min(pr.hi, 720);
   plot($('cvPh'), {
     ...common,
-    series: [...swp, ...curves('ph')],
+    series: [...swp, ...curves('ph'), ...phAsym],
+    points: phPts,
     ymin: Math.floor(Math.min(pr.lo, -180) / 90) * 90,
     ymax: Math.ceil(Math.max(pr.hi, 0) / 90) * 90,
     ylabel: T('Phase [deg]'),

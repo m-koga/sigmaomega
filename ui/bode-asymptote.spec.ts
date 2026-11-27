@@ -23,17 +23,18 @@ test('Bode asymptotes: the curve button and the table of break frequencies, foll
   await page.locator('label:has(#bodeA)').click();
   await expect(page.locator('#bodeA')).toBeChecked();
   // drawn in its own color, visible beside the blue curve of L (counted in the pixels of the gain plot)
-  const pixels = () =>
-    page.evaluate(() => {
-      const c = byId<HTMLCanvasElement>('cvG'),
+  const pixels = (id = 'cvG') =>
+    page.evaluate(id => {
+      const c = byId<HTMLCanvasElement>(id),
         d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data,
         [r, g, b] = [0xd8, 0x1b, 0x60];
       let n = 0;
       for (let i = 0; i < d.length; i += 4)
         if (Math.abs(d[i] - r) < 20 && Math.abs(d[i + 1] - g) < 20 && Math.abs(d[i + 2] - b) < 20) n++;
       return n;
-    });
-  await expect.poll(pixels).toBeGreaterThan(200);
+    }, id);
+  await expect.poll(() => pixels()).toBeGreaterThan(200);
+  await expect.poll(() => pixels('cvPh')).toBeGreaterThan(200); // the phase approximation too
   expect(await page.evaluate(() => viewOptions().bodeA)).toBe(true);
   // PI control adds an integrator and a zero: two break frequencies
   await page.evaluate(() => {

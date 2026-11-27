@@ -721,19 +721,30 @@ export function renderBodeAsym() {
     a.q === 0
       ? `|L(jω)| ≈ ${numStr(Math.abs(a.K))} (${numStr(20 * Math.log10(Math.abs(a.K)))} dB), ${slope(0)}`
       : `|L(jω)| ≈ ${numStr(Math.abs(a.K))} / ω${a.q === 1 ? '' : `<sup>${a.q}</sup>`}, ${slope(-20 * a.q)}`;
+  // the change of phase of a pole (sgn −1) or zero (+1) and the frequencies over which the straight line makes it
+  const phaseOf = (r: { z: Complex; mult: number }, sgn: number) => {
+    const wn = Math.hypot(r.z[0], r.z[1]),
+      d = sgn * (r.z[0] < 0 ? 1 : -1) * (r.z[1] > 0 ? 180 : 90) * r.mult,
+      [lo, hi] =
+        r.z[1] > 0
+          ? [wn * Math.pow(10, -Math.abs(r.z[0]) / wn), wn * Math.pow(10, Math.abs(r.z[0]) / wn)]
+          : [wn / 10, wn * 10];
+    return `${d > 0 ? '+' : ''}${d}° (${numStr(lo)}–${numStr(hi)} rad/s)`;
+  };
   const rows = a.breaks
     .map(
       b =>
         `<tr><td>${numStr(b.w)}</td><td>${[...b.poles.map(r => root(r, 'pole')), ...b.zeros.map(r => root(r, 'zero'))].join('<br>')}</td>` +
-        `<td>${slope(b.dSlope)}</td><td>${slope(b.slope)}</td><td>${numStr(trueDb(b.w) - a.gain(b.w))} dB</td></tr>`,
+        `<td>${slope(b.dSlope)}</td><td>${slope(b.slope)}</td><td>${numStr(trueDb(b.w) - a.gain(b.w))} dB</td>` +
+        `<td>${[...b.poles.map(r => phaseOf(r, -1)), ...b.zeros.map(r => phaseOf(r, 1))].join('<br>')}</td></tr>`,
     )
     .join('');
   box.innerHTML =
     `<p>${T('Low frequencies:')} ${low}</p>` +
     (a.breaks.length
-      ? `<div class="pzwrap-tbl"><table class="pzt rules asym"><thead><tr><th>${T('Break frequency [rad/s]')}</th><th>${T('Poles and zeros')}</th><th>${T('Change of slope')}</th><th>${T('Slope after')}</th><th>${T('True − asymptote')}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      ? `<div class="pzwrap-tbl"><table class="pzt rules asym"><thead><tr><th>${T('Break frequency [rad/s]')}</th><th>${T('Poles and zeros')}</th><th>${T('Change of slope')}</th><th>${T('Slope after')}</th><th>${T('True − asymptote')}</th><th>${T('Change of phase')}</th></tr></thead><tbody>${rows}</tbody></table></div>`
       : `<p>${T('No break frequency: the asymptote is a single line.')}</p>`) +
-    `<p class="note">${T('Each pole changes the slope by −20 dB/dec and each zero by +20 dB/dec at its break frequency |s| (a complex pair by ±40 at ωn). At a real break the true gain differs by 3 dB; at a complex pair by −20 log10(2ζ) dB. The dead time does not change the gain.')}</p>`;
+    `<p class="note">${T('Gain: each pole changes the slope by −20 dB/dec and each zero by +20 dB/dec at its break frequency |s| (a complex pair by ±40 at ωn). At a real break the true gain differs by 3 dB; at a complex pair by −20 log10(2ζ) dB. Phase: a real pole changes it by −90° and a zero by +90° along a straight line from ω_b/10 to 10ω_b, a complex pair by ∓180° from ωn·10^(−ζ) to ωn·10^ζ (the opposite sign in the right half-plane). The dead time does not change the gain and adds its exact phase −ωL.')}</p>`;
 }
 /* ---- Nyquist stability criterion ---- */
 // The tab "Nyquist criterion" under the Nyquist plot: P, N and Z = N + P with the verdict, and the crossings of the

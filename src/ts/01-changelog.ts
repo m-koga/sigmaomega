@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.88.0',
+    d: '2026-11-27',
+    en: [
+      'Bode plot: the button "L asymptotes" also draws the straight-line approximation of the phase of L(jω): a real pole changes it by −90° and a zero by +90° along a straight line from ω_b/10 to 10ω_b, a complex pair by ∓180° from ωn·10^(−ζ) to ωn·10^ζ, with the exact −ωL of the dead time. The tab "Break frequencies" adds the change of phase of each break with its frequency range',
+    ],
+    ja: [
+      'ボード線図：ボタン「L の折れ線近似」で L(jω) の位相の折れ線近似も描くようにした。実数の極は ω_b/10 から 10ω_b までの直線で −90°、零点は +90°、複素の対は ωn·10^(−ζ) から ωn·10^ζ まで ∓180° 変わり、むだ時間は厳密な −ωL を加える。タブ「折れ点周波数」に、各折れ点の位相の変化とその周波数の範囲を加えた',
+    ],
+  },
+  {
     v: '1.87.1',
     d: '2026-11-27',
     en: [
