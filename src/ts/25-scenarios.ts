@@ -178,6 +178,7 @@ export function applyScenario(data: Scenario, opts: { layout?: boolean } = {}) {
   if (!REF_TYPES[S.refType]) S.refType = 'step';
   if (!['lead', 'lag', 'leadlag'].includes(S.comp.method)) S.comp.method = 'lead';
   S.ex.n = Math.max(1, Math.floor(S.ex.n));
+  if (S.ex.kind !== 'bode') S.ex.kind = 'step';
   try {
     S.cNum = parsePoly(S.cNumStr);
     S.cDen = parsePoly(S.cDenStr);

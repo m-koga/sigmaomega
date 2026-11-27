@@ -42,7 +42,7 @@ export function defaults() {
   S.spec = specDefaults();
   S.tune = { method: 'zn-step', type: 'PID', lam: null };
   S.comp = { method: 'lead', pm: 50, kc: 2, theta: 5, wc: null };
-  S.ex = { n: 1 };
+  S.ex = { n: 1, kind: 'step' };
   S.sweep = { on: false, p: 'Kp', vals: [1, 2, 4, 8] };
   S.wr = { on: false, lo: 0.01, hi: 100, sig: '' };
 }

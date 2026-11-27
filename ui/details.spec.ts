@@ -110,6 +110,57 @@ test('estimation exercise: the hidden step response, checking estimates, the ans
   expect(await page.evaluate(() => S.ex.n)).toBe(7);
 });
 
+test('estimation exercise from the Bode plot: the plant of each kind, the readout, the check and using the plant', async ({
+  page,
+}) => {
+  await openCard(page, 'ex');
+  await expect(page.locator('#cvEx2')).toBeHidden();
+  await page.selectOption('#exKind', 'bode');
+  expect(await page.evaluate(() => S.ex.kind)).toBe('bode');
+  await expect(page.locator('#cvEx2')).toBeVisible();
+  // number 2: two lags, the time constants given in the other order
+  await page.fill('#exN', '2');
+  await page.press('#exN', 'Enter');
+  const p = await page.evaluate(() => freqExercisePlant(2));
+  expect(p.kind).toBe('lags');
+  await expect(page.locator('#exTL')).toHaveText(await page.evaluate(() => T('Time constant T1 [s]')));
+  // the readout under the mouse: ω, the gain and the phase
+  const box = (await page.locator('#cvEx2').boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.locator('#exRead')).toContainText('rad/s');
+  await expect(page.locator('#exRead')).toContainText('dB');
+  await page.fill('#exK', String(p.v[0] * 1.05));
+  await page.fill('#exT', String(p.v[2]));
+  await page.fill('#exL', String(p.v[1] * 0.95));
+  await page.click('#exCheck');
+  await expect(page.locator('#exOut')).toContainText(await page.evaluate(() => T('All three within 10 %: well done!')));
+  await page.click('#exShow');
+  await page.click('#exUse');
+  expect(await page.evaluate(() => [S.plant, [...S.cNum], [...S.cDen], S.L])).toEqual([
+    'custom',
+    [p.v[0]],
+    [p.v[1] * p.v[2], p.v[1] + p.v[2], 1].map(x => expect.closeTo(x, 9)),
+    0,
+  ]);
+  // number 5: second order, an invalid ζ, then the plant
+  await page.fill('#exN', '5');
+  await page.press('#exN', 'Enter');
+  const q = await page.evaluate(() => freqExercisePlant(5));
+  expect(q.kind).toBe('second');
+  await page.fill('#exK', '1');
+  await page.fill('#exT', '1');
+  await page.fill('#exL', '0');
+  await page.click('#exCheck');
+  await expect(page.locator('#exOut .err')).toHaveText(await page.evaluate(() => T('Enter K, ωn and ζ (> 0).')));
+  await page.click('#exShow');
+  await page.click('#exUse');
+  expect(await page.evaluate(() => [S.plant, S.K, S.wn, S.zeta])).toEqual(['second', ...q.v]);
+  // back to the step response
+  await page.selectOption('#exKind', 'step');
+  await expect(page.locator('#cvEx2')).toBeHidden();
+  await expect(page.locator('#exTL')).toHaveText(await page.evaluate(() => T('Time constant T [s]')));
+});
+
 test('time response: the response of the plant alone is drawn when chosen, and saved in the CSV', async ({ page }) => {
   await page.click('#tinfo [data-itab=tdisp]');
   await expect(page.locator('#timePlant')).not.toBeChecked(); // off at first

@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.93.0',
+    d: '2026-11-27',
+    en: [
+      'Estimation exercise: "Read from" adds the Bode plot. The exercise number gives one of three hidden plants, K/((T1 s + 1)(T2 s + 1)), K e^(−Ls)/(Ts + 1) or K ωn²/(s² + 2ζωn s + ωn²); its gain and phase are drawn, the mouse reads ω, the gain and the phase, and the three estimates are checked within 10 % (T1 and T2 in either order). "Use this plant" sets that plant.',
+      'Development: the legend of a plot can be placed at the bottom left.',
+    ],
+    ja: [
+      '推定の演習：「読み取る応答」でボード線図を選べるようにした。演習の番号で、隠された制御対象 K/((T1 s + 1)(T2 s + 1))、K e^(−Ls)/(Ts + 1)、K ωn²/(s² + 2ζωn s + ωn²) のどれかが決まる。そのゲインと位相を描き、マウスで ω、ゲイン、位相を読み取り、3 つの推定値を 10 % 以内か判定する（T1 と T2 の順は問わない）。「この制御対象を使う」でその制御対象を設定する。',
+      '開発：グラフの凡例を左下にも置けるようにした。',
+    ],
+  },
+  {
     v: '1.92.1',
     d: '2026-11-27',
     en: [

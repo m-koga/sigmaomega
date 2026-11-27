@@ -113,7 +113,8 @@ interface State {
   /** lead/lag compensator design: kind, target phase margin [deg], gain Kc, allowance θ [deg] */
   comp: { method: string; pm: number; kc: number; theta: number; wc: number | null };
   /** estimation exercise: its number (the hidden plant follows from it) */
-  ex: { n: number };
+  /** estimation exercise: its number, and the response read (the step response or the Bode plot) */
+  ex: { n: number; kind: 'step' | 'bode' };
   sweep: { on: boolean; p: NumKey; vals: number[] };
   /** frequency range of the Bode plot set by hand [rad/s]; sig: what the automatic range depended on then */
   wr: { on: boolean; lo: number; hi: number; sig: string };
@@ -332,6 +333,8 @@ interface PlotOptions {
   circles?: { cx: number; cy: number; r: number; color: string; width?: number; dash?: number[] }[];
   bands?: { x0: number; x1: number; y0: number; y1: number; fill: string; stroke?: string }[];
   segs?: { x0: number; x1: number; y: number; color: string; dash?: number[] }[];
+  /** place of the legend: top right (default) or bottom left */
+  legend?: 'tr' | 'bl';
   /** marks: × (default) or a small circle */
   points?: { x: number; y: number; color: string; shape?: 'x' | 'o' }[];
 }

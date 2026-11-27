@@ -67,7 +67,7 @@ export function plot(cv: HTMLCanvasElement, o: PlotOptions) {
   o.series.forEach(s => drawSeries(f, s));
   drawPoints(f, o.points || []);
   g.restore();
-  drawLegend(f, o.series);
+  drawLegend(f, o.series, o.legend);
 }
 
 // Vertical range from the curves and horizontal lines, with 8 % margin (when not given)
@@ -307,15 +307,16 @@ export function drawPoints(f: PlotFrame, points: NonNullable<PlotOptions['points
 }
 
 // Legend of the named curves, in the top right corner
-export function drawLegend(f: PlotFrame, series: PlotSeries[]) {
+export function drawLegend(f: PlotFrame, series: PlotSeries[], pos: 'tr' | 'bl' = 'tr') {
   const leg = series.filter((s): s is PlotSeries & { name: string } => !!s.name);
   if (!leg.length) return;
-  const { g, m, pw } = f;
+  const { g, m, pw, ph } = f;
   g.font = '12px ' + UIFONT();
   g.textAlign = 'left';
+  // top right (default) or bottom left
   const w = Math.max(...leg.map(s => g.measureText(s.name).width)),
-    bx = m.l + pw - w - 42,
-    by = m.t + 8;
+    bx = pos === 'bl' ? m.l + 12 : m.l + pw - w - 42,
+    by = pos === 'bl' ? m.t + ph - leg.length * 17 - 8 : m.t + 8;
   g.fillStyle = COLORS.legendBack;
   g.fillRect(bx - 6, by - 4, w + 44, leg.length * 17 + 6);
   leg.forEach((s, i) => {
