@@ -174,8 +174,9 @@ From the frequency response of K_c P(s) (K_c given, for the steady-state error; 
 | --- | --- | --- |
 | Lead | ω_gc and PM of K_c P; φ_m = PM* − PM + θ; α = (1 − sin φ_m)/(1 + sin φ_m); ω_m where \|K_c P(jω)\| = √α; T_1 = 1/(ω_m √α) | C(s) = K_c (T_1 s + 1)/(α T_1 s + 1) |
 | Lag | ω_gc and PM of K_c P; ω where the phase of K_c P is −180° + PM* + θ; β = \|K_c P(jω)\| there; T_2 = 10/ω | C(s) = K_c (T_2 s + 1)/(β T_2 s + 1) |
+| Lead-lag | ω_gc and PM of K_c P; the new crossover ω_c (the phase crossover of K_c P, where its phase is −180°, or given); φ_m = PM* + θ − (180° + ∠K_c P(jω_c)); α as for the lead; T_1 = 1/(ω_c √α); β = \|K_c P(jω_c)\|/√α; T_2 = 10/ω_c | C(s) = K_c (T_1 s + 1)/(α T_1 s + 1) · (T_2 s + 1)/(β T_2 s + 1) |
 
-The phase margin of C(s)P(s) is then computed. No design is made when K_c P has no gain crossover, when its phase margin already meets PM*, when a lead would have to add more than 80°, or when no frequency has the required gain or phase. "Apply to the controller" sets the compensator (rounded to 4 significant digits). The settings are kept with the scenario.
+The phase margin of C(s)P(s) is then computed. No design is made when K_c P has no gain crossover, when its phase margin already meets PM*, when a lead would have to add more than 80°, or when no frequency has the required gain or phase; for the lead-lag also when no phase lead is needed at ω_c (a lag is enough) or no attenuation (a lead is enough). The new crossover ω_c is asked only for the lead-lag (blank: automatic). "Apply to the controller" sets the compensator (rounded to 4 significant digits). The settings are kept with the scenario.
 
 ### 5.4 Parameter sweep
 

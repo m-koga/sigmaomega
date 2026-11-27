@@ -670,22 +670,40 @@ export function buildExercise() {
 export function buildComp() {
   const c = S.comp;
   byId('comp-card').innerHTML = `<div class="tune-grid">
-      <label for="compMethod">${T('Compensator')}</label><select id="compMethod">${(['lead', 'lag'] as const)
-        .map(
-          m =>
-            `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(m === 'lead' ? 'Lead compensator' : 'Lag compensator')}</option>`,
-        )
+      <label for="compMethod">${T('Compensator')}</label><select id="compMethod">${(
+        [
+          ['lead', 'Lead compensator'],
+          ['lag', 'Lag compensator'],
+          ['leadlag', 'Lead-lag compensator'],
+        ] as const
+      )
+        .map(([m, l]) => `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(l)}</option>`)
         .join('')}</select>
       <label for="compPm">${T('Target phase margin PM* [°]')}</label><input type="number" id="compPm" step="any" min="1" value="${c.pm}">
       <label for="compKc">${T('Gain K_c (for the steady-state error)').replace('K_c', 'K<sub>c</sub>')}</label><input type="number" id="compKc" step="any" min="0" value="${c.kc}">
       <label for="compTheta">${T('Allowance θ [°]')}</label><input type="number" id="compTheta" step="any" min="0" value="${c.theta}">
+      <label for="compWc" id="compWcL">${T('New crossover ωc [rad/s]')}</label><input type="number" id="compWc" step="any" min="0" placeholder="${T('auto (phase crossover)')}" value="${c.wc ?? ''}">
     </div>
     <div class="poles" id="compOut"></div>
     <button class="chip" id="compApply">${T('Apply to the controller')}</button>
-    <div class="hint">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); both keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>`;
+    <div class="hint">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); lead-lag: the product of the two; all keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>`;
+  // the new crossover is asked only for the lead-lag design
+  const showWc = () =>
+    (['compWc', 'compWcL'] as const).forEach(id => ($(id).style.display = c.method === 'leadlag' ? '' : 'none'));
+  showWc();
   byId<HTMLSelectElement>('compMethod').onchange = e => {
     c.method = (e.target as HTMLSelectElement).value;
+    showWc();
     renderComp();
+  };
+  $('compWc').onchange = () => {
+    const v = parseFloat($('compWc').value);
+    c.wc = isFinite(v) && v > 0 ? v : null;
+    $('compWc').value = String(c.wc ?? '');
+    renderComp();
+  };
+  $('compWc').onkeydown = e => {
+    if (e.key === 'Enter') $('compWc').blur();
   };
   (
     [
@@ -714,11 +732,15 @@ export function applyComp() {
   const prev = S.mode;
   if (prev !== 'custom' && !isTFMode(S)) S.lastPid = prev;
   S.Kc = +S.comp.kc.toPrecision(4);
-  if (S.comp.method === 'lead') {
-    S.mode = 'lead';
+  if (S.comp.method !== 'lag') {
+    S.mode = S.comp.method;
     S.T1 = +d.T1!.toPrecision(4);
     S.alpha = +d.alpha!.toPrecision(4);
-  } else {
+  }
+  if (S.comp.method === 'leadlag') {
+    S.T2 = +d.T2!.toPrecision(4);
+    S.beta = +d.beta!.toPrecision(4);
+  } else if (S.comp.method === 'lag') {
     S.mode = 'lag';
     S.T2 = +d.T2!.toPrecision(4);
     S.beta = +d.beta!.toPrecision(4);

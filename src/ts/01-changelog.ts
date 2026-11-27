@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.92.0',
+    d: '2026-11-27',
+    en: [
+      'Lead and lag compensator design: the new kind "Lead-lag compensator" combines both by the classical steps: the new crossover ωc (the phase crossover of K_c P, or a value given), the phase lead φm to add there with α and T1 = 1/(ωc√α), and the lag β = |K_c P(jωc)|/√α with T2 = 10/ωc, so that ωc becomes the gain crossover; "Apply to the controller" sets the lead-lag compensator',
+    ],
+    ja: [
+      '位相進み・遅れ補償器の設計：新しい種類「位相進み遅れ補償」で両者を組み合わせて設計できるようにした。古典的な手順で、新しい交差周波数 ωc（K_c P の位相交差周波数、または指定値）、そこで加える位相 φm と α、T1 = 1/(ωc√α)、ωc がゲイン交差周波数になるように β = |K_c P(jωc)|/√α、T2 = 10/ωc を求め、「制御器に適用」で位相進み遅れ補償器を設定する',
+    ],
+  },
+  {
     v: '1.91.1',
     d: '2026-11-27',
     en: [

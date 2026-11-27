@@ -61,10 +61,28 @@ test('lead and lag compensator design: the steps, the result and Apply', async (
   expect(await page.evaluate(() => [S.mode, S.Kc, S.alpha > 0.2 && S.alpha < 0.3])).toEqual(['lead', 10, true]);
   expect(await page.evaluate(() => Math.round(lastFr!.pm!))).toBe(50);
   // lag: four steps
+  await expect(page.locator('#compWc')).toBeHidden(); // the new crossover only for the lead-lag
   await page.selectOption('#compMethod', 'lag');
   await expect(page.locator('#compOut li')).toHaveCount(4);
   await page.click('#compApply');
   expect(await page.evaluate(() => S.mode)).toBe('lag');
+  // lead-lag: the phase of 10/(s(s + 1)) never reaches −180°, so the new crossover must be given; then seven steps,
+  // and both parts are applied
+  await page.selectOption('#compMethod', 'leadlag');
+  await expect(page.locator('#compWc')).toBeVisible();
+  await expect(page.locator('#compOut .err')).toBeVisible();
+  await page.fill('#compWc', '3');
+  await page.press('#compWc', 'Enter');
+  expect(await page.evaluate(() => S.comp.wc)).toBe(3);
+  await expect(page.locator('#compOut li')).toHaveCount(7);
+  await page.click('#compApply');
+  expect(
+    await page.evaluate(() => [S.mode, S.T2 === lastComp!.T2 || Math.abs(S.T2 - lastComp!.T2!) < 1e-3, S.beta > 1]),
+  ).toEqual(['leadlag', true, true]);
+  // emptied: automatic again
+  await page.fill('#compWc', '');
+  await page.press('#compWc', 'Enter');
+  expect(await page.evaluate(() => S.comp.wc)).toBe(null);
 });
 
 test('estimation exercise: the hidden step response, checking estimates, the answer and using the plant', async ({

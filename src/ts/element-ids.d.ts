@@ -41,6 +41,8 @@ interface ElementById {
   "compOut": HTMLDivElement;
   "compPm": HTMLInputElement;
   "compTheta": HTMLInputElement;
+  "compWc": HTMLInputElement;
+  "compWcL": HTMLLabelElement;
   "cPoles": HTMLDivElement;
   "ctrl-custom": HTMLDivElement;
   "ctrl-info": HTMLDivElement;

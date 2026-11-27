@@ -1070,6 +1070,7 @@ export function renderComp() {
     d = (lastComp = compDesign(c)),
     n = numStr,
     lead = c.method === 'lead',
+    ll = c.method === 'leadlag',
     steps: string[] = [];
   steps.push(
     d.pm0 === null
@@ -1083,6 +1084,38 @@ export function renderComp() {
           },
         ),
   );
+  if (ll && d.wc !== undefined) {
+    steps.push(
+      T(
+        d.wcAuto
+          ? 'New crossover ωc = {w} rad/s, where the phase of K_c P(jω) is −180° (the phase crossover); there |K_c P| = {db} dB'
+          : 'New crossover ωc = {w} rad/s (given); there |K_c P| = {db} dB and its phase is {p}°',
+        { w: n(d.wc), db: n(d.gcDb!), p: n(d.phc!) },
+      ),
+    );
+    if (d.phiM !== undefined)
+      steps.push(
+        T('Phase to add at ωc: φm = PM* + θ − (180° + ∠K_c P(jωc)) = {a} + {c} − ({s}) = {p}°', {
+          a: n(c.pm),
+          c: n(c.theta),
+          s: n(180 + d.phc!),
+          p: n(d.phiM),
+        }),
+      );
+    if (d.alpha !== undefined) steps.push(T('α = (1 − sin φm)/(1 + sin φm) = {a}', { a: n(d.alpha) }));
+    if (d.T1 !== undefined)
+      steps.push(
+        T('T₁ = 1/(ωc √α) = {t} s (the largest phase lead at ωc, raising the gain by 1/√α there)', { t: n(d.T1) }),
+      );
+    if (d.beta !== undefined)
+      steps.push(
+        T('β = |K_c P(jωc)|/√α = {b}: the lag lowers the gain by 1/β, so that ωc becomes the gain crossover', {
+          b: n(d.beta),
+        }),
+      );
+    if (d.T2 !== undefined)
+      steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
+  }
   if (lead && d.phiM !== undefined)
     steps.push(
       T('Phase to add: φm = PM* − PM + θ = {a} − {b} + {c} = {p}°', {
@@ -1104,21 +1137,21 @@ export function renderComp() {
       ),
     );
   if (lead && d.T1 !== undefined) steps.push(T('T₁ = 1/(ωm √α) = {t} s', { t: n(d.T1) }));
-  if (!lead && d.phiT !== undefined && d.wg !== undefined)
+  if (c.method === 'lag' && d.phiT !== undefined && d.wg !== undefined)
     steps.push(
       T('New crossover where the phase of K_c P(jω) is −180° + PM* + θ = {p}°: ω = {w} rad/s', {
         p: n(d.phiT),
         w: n(d.wg),
       }),
     );
-  if (!lead && d.beta !== undefined)
+  if (c.method === 'lag' && d.beta !== undefined)
     steps.push(
       T('β = |K_c P(jω)| there = {b} ({db} dB): the lag lowers the gain by 1/β', {
         b: n(d.beta),
         db: n(20 * Math.log10(d.beta)),
       }),
     );
-  if (!lead && d.T2 !== undefined)
+  if (c.method === 'lag' && d.T2 !== undefined)
     steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
   const err = d.err
     ? `<p class="err">${T(
@@ -1127,6 +1160,8 @@ export function renderComp() {
           'not-needed': 'The target phase margin is already met: no compensator is needed.',
           'too-much': 'More than 80° to add: one lead stage is not enough (use two, or lower the target).',
           'no-frequency': 'No frequency with the required gain or phase was found.',
+          'lead-not-needed': 'No phase lead is needed at ωc: a lag compensator is enough.',
+          'lag-not-needed': 'No attenuation is needed at ωc: a lead compensator is enough.',
         }[d.err],
       )}</p>`
     : '';

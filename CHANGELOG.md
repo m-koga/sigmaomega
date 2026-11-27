@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.92.0 (2026-11-27)
+- Lead and lag compensator design: the new kind "Lead-lag compensator" combines both by the classical steps: the new crossover ωc (the phase crossover of K_c P, or a value given), the phase lead φm to add there with α and T1 = 1/(ωc√α), and the lag β = |K_c P(jωc)|/√α with T2 = 10/ωc, so that ωc becomes the gain crossover; "Apply to the controller" sets the lead-lag compensator
+
 ## v1.91.1 (2026-11-27)
 - Time response: "Only the plant alone" is now the first option of the tab "Display", and while it is chosen the block diagram shows the plant alone, u → P(s) → y
 

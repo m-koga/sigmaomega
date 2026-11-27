@@ -111,7 +111,7 @@ interface State {
   spec: Specs;
   tune: { method: string; type: string; lam: number | null };
   /** lead/lag compensator design: kind, target phase margin [deg], gain Kc, allowance θ [deg] */
-  comp: { method: string; pm: number; kc: number; theta: number };
+  comp: { method: string; pm: number; kc: number; theta: number; wc: number | null };
   /** estimation exercise: its number (the hidden plant follows from it) */
   ex: { n: number };
   sweep: { on: boolean; p: NumKey; vals: number[] };

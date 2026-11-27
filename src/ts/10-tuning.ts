@@ -271,6 +271,8 @@ export interface CompSettings {
   pm: number;
   kc: number;
   theta: number;
+  /** lead-lag: the new gain crossover [rad/s]; null: where the phase of Kc P is −180° */
+  wc: number | null;
 }
 /** Result of the design. wgc0, pm0: crossover and phase margin of Kc P(s); lead: phiM (phase to add), alpha, wm (the
  *  new crossover where |Kc P| = √α), T1; lag: phiT (phase at the new crossover), wg, beta = |Kc P(jwg)|, T2 = 10/wg;
@@ -285,11 +287,17 @@ export interface CompDesign {
   T1?: number;
   phiT?: number;
   wg?: number;
+  /** lead-lag: the new crossover (given or where the phase of Kc P is −180°), with the gain [dB] and phase of Kc P
+   *  there; the lead adds φm there (centred on it), the lag lowers the gain by β = |Kc P|/√α, T2 = 10/ωc */
+  wc?: number;
+  wcAuto?: boolean;
+  gcDb?: number;
+  phc?: number;
   beta?: number;
   T2?: number;
   wgc: number | null;
   pm: number | null;
-  err?: 'no-crossover' | 'not-needed' | 'too-much' | 'no-frequency';
+  err?: 'no-crossover' | 'not-needed' | 'too-much' | 'no-frequency' | 'lead-not-needed' | 'lag-not-needed';
 }
 // The frequency response of g(ω) on a log grid: frequencies, gains [dB] and phases [deg] unwrapped from the lowest
 function compGrid(st: State, g: (w: number) => Complex) {
@@ -364,6 +372,38 @@ export function compDesign(cs: CompSettings, st: State = S): CompDesign {
     out.wm = m.w;
     const T1 = (out.T1 = 1 / (m.w * Math.sqrt(alpha)));
     verify(w => cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])));
+  } else if (cs.method === 'leadlag') {
+    // the new crossover: given, or the phase crossover of Kc P (where its phase is −180°)
+    let wc = cs.wc && cs.wc > 0 ? cs.wc : null;
+    out.wcAuto = wc === null;
+    if (wc === null) {
+      const c = crossDown(g0.W, g0.ph, -180, g0.db);
+      if (!c) return { ...out, err: 'no-frequency' };
+      wc = c.w;
+    }
+    out.wc = wc;
+    const z = G(wc),
+      unwrap = crossDown(
+        g0.W,
+        g0.W.map(w => -w),
+        -wc,
+        g0.ph,
+      ), // the plotted (unwrapped) phase at ωc
+      // the phase there: exactly −180° at the phase crossover, otherwise on the branch of the plotted phase
+      phc = out.wcAuto ? -180 : unwrap ? unwrap.o : (Math.atan2(z[1], z[0]) * 180) / Math.PI,
+      gc = Math.hypot(z[0], z[1]);
+    out.gcDb = 20 * Math.log10(gc);
+    out.phc = phc;
+    const phiM = (out.phiM = cs.pm + cs.theta - (180 + phc));
+    if (phiM <= 0) return { ...out, err: 'lead-not-needed' };
+    if (phiM > 80) return { ...out, err: 'too-much' };
+    const s = Math.sin((phiM * Math.PI) / 180),
+      alpha = (out.alpha = (1 - s) / (1 + s)),
+      T1 = (out.T1 = 1 / (wc * Math.sqrt(alpha))),
+      beta = (out.beta = gc / Math.sqrt(alpha));
+    if (beta <= 1) return { ...out, err: 'lag-not-needed' };
+    const T2 = (out.T2 = 10 / wc);
+    verify(w => cmul(cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])), cdiv([1, w * T2], [1, w * beta * T2])));
   } else {
     const phiT = (out.phiT = -180 + cs.pm + cs.theta),
       c = crossDown(g0.W, g0.ph, phiT, g0.db);
