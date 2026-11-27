@@ -28,24 +28,28 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
 - `src/index.html`（`@@VERSION@@`、`/*@@CSS@@*/`、`//@@JS@@` を置き換えるひな形）、`src/style.css`、`src/i18n.json`、`src/ts/*.ts`。
 - `src/ts/NN-*.ts` は ES モジュール。`scripts/build.ts` が型を除き、`import`/`export` を消して、ファイル名の順に 1 つのスクリプトにつなぎ、`index.html` を作る。
   - 新しいソースファイルの先頭には `// SPDX-License-Identifier: Apache-2.0` と `// Copyright 2026 Masanobu Koga` の 2 行を入れる（CSS・YAML・HTML はそれぞれのコメントの書き方。`tests/license-headers.test.ts` が確かめる）。
-  - ファイルは層（`tests/modules.test.ts` が確かめる。各ファイルは番号の小さいファイルからだけ import する。下の層が上の層を呼ぶ必要ができたら、そのコードを下に移すか、上の層で設定する。01–12 はページに触れない）：
-    - 計算：01 更新履歴、02 翻訳（`T()`・`LANGUAGES`）、03 複素数と多項式・数の表記、04 構文解析、05 定義（設定パネルのカード `CARD_KEYS`・`CARD_GROUP` も）、06 状態（`S`、`ctrlRational`・`refValue` など設定から決まるもの、最後の結果 `lastSim` など。書き換えは `setResults()`）、07 周波数応答、08 シミュレーション、09 ループと閉ループ極・根軌跡、10 調整則、11 設計仕様の評価、12 掃引の計算。
-    - 表示：13 ページの要素（`$`・`byId`）・ファイル・メッセージ・ページの翻訳、14 表示の状態（`layout`・`shownPanels`・`PLOT_VIEWS`・`COLORS`・行と列の配置の正規化）、15 描画、16 極・零点配置の描画、17 パネルの内容（ブロック線図・式・設計仕様・調整則・掃引の表示）、18 `update()`・`redraw()`。
-    - 操作：19 設定パネルの構築とイベント、20 図の操作（拡大縮小・極・零点配置・ボードとナイキストの表示項目）、21 書き出し、22 行による配置、23 図の配置と高さ（列の自由な配置、`applyPanels`）、24 ページのレイアウト（図の下の区画・設定パネル・更新履歴）、25 例題、26 メニューバー（共通の `dropdown()`）、27 ブロック線図の拡大・縮小・移動と PNG、28 利用者マニュアル（本文は英語と日本語。辞書を通さない。章「例題で試す」の `<figure data-img>` のスクリーンショットは `src/help-img/<名前>.<en|ja>.webp`。画面の見た目や演習の数値が変わる変更のあとは `npm run shots` で撮り直してから `npm run build`。新しい画像を入れた版は `edit_version` では公開できない。アイコンの図案は `src/icon.svg`。変えたら `npm run icon` で PNG のアイコン（`src/icon-180.png`、`-192`、`-512`、`-maskable-512`）も作り直す。GitHub Pages 用のサイトは `npm run pages` で `site/` に書き出す（マニフェストは `src/manifest.webmanifest`。アーティファクトには入らない）。図と表には `data-id` と説明文（`figcaption`・`caption`）を付け、本文から `<a class="hp-ref" href="#" data-ref="id"></a>` で参照する。番号は表示時に章ごとに振る）、29 言語の切り替え（`setLang`）、99 起動。
-  - 画面：ヘッダーの下のメニューバー（ファイル、表示する図、系の設定、解析・設計、図の並び方、指標の表示）。その下に設定パネル（選んだカード 1 枚だけ）と図の区画。新しいプルダウンは `26-menubar.ts` の `dropdown()` を使う。
+  - ファイルは層。番号が層を表し、各層の番号には空きがある（`tests/modules.test.ts` が確かめる：どのファイルもいずれかの層にある、先頭にタイトル（何を持つか）、番号の小さいファイルからだけ import する、40 未満はページに触れない、600 行以内（更新履歴を除く）、関数は 80 行以内）。1 ファイルに 1 つの話題。新しいファイルは関係するファイルの近くの空き番号にし、ほかの番号は変えない。下の層が上の層を呼ぶ必要ができたら、そのコードを下に移すか、上の層で設定する：
+    - 基礎 01–09：01 更新履歴、02 翻訳（`T()`・`LANGUAGES`）、03 複素数と多項式・数の表記（`groupRoots`・`originOrder` も）、04 構文解析。
+    - モデル 10–14：10 定義（設定パネルのカード `CARD_KEYS`・`CARD_GROUP` も）、11 状態（`S`、`ctrlRational`・`refValue` など設定から決まるもの、最後の結果 `lastSim` など。書き換えは `setResults()`）。
+    - 計算 15–39：15 周波数応答、16 シミュレーション、17 ループ・閉ループ極・根軌跡、18 Routh–Hurwitz、19 ボード線図の折れ線近似、20 ナイキストの安定判別、21 根軌跡の作図規則、22 定常偏差、23 現在のループの解析（変更ごとに一度。`resetLoopCache`）、24 調整則、25 補償器の設計（`COMP_METHODS`）、26 推定の演習の制御対象と判定、27 設計仕様の評価、28 掃引の計算。
+    - ページの基礎 40–44：40 ページの要素（`$`・`byId`・`qs`・`must`）・ファイル・メッセージ・ページの翻訳、41 表示の状態（`layout`・`shownPanels`・`PLOT_VIEWS`・`COLORS`・`PANEL_DEFS`・行と列の配置の正規化）。
+    - 表示 45–69：45 図の共通部分（枠・軸・凡例・指標のカード・PNG）、46 時間応答、47 ボード線図、48 ナイキスト線図、49 ニコルス線図、50 極・零点配置の描画と表示範囲、51 その下の文、52 拡大とツールチップ、53 ブロック線図、54 設定を入力欄に表示（`syncControls`）、55 式（P・C とループの伝達関数）、56 極の表、57 Routh の判定、58 図の下の説明（折れ線近似の折れ点・ナイキストの判別）、59 定常偏差、60 設計のカード（設計仕様・調整則・補償器、`COMP_STEPS`）、61 掃引の表、62 `update()`・`redraw()`。
+    - 操作 70–98：70 設定パネルのイベント、71 制御器の伝達関数の入力、72 推定の演習のカード、73 設計の操作（設計仕様・調整則・補償器・掃引・ループゲイン・比較）、74 設定パネルの固定部分の構築（`buildStatic`）、75 図の操作（拡大縮小・極・零点配置・ボードとナイキストの表示項目）、76 書き出し、77 行による配置、78 図の配置と高さ（列の自由な配置、`applyPanels`）、79 ページのレイアウト（図の下の区画・設定パネル・更新履歴）、80 例題（保存する内容・例・適用・リンク）、81 例題のカード、82 メニューバー（共通の `dropdown()`）、83 ブロック線図の拡大・縮小・移動と PNG、84 利用者マニュアル（本文は英語と日本語。辞書を通さない。章「例題で試す」の `<figure data-img>` のスクリーンショットは `src/help-img/<名前>.<en|ja>.webp`。画面の見た目や演習の数値が変わる変更のあとは `npm run shots` で撮り直してから `npm run build`。新しい画像を入れた版は `edit_version` では公開できない。アイコンの図案は `src/icon.svg`。変えたら `npm run icon` で PNG のアイコン（`src/icon-180.png`、`-192`、`-512`、`-maskable-512`）も作り直す。GitHub Pages 用のサイトは `npm run pages` で `site/` に書き出す（マニフェストは `src/manifest.webmanifest`。アーティファクトには入らない）。図と表には `data-id` と説明文（`figcaption`・`caption`）を付け、本文から `<a class="hp-ref" href="#" data-ref="id"></a>` で参照する。番号は表示時に章ごとに振る）、85 言語の切り替え（`setLang`）。
+    - 99 起動。
+  - 画面：ヘッダーの下のメニューバー（ファイル、表示する図、系の設定、解析・設計、図の並び方、指標の表示）。その下に設定パネル（選んだカード 1 枚だけ）と図の区画。新しいプルダウンは `82-menubar.ts` の `dropdown()` を使う。
 - 型：`src/ts/types.d.ts`（import なし＝グローバル）。`src/ts/element-ids.d.ts` と `tests/app-api.d.ts` は生成物。
 - 拡張は表に 1 項目を足す方式：
-  - `PLANTS`、`CONTROLLERS`、`PLOTS`、パラメータ（`PARAMS`・`CTRL` ほか。入力範囲 `hard`、記号 `sym`、掃引の値 `sweep`）、設計仕様 `SPECS`：`05-definitions.ts`（設計仕様の測り方は `11-specs.ts` の `SPEC_MEASURES`）
+  - `PLANTS`、`CONTROLLERS`、`PLOTS`、パラメータ（`PARAMS`・`CTRL` ほか。入力範囲 `hard`、記号 `sym`、掃引の値 `sweep`）、設計仕様 `SPECS`：`10-definitions.ts`（設計仕様の測り方は `27-specs.ts` の `SPEC_MEASURES`）
   - 言語 `LANGUAGES`：`02-i18n.ts`
-  - `TUNE_RULES`：`10-tuning.ts`
-  - `INFO_AREAS`：`14-view.ts`（図の下のタブ付き区画）
-  - パネル `PANEL_DEFS`：`14-view.ts`（メニューの項目はここから作る。HTML にタブを書かない）。描画は `18-update.ts` の `PANEL_DRAW`、CSV は `21-export.ts` の `CSV_EXPORTS`
-  - 補償器の設計法 `COMP_METHODS`：`10-tuning.ts`（手順の表示は `17-panels.ts` の `COMP_STEPS`）
+  - `TUNE_RULES`：`24-tuning.ts`
+  - `INFO_AREAS`：`41-view.ts`（図の下のタブ付き区画）
+  - パネル `PANEL_DEFS`：`41-view.ts`（メニューの項目はここから作る。HTML にタブを書かない）。描画は `62-update.ts` の `PANEL_DRAW`、CSV は `76-export.ts` の `CSV_EXPORTS`
+  - 補償器の設計法 `COMP_METHODS`：`25-compensator.ts`（手順の表示は `60-design-cards.ts` の `COMP_STEPS`）
   - `tests/kinds.test.ts` が全項目を確かめる。
 - 関数は 80 行以内（`tests/modules.test.ts`）。長くなったら、何をするかをコメントに書いた名前付きの部分に分ける。数行を超えるイベント処理も名前付きの関数にして `build…()` で割り当てる。
 - 計算関数は設定を最後の引数 `st: State = S` で受け取る（グローバルを暗黙に読まない）。
 - 数値精度は `ACCURACY.md`（`npm run accuracy`、`tests/accuracy.test.ts`）、時間効率は `PERFORMANCE.md`（`npm run performance`、約 8 分、`tests/performance.test.ts`）。計算や描画を変えて結果や時間が変わったら、日英の表を更新する。
-- レイアウト（`layout`）は設定と別。ブラウザに保存し、例題にも入る（読み込みの検証は `25-scenarios.ts` の `scLayout`）。新しい項目は、既定値を `14-view.ts` の `defaultLayout()`（1 か所）に足し、保存するなら 14 の読み込みと 25 の `scLayout` の検証にも足す。
+- レイアウト（`layout`）は設定と別。ブラウザに保存し、例題にも入る（読み込みの検証は `80-scenarios.ts` の `scLayout`）。新しい項目は、既定値を `41-view.ts` の `defaultLayout()`（1 か所）に足し、保存するなら 41 の読み込みと 80 の `scLayout` の検証にも足す。
 
 ## 2. 書き方の決まり
 

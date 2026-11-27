@@ -135,3 +135,23 @@ export function matchRoots(prev: Complex[], r: Complex[]): Complex[] {
     return r[bi];
   });
 }
+// Number of factors s of a polynomial (trailing zero coefficients, relative to its largest coefficient)
+export const originOrder = (p: Poly): number => {
+  const tol = 1e-12 * Math.max(0, ...p.map(Math.abs));
+  let n = 0;
+  while (n < p.length - 1 && Math.abs(p[p.length - 1 - n]) <= tol) n++;
+  return n;
+};
+// Roots grouped into distinct points with their multiplicity (repeated roots are found only to about 10^(−16/r))
+export function groupRoots(rs: Complex[]): { z: Complex; mult: number }[] {
+  const out: { z: Complex; mult: number; sum: Complex }[] = [];
+  for (const z of rs) {
+    const g = out.find(o => Math.hypot(o.z[0] - z[0], o.z[1] - z[1]) <= 1e-3 * (1 + Math.hypot(z[0], z[1])));
+    if (g) {
+      g.sum = cadd(g.sum, z);
+      g.mult++;
+      g.z = [g.sum[0] / g.mult, g.sum[1] / g.mult];
+    } else out.push({ z, mult: 1, sum: z });
+  }
+  return out.map(({ z, mult }) => ({ z: [z[0], Math.abs(z[1]) < 1e-9 ? 0 : z[1]], mult }));
+}

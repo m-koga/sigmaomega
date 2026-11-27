@@ -28,11 +28,11 @@ npm run performance  # Chrome で時間を計測する（PERFORMANCE.md の表�
 
 - **生成されるファイルではなくソースを直す。** `index.html`、`CHANGELOG*.md`、`CITATION.cff`、`src/ts/element-ids.d.ts`、`tests/app-api.d.ts` はビルドが書きます。マージの衝突を解いたあとも、`npm run docs`、`npm test` で作り直してください。
 - **版番号と更新履歴。** アプリを変えたら、`src/ts/01-changelog.ts` の `CHANGELOG` の先頭に新しい版を加えます（セマンティック バージョニング：2 番目の数は新機能、3 番目は修正と文言）。項目は英語（`en`）と日本語（`ja`）で同じ内容にします。
-- **言語。** 画面の文字列、コメント、テスト名は英語で書き、画面の文字列は `src/i18n.json` で訳します（日本語・中国語・韓国語・タイ語）。利用者マニュアル（`src/ts/28-help.ts`）は英語と日本語で書きます。README、SPEC、CONTRIBUTING は英語版と日本語版の両方を更新します。
+- **言語。** 画面の文字列、コメント、テスト名は英語で書き、画面の文字列は `src/i18n.json` で訳します（日本語・中国語・韓国語・タイ語）。利用者マニュアル（`src/ts/84-help.ts`）は英語と日本語で書きます。README、SPEC、CONTRIBUTING は英語版と日本語版の両方を更新します。
 - **仕様書。** `SPEC.md`／`SPEC.ja.md` に書いてある内容を変えたときは、両方を更新します。
 - **マニュアルの数値**は `tests/tutorial.test.ts` が確かめます。計算を変えて数値が変わったら、テストと一緒にマニュアルも直します。マニュアルのスクリーンショットは `npm run shots` で撮り直します。
 - **描画。** 図や指標が変わりうる変更では、前のビルドと `npm run pixcmp` で比べ、違いがあれば理由を説明してください。
-- **関数の長さ。** 関数は 80 行以内にします（`tests/modules.test.ts`）。長くなったら名前付きの部分に分けてください。
+- **ファイルと関数の長さ。** `src/ts` の各ファイルは 1 つの話題を持ち、それをタイトルに書きます。ファイルの番号はその層を表します（README の「スクリプトの構成」）。新しいファイルにはその層の空いた番号を付け、番号の小さいファイルからだけ import します。ファイルは 600 行以内、関数は 80 行以内にします（`tests/modules.test.ts`）。長くなったら名前付きの部分に分けてください。
 - **数値精度。** 計算を変えたときも `tests/accuracy.test.ts` が通る必要があります。結果が変わったら `npm run accuracy` を実行し、`ACCURACY.md`・`ACCURACY.ja.md` の表を更新します。
 - **時間効率。** 計算や描画を変えたときも `tests/performance.test.ts` が通る必要があります。時間が目立って変わったら `npm run performance` を実行し、`PERFORMANCE.md` と `PERFORMANCE.ja.md` の表を更新してください。
 - **ライセンスの表示。** 新しいソースファイルの先頭には、`SPDX-License-Identifier: Apache-2.0` と `Copyright 2026 Masanobu Koga` の 2 行をコメントで入れます（`tests/license-headers.test.ts`）。

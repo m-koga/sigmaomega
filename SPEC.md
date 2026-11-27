@@ -316,7 +316,7 @@ The work for one change has upper limits: at most 4000 recorded points × 100 ti
 
 ## 11. Development and quality assurance
 
-The source is TypeScript in `src/` (30 script files in layers, about 9,700 lines), built into `index.html`. A file uses only files with a lower number, and files 01–12 do not touch the page (`tests/modules.test.ts`). In version 1.61.4 all 109 unit tests and 99 browser tests pass.
+The source is TypeScript in `src/` (57 script files in layers, one topic each, about 13,400 lines), built into `index.html`. The number of a file says its layer; a file uses only files with a lower number, and the files below 40 do not touch the page (`tests/modules.test.ts`). In version 1.61.4 all 109 unit tests and 99 browser tests pass.
 
 ### 11.1 Source layout
 
@@ -324,17 +324,17 @@ The source is TypeScript in `src/` (30 script files in layers, about 9,700 lines
 | --- | --- |
 | `src/index.html`, `src/style.css`, `src/i18n.json` | Page template, stylesheet, translation dictionary |
 | `01-changelog` to `04-parser` | Basics: change log, translation, complex numbers and polynomials, transfer-function parser |
-| `05-definitions`, `06-state` | Model: definitions of plants, controllers, references, parameters and specifications; the settings, what follows from them, and the last results |
-| `07-frequency` to `12-sweep` | Computing (no access to the page): frequency response, simulation, loop and root locus, auto-tuning rules, design specifications, parameter sweep |
-| `13-dom`, `14-view` | Page basics: elements, files, messages and translation of the page; view state (layout and its defaults `defaultLayout()`, shown plots, zoomed views, colours) |
-| `15-drawing` to `18-update` | Showing: drawing of the plots and of the pole-zero map, contents of the panels and formulas, `update()` and `redraw()` |
-| `19-controls`, `20-zoom`, `21-export` | Settings panel and its events; interaction with the plots (zoom, pole-zero map, plot options); export |
-| `22-rows`, `23-tiles`, `24-layout` | Arrangement in rows, free arrangement in columns, layout of the page |
-| `25-scenarios` | Scenarios (save and load) |
-| `26-menubar` | Menu bar and the shared drop-down `dropdown()` |
-| `27-diagram-zoom` | Zoom, pan and PNG of the block diagram |
-| `28-help` | User manual (text in English and Japanese, its screenshots and its dialog) |
-| `29-language` | Switching the language |
+| `10-definitions`, `11-state` | Model: definitions of plants, controllers, references, parameters and specifications; the settings, what follows from them, and the last results |
+| `15-frequency` to `28-sweep` | Computing (no access to the page): frequency response, simulation, the loop and root locus, Routh–Hurwitz test, Bode asymptotes, Nyquist criterion, root-locus rules, steady-state error, analyses of the current loop, auto-tuning rules, compensator design, estimation exercises, design specifications, parameter sweep |
+| `40-dom`, `41-view` | Page basics: elements, files, messages and translation of the page; view state (layout and its defaults `defaultLayout()`, shown plots, zoomed views, colours) |
+| `45-plot` to `62-update` | Showing: the plots (one file each) and the pole-zero map, the block diagram, the contents of the panels and formulas, `update()` and `redraw()` |
+| `70-controls` to `74-settings-panel`, `75-zoom`, `76-export` | Settings panel and its events (controller input, estimation exercise, design controls); interaction with the plots (zoom, pole-zero map, plot options); export |
+| `77-rows`, `78-tiles`, `79-layout` | Arrangement in rows, free arrangement in columns, layout of the page |
+| `80-scenarios`, `81-scenario-card` | Scenarios: what is saved and how it is applied; their card (save and load) |
+| `82-menubar` | Menu bar and the shared drop-down `dropdown()` |
+| `83-diagram-zoom` | Zoom, pan and PNG of the block diagram |
+| `84-help` | User manual (text in English and Japanese, its screenshots and its dialog) |
+| `85-language` | Switching the language |
 | `99-init` | Start-up |
 
 ### 11.2 From build to release

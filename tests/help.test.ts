@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-// The user manual (src/ts/28-help.ts): its figures and tables have ids and captions, and the text refers to each
+// The user manual (src/ts/84-help.ts): its figures and tables have ids and captions, and the text refers to each
 // of them; the English and the Japanese text have the same figures and tables in the same places
 import test from 'node:test';
 import assert from 'node:assert/strict';

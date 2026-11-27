@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-// The numbers of the chapter "Trying the exercises" of the user manual (src/ts/28-help.ts): each step of the four
+// The numbers of the chapter "Trying the exercises" of the user manual (src/ts/84-help.ts): each step of the four
 // built-in exercises gives what the manual says (rounded as there). When one of these fails after a change of the
 // computation, correct the manual in English and Japanese together with this test.
 import test from 'node:test';

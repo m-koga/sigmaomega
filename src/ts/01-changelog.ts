@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.94.3',
+    d: '2026-11-27',
+    en: [
+      'Development: the script is in 57 files of one topic each instead of 30 (the largest held up to 1,300 lines and a dozen topics): the analyses of the loop (Routh–Hurwitz test, Bode asymptotes, Nyquist criterion, root-locus rules, steady-state error), the tuning rules, the compensator design and the exercises, each plot, each panel (block diagram, formulas, poles, Routh test, steady-state errors, design cards, sweep), the parts of the settings panel and the scenarios have their own files',
+      'Development: the number of a file says its layer (basics 01–09, model 10–14, computing 15–39, page basics 40–44, showing 45–69, controls 70–98, start-up 99), with room for new files in each; the test of the modules checks that every file is in a layer, starts with its title and is at most 600 lines long, and that the files below 40 do not touch the page. The page is unchanged (pixel comparison identical)',
+    ],
+    ja: [
+      '開発：スクリプトを、30 ファイルから 1 つの話題ごとの 57 ファイルに分けた（最大のファイルは約 1,300 行で十数個の話題を持っていた）。ループの解析（Routh–Hurwitz の判定、ボード線図の折れ線近似、ナイキストの安定判別、根軌跡の作図規則、定常偏差）、調整則・補償器の設計・演習、図ごと、パネルごと（ブロック線図、式、極、Routh の判定、定常偏差、設計のカード、掃引）、設定パネルの部分、例題がそれぞれのファイルを持つ',
+      '開発：ファイルの番号で層を表すようにした（基礎 01–09、モデル 10–14、計算 15–39、ページの基礎 40–44、表示 45–69、操作 70–98、起動 99）。各層には新しいファイルのための空き番号がある。モジュールのテストは、すべてのファイルがいずれかの層にあり、タイトルで始まり、600 行以内であること、40 より小さい番号のファイルがページに触れないことを確かめる。画面は変わらない（ピクセル比較で一致）',
+    ],
+  },
+  {
     v: '1.94.2',
     d: '2026-11-27',
     en: [

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-// The modules of src/ts are in layers: a file imports only from files with a lower number, so that there are no
-// cycles and a file can be read (and changed) knowing only the files below it. Files 01-12 compute (math,
-// definitions, state, responses, tuning, specifications, sweep) and do not touch the page; 13 and above show it.
-// And no function is too long.
+// The modules of src/ts are in layers, and the number of a file says its layer (LAYERS): a file imports only from
+// files with a lower number, so that there are no cycles and a file can be read (and changed) knowing only the
+// files below it. The basics, the model and the computing (math, definitions, state, responses, analyses, tuning,
+// specifications, sweep) do not touch the page; the layers from 40 show it. Each file holds one topic, said in its
+// title, and is not too long; and no function is too long.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -16,8 +17,21 @@ const files = fs
   .filter(f => /^\d\d-[\w-]+\.ts$/.test(f))
   .sort();
 const num = (f: string) => Number(f.slice(0, 2));
-// The last file of the computing layer (no page access)
-const COMPUTE_LAST = 12;
+/* The layers, from the bottom: the numbers of their files (with room for new files), and whether they may use the
+   page. A new file gets a free number in its layer, next to the files it belongs with. */
+const LAYERS = [
+  { name: 'basics', first: 1, last: 9, page: false }, // change log, translation, math, parser
+  { name: 'model', first: 10, last: 14, page: false }, // definitions, settings
+  { name: 'computing', first: 15, last: 39, page: false }, // responses, analyses of the loop, tuning, specs, sweep
+  { name: 'page basics', first: 40, last: 44, page: true }, // elements, files, messages; view state
+  { name: 'showing', first: 45, last: 69, page: true }, // plots, panels, formulas, update() and redraw()
+  { name: 'controls', first: 70, last: 98, page: true }, // settings panel, interaction, layout, scenarios, help
+  { name: 'start-up', first: 99, last: 99, page: true },
+];
+const layerOf = (f: string) => LAYERS.find(l => num(f) >= l.first && num(f) <= l.last);
+// The longest a file may be (lines): a longer one holds more than one topic and is split. The change log is data.
+const MAX_FILE_LINES = 600;
+const DATA_FILES = ['01-changelog.ts'];
 const source = (f: string) => fs.readFileSync(path.join(DIR, f), 'utf8');
 // The code without comments and string contents (enough to look for names)
 const code = (s: string) =>
@@ -31,6 +45,31 @@ test('every file has its own number', () => {
   assert.equal(new Set(nums).size, nums.length, files.join(', '));
 });
 
+test('every file is in a layer', () => {
+  assert.deepEqual(
+    files.filter(f => !layerOf(f)),
+    [],
+  );
+  assert.ok(
+    files.some(f => num(f) === 99),
+    'the start-up file',
+  );
+});
+
+test('every file starts with its title (what it holds) after the license lines', () => {
+  const bad = files.filter(f => !/^(?:\/\/[^\n]*\n){2}\/\* =+ \S[^\n]* =+/.test(source(f)));
+  assert.deepEqual(bad, []);
+});
+
+test(`no file is longer than ${MAX_FILE_LINES} lines (one topic per file)`, () => {
+  const long = files
+    .filter(f => !DATA_FILES.includes(f))
+    .map(f => [f, source(f).split('\n').length - 1] as const)
+    .filter(([, n]) => n > MAX_FILE_LINES)
+    .map(([f, n]) => `${f}: ${n} lines`);
+  assert.deepEqual(long, []);
+});
+
 test('a file imports only from files with a lower number (no cycles)', () => {
   const bad: string[] = [];
   for (const f of files)
@@ -42,9 +81,9 @@ test('a file imports only from files with a lower number (no cycles)', () => {
   assert.deepEqual(bad, [], 'imports from a higher-numbered file:\n' + bad.join('\n'));
 });
 
-test('the computing files (01-12) do not touch the page', () => {
+test('the basics, the model and the computing (files 01-39) do not touch the page', () => {
   const bad: string[] = [];
-  for (const f of files.filter(f => num(f) <= COMPUTE_LAST)) {
+  for (const f of files.filter(f => !layerOf(f)?.page)) {
     const c = code(source(f));
     for (const m of c.matchAll(/\b(document|window)\s*\.|\$\(|\bbyId\(|\bcanvas\b/g)) bad.push(`${f}: ${m[0]}`);
   }

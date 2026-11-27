@@ -34,7 +34,7 @@ interface SpecItem {
   on: boolean;
   v: number;
 }
-/** Definition of a design specification (SPECS in 05-definitions.ts) */
+/** Definition of a design specification (SPECS in 10-definitions.ts) */
 interface SpecDef {
   /** text before the limit, in English (translated through the dictionary) */
   label: string;
@@ -150,7 +150,7 @@ interface Layout {
   hidden: Record<string, boolean>;
   subs: Record<string, boolean>;
   panels: string[] | null;
-  /** version of the panel list (PANELS_V in 14-view.ts) */
+  /** version of the panel list (PANELS_V in 41-view.ts) */
   pv: number;
   /** '1', '2', 'row' or 'free' (tiles) */
   pcols: string | null;
@@ -178,7 +178,7 @@ declare var MathJax: any;
 /** claude.ai artifact viewer API (only inside the viewer) */
 declare var claude: { use(name: string): Promise<any> } | undefined;
 // Functions the script puts on window: renderTeX is called by MathJax when it has loaded (src/index.html);
-// diagViewReset shows the whole block diagram after a new drawing (27-diagram-zoom.ts)
+// diagViewReset shows the whole block diagram after a new drawing (83-diagram-zoom.ts)
 interface Window {
   renderTeX?: () => void;
   diagViewReset?: () => void;
@@ -244,16 +244,16 @@ interface DiscreteSS extends StateSpace {
 type NumKey = { [K in keyof State]-?: State[K] extends number ? K : never }[keyof State];
 
 // Results of the main computations (inferred from the functions that make them)
-type SimResult = ReturnType<typeof import('./08-simulation.ts').simulate>;
-type FreqResult = ReturnType<typeof import('./07-frequency.ts').freqResp>;
-type BodeSeries = ReturnType<typeof import('./07-frequency.ts').bodeSeries>;
-type StepMetrics = ReturnType<typeof import('./08-simulation.ts').stepMetrics>;
+type SimResult = ReturnType<typeof import('./16-simulation.ts').simulate>;
+type FreqResult = ReturnType<typeof import('./15-frequency.ts').freqResp>;
+type BodeSeries = ReturnType<typeof import('./15-frequency.ts').bodeSeries>;
+type StepMetrics = ReturnType<typeof import('./16-simulation.ts').stepMetrics>;
 
 /** Handle of setTimeout */
 type Timer = ReturnType<typeof setTimeout>;
 
-type PZResult = ReturnType<typeof import('./09-loop.ts').computePZ>;
-type SpecKey = keyof typeof import('./05-definitions.ts').SPECS;
+type PZResult = ReturnType<typeof import('./17-loop.ts').computePZ>;
+type SpecKey = keyof typeof import('./10-definitions.ts').SPECS;
 /** Result of one specification: checked or not, whether it applies, measured value, met or not */
 interface SpecResult {
   key: SpecKey;
@@ -338,7 +338,7 @@ interface PlotOptions {
   /** marks: × (default) or a small circle */
   points?: PlotPoint[];
 }
-/** A panel of the plot area (PANEL_DEFS in 14-view.ts) */
+/** A panel of the plot area (PANEL_DEFS in 41-view.ts) */
 interface PanelDef {
   /** its item in the menu, in English */
   label: string;

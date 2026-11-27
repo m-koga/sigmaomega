@@ -37,7 +37,7 @@ export function detectLang(): Lang {
   return 'en';
 }
 export let LANG: Lang = 'en';
-// Change the display language (the page is updated by setLang in 29-language.ts)
+// Change the display language (the page is updated by setLang in 85-language.ts)
 export function setLangCode(l: Lang) {
   LANG = l;
 }

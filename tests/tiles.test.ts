@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-// Free arrangement of the plot panels (23-tiles.ts): reading stored arrangements, starting from a preset layout,
+// Free arrangement of the plot panels (78-tiles.ts): reading stored arrangements, starting from a preset layout,
 // and moving a panel by dragging or with the arrow keys
 import test from 'node:test';
 import assert from 'node:assert/strict';
