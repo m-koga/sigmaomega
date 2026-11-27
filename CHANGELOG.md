@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.99.1 (2026-11-28)
+- Numerical accuracy (ACCURACY.md and the manual): the time response is also evaluated for lightly damped loops (pure second-order closed loops with ζ = 0.35 to 0.05, and a second-order plant with PI). The error grows as the damping falls, since the controller sees the output once per time step: for ζ = 0.1 y is off by about 1 % and the overshoot about 1 point too large, for ζ = 0.05 by 2 % and 1.3 points, and below ζ = 0.2 the settling time can be later by up to half a period. The summary, the limits and the manual now say so (they gave 0.3 % and 0.1 point for every case)
+- Development: npm run accuracy prints the table of the lightly damped loops, and tests/accuracy.test.ts checks their bounds
+
 ## v1.99.0 (2026-11-27)
 - Pole-zero map: drag a pole or zero of the plant to move it (a real one along the real axis, a complex pair together, to a double pole on the axis); the plant becomes "Enter transfer function" with the new factors, its gain at s = 0 kept, and every plot follows while dragging
 - Time response, tab "Second-order approximation": the dominant closed-loop poles (ζ, ωn) and the textbook formulas of the overshoot, peak time, settling time and rise time beside the simulated values, with whether the approximation holds (the next pole far enough, no zero of Gyr nearby; poles nearly cancelled by a zero left out); an option draws the approximate step response

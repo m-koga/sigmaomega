@@ -21,6 +21,7 @@ import {
   steadyCase,
   DEAD_CASES,
   FREQ_CASES,
+  LIGHT_CASES,
   TIME_CASES,
   deadCase,
   discretizationError,
@@ -52,6 +53,25 @@ test('time response: within 0.3 % of the exact closed loop; metrics within 0.2 %
     assert.ok(Math.abs((r.got?.os ?? 0) - r.ref.os) < 0.1, `${name}: overshoot ${r.got?.os} / ${r.ref.os}`);
     assert.ok(rel(r.got?.rise, r.ref.rise) < 2e-3, `${name}: rise ${r.got?.rise} / ${r.ref.rise}`);
     assert.ok(rel(r.got?.ts, r.ref.ts) < 2e-3, `${name}: settling ${r.got?.ts} / ${r.ref.ts}`);
+  }
+});
+
+test('lightly damped loops: the error grows as the damping falls, within the bounds stated in ACCURACY.md', () => {
+  // [ζ, largest relative error of y, of the overshoot in points, relative error of the settling time] (the settling
+  // time of a lightly damped loop jumps by up to half a period when a peak is near the edge of the ±2 % band)
+  const bounds: [number, number, number, number][] = [
+    [0.35, 4e-3, 0.4, 5e-3],
+    [0.2, 4e-3, 0.4, 5e-3],
+    [0.15, 1e-2, 1.1, 0.15],
+    [0, 2.5e-2, 1.5, 0.15],
+  ];
+  for (const [name, zeta, set] of LIGHT_CASES) {
+    const r = timeCase(set),
+      [, eY, eOs, eTs] = bounds.find(([z]) => zeta >= z)!;
+    assert.ok(r.rel < eY, `${name}: error ${r.rel}`);
+    assert.ok(Math.abs((r.got?.os ?? 0) - r.ref.os) < eOs, `${name}: overshoot ${r.got?.os} / ${r.ref.os}`);
+    assert.ok(rel(r.got?.rise, r.ref.rise) < 5e-3, `${name}: rise ${r.got?.rise} / ${r.ref.rise}`);
+    assert.ok(rel(r.got?.ts, r.ref.ts) < eTs, `${name}: settling ${r.got?.ts} / ${r.ref.ts}`);
   }
 });
 

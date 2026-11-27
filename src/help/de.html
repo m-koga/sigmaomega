@@ -179,7 +179,7 @@ Mit <i>K</i><sub>I</sub> = 0.4 beträgt die Ausregelzeit etwa 8.8 s, die Phasenr
 <section id="accuracy" title="Numerische Genauigkeit">
 <p>Die Ergebnisse werden numerisch berechnet und haben kleine Fehler. Verglichen mit exakten Lösungen und mit unabhängigen, weit genaueren Berechnungen bleiben sie in diesen Grenzen:</p>
 <ul>
-<li><b>Zeitantwort</b>: innerhalb von etwa 0.3 % der Größe der Antwort; das Überschwingen innerhalb von 0.1 Prozentpunkten, Anstiegs- und Ausregelzeit innerhalb von 0.5 %.</li>
+<li><b>Zeitantwort</b>: innerhalb von etwa 0.3 % der Größe der Antwort; das Überschwingen innerhalb von 0.1 Prozentpunkten, Anstiegs- und Ausregelzeit innerhalb von 0.5 %. Je schwächer der Kreis gedämpft ist, desto größer der Fehler: Das Überschwingen fällt bei ζ = 0.35 (ζ der dominanten Pole) um etwa 0.3 Prozentpunkte zu groß aus und bei ζ = 0.1 um etwa 1 Prozentpunkt, wo y um etwa 1 % abweicht; unter ζ = 0.2 kann die Ausregelzeit bis zu einer halben Periode später sein.</li>
 <li><b>Bode- und Nyquist-Diagramm</b>: direkt aus den Übertragungsfunktionen berechnet (die Totzeit exakt); die Phasenreserve innerhalb von 0.02°, die Amplitudenreserve innerhalb von 0.001 dB, Ms innerhalb von 10<sup>−6</sup> (relativ).</li>
 <li><b>Pole und Nullstellen</b>: innerhalb von 10<sup>−9</sup>, wenn sie verschieden sind. Ein <i>k</i>-facher Pol lässt sich nur auf einige Male 10<sup>−16/<i>k</i></sup> genau bestimmen (2×10<sup>−5</sup> bei einem dreifachen Pol): eine Grenze des Problems selbst, nicht des Verfahrens.</li>
 <li><b>Totzeit</b>: Zeit- und Frequenzantworten verwenden die exakte Verzögerung; Pole und Wurzelortskurve verwenden eine Padé-Approximation dritter Ordnung (die dominanten Pole auf etwa 10<sup>−3</sup> genau für <i>L</i>/<i>T</i> ≤ 3).</li>

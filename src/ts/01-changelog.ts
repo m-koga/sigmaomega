@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.99.1',
+    d: '2026-11-28',
+    en: [
+      'Numerical accuracy (ACCURACY.md and the manual): the time response is also evaluated for lightly damped loops (pure second-order closed loops with ζ = 0.35 to 0.05, and a second-order plant with PI). The error grows as the damping falls, since the controller sees the output once per time step: for ζ = 0.1 y is off by about 1 % and the overshoot about 1 point too large, for ζ = 0.05 by 2 % and 1.3 points, and below ζ = 0.2 the settling time can be later by up to half a period. The summary, the limits and the manual now say so (they gave 0.3 % and 0.1 point for every case)',
+      'Development: npm run accuracy prints the table of the lightly damped loops, and tests/accuracy.test.ts checks their bounds',
+    ],
+    ja: [
+      '数値精度（ACCURACY.md とマニュアル）：減衰の小さいループ（ζ = 0.35〜0.05 の純粋な 2 次系の閉ループと、2 次系の制御対象の PI 制御）でも時間応答を評価した。制御器が出力を時間刻みごとに 1 回だけ見るため、減衰が小さいほど誤差が大きくなる。ζ = 0.1 では y の誤差が 約 1 %、オーバーシュートが 約 1 ポイント大きく、ζ = 0.05 では 2 %、1.3 ポイント。ζ が 0.2 未満では整定時間が最大で半周期遅くなることがある。要約・限界・マニュアルの記述をこれに合わせて直した（どの場合も 0.3 %、0.1 ポイント以内としていた）',
+      '開発：npm run accuracy が減衰の小さいループの表を出力し、tests/accuracy.test.ts がその範囲を確かめる',
+    ],
+  },
+  {
     v: '1.99.0',
     d: '2026-11-27',
     en: [

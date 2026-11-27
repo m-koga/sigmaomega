@@ -231,6 +231,21 @@ export const TIME_CASES: [string, Settings][] = [
   ['Integrator + 1st-order lag + PD', { plant: 'integ', K: 1, T: 1, mode: 'PD', Kp: 1, Kd: 0.5, N: 20, Tsim: 20 }],
   ['3rd-order lag + lead', { plant: 'third', K: 1, T: 1, mode: 'lead', Tsim: 30 }],
 ];
+/** Lightly damped loops: K/(s(Ts + 1)) with P control, a pure second-order closed loop (ζ = 1/(2√(K Kp T))), and a
+ *  second-order plant with PI. The controller sees y once per time step, which acts like a delay of half a step and
+ *  lowers the damping a little; with little damping this shows over the many periods of the response */
+export const LIGHT_CASES: [string, number, Settings][] = [
+  ['Integrator + 1st-order lag + P, ζ = 0.35', 0.354, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 2, Tsim: 30 }],
+  ['Integrator + 1st-order lag + P, ζ = 0.16', 0.158, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 10, Tsim: 30 }],
+  [
+    'Integrator + 1st-order lag + P, ζ = 0.16, 100 s',
+    0.158,
+    { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 10, Tsim: 100 },
+  ],
+  ['Integrator + 1st-order lag + P, ζ = 0.10', 0.1, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 25, Tsim: 30 }],
+  ['Integrator + 1st-order lag + P, ζ = 0.05', 0.05, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 100, Tsim: 30 }],
+  ['2nd-order (ζ = 0.2) + PI', 0.2, { plant: 'second', K: 1, zeta: 0.2, wn: 1, mode: 'PI', Kp: 1, Ki: 0.3, Tsim: 60 }],
+];
 export function timeCase(set: Settings) {
   const a = app(set),
     sim = a.simulate(),
@@ -750,6 +765,17 @@ if (import.meta.main) {
     const r = timeCase(set);
     P(
       `| ${name} | ${r.m} | ${r.h.toPrecision(2)} | ${sci(r.err)} | ${fmt(r.got?.os, 2)} / ${fmt(r.ref.os, 2)} | ${fmt(r.got?.rise)} / ${fmt(r.ref.rise)} | ${fmt(r.got?.ts)} / ${fmt(r.ref.ts)} |`,
+    );
+  }
+  P('\n### Time response of lightly damped loops\n');
+  P(
+    '| Case | ζ of the dominant poles | m | h [s] | Max. error of y (relative) | Overshoot [%] app / exact | Rise time [s] app / exact | Settling time [s] app / exact |',
+  );
+  P('|---|---|---|---|---|---|---|---|');
+  for (const [name, zeta, set] of LIGHT_CASES) {
+    const r = timeCase(set);
+    P(
+      `| ${name} | ${zeta} | ${r.m} | ${r.h.toPrecision(2)} | ${(100 * r.rel).toFixed(2)} % | ${fmt(r.got?.os, 2)} / ${fmt(r.ref.os, 2)} | ${fmt(r.got?.rise)} / ${fmt(r.ref.rise)} | ${fmt(r.got?.ts)} / ${fmt(r.ref.ts)} |`,
     );
   }
   P('\n### Time response with dead time\n');

@@ -2,7 +2,7 @@
 
 English | [日本語](ACCURACY.ja.md)
 
-SigmaOmega computes its results numerically, so they carry small errors. This document states how large those errors are, how this was found and where the limits lie, so that you can judge how far to trust a number on the screen. It describes version 1.98.1 and covers both the simulation and the analyses of the loop (stability tests, steady-state errors, straight-line approximations, root-locus rules); every table below is printed by `npm run accuracy` (`scripts/accuracy.ts`), and `tests/accuracy.test.ts` checks the bounds on every change.
+SigmaOmega computes its results numerically, so they carry small errors. This document states how large those errors are, how this was found and where the limits lie, so that you can judge how far to trust a number on the screen. It describes version 1.99.1 and covers both the simulation and the analyses of the loop (stability tests, steady-state errors, straight-line approximations, root-locus rules); every table below is printed by `npm run accuracy` (`scripts/accuracy.ts`), and `tests/accuracy.test.ts` checks the bounds on every change.
 
 ## Summary
 
@@ -10,9 +10,9 @@ Compared with exact solutions and with independent references computed far more 
 
 | Result | Accuracy |
 | --- | --- |
-| Time response y(t) | Within about 0.3 % of the size of the response (often 0.02–0.05 %) |
-| Overshoot | Within 0.1 percentage point |
-| Rise time, settling time | Within 0.5 % (usually within 0.2 %) |
+| Time response y(t) | Within about 0.3 % of the size of the response (often 0.02–0.05 %) when the dominant poles have ζ ≥ 0.2; up to 1 % for ζ = 0.1 and 2 % for ζ = 0.05 (lightly damped loops, see [below](#time-response-of-lightly-damped-loops)) |
+| Overshoot | Within 0.1 percentage point for well-damped loops; about 0.3 point for ζ = 0.2–0.35, 0.6–1 for ζ = 0.16, 1.1–1.3 for ζ ≤ 0.1 (the app slightly larger) |
+| Rise time, settling time | Within 0.5 % (usually within 0.2 %); for ζ < 0.2 the settling time can be later by up to half a period π/ω_d |
 | Phase margin, gain margin | Within 0.02°, within 0.001 dB |
 | Peak sensitivity Ms | Within 10⁻⁶ (relative), sharp peaks included |
 | Bode and Nyquist plots | Computed directly from the transfer functions (the dead time exactly); only the rounding of double-precision arithmetic |
@@ -80,6 +80,19 @@ The errors are absolute, for a unit step reference; "m" is the number of substep
 | 3rd-order lag + PID, fast | 3 | 0.0017 | 8.2×10<sup>-4</sup> | 11.05 / 10.97 | 0.778 / 0.779 | 7.245 / 7.248 |
 | Integrator + 1st-order lag + PD | 5 | 0.0010 | 1.8×10<sup>-4</sup> | 3.35 / 3.34 | 1.914 / 1.915 | 5.190 / 5.189 |
 | 3rd-order lag + lead | 4 | 0.0019 | 3.2×10<sup>-4</sup> | 0.00 / 0.00 | — / — | — / — |
+
+### Time response of lightly damped loops
+
+The error of the time response grows as the damping falls. *K*/(*s*(*Ts* + 1)) with P control gives a pure second-order closed loop with ζ = 1/(2√(*K K*<sub>P</sub> *T*)); its exact overshoot is 100 e<sup>−πζ/√(1−ζ²)</sup> %. The error of *y* is relative to the size of the response.
+
+| Case | ζ of the dominant poles | m | h [s] | Max. error of y (relative) | Overshoot [%] app / exact | Rise time [s] app / exact | Settling time [s] app / exact |
+|---|---|---|---|---|---|---|---|
+| Integrator + 1st-order lag + P, ζ = 0.35 | 0.354 | 1 | 0.0075 | 0.26 % | 30.81 / 30.50 | 0.983 / 0.986 | 7.760 / 7.742 |
+| Integrator + 1st-order lag + P, ζ = 0.16 | 0.158 | 2 | 0.0037 | 0.45 % | 61.06 / 60.47 | 0.366 / 0.367 | 7.334 / 7.317 |
+| Integrator + 1st-order lag + P, ζ = 0.16, 100 s | 0.158 | 4 | 0.0063 | 0.75 % | 61.45 / 60.47 | 0.366 / 0.366 | 8.101 / 7.318 |
+| Integrator + 1st-order lag + P, ζ = 0.10 | 0.1 | 2 | 0.0037 | 1.03 % | 74.02 / 72.92 | 0.220 / 0.221 | 8.217 / 7.677 |
+| Integrator + 1st-order lag + P, ζ = 0.05 | 0.05 | 4 | 0.0019 | 1.96 % | 86.72 / 85.45 | 0.106 / 0.106 | 8.527 / 7.601 |
+| 2nd-order (ζ = 0.2) + PI | 0.2 | 2 | 0.0075 | 0.30 % | 5.09 / 4.78 | 1.326 / 1.330 | 27.701 / 27.666 |
 
 ### Time response with dead time
 
@@ -214,6 +227,7 @@ The values found by the app; the last column is the largest difference from the 
 ## Limits and what to keep in mind
 
 - **The time response is first-order accurate in the substep *h*.** The controller sees the output at the start of each substep and holds its output over it, so the error is proportional to *h*. The substep is chosen to keep it at about 0.3 % or less; shortening the simulation time makes *h* smaller.
+- **Lightly damped loops.** Seeing the output once per substep acts like a delay of *h*/2, which lowers the damping a little (the phase at the crossover by about ω·*h*/2 ≈ 0.5°). With little damping this matters, and it adds up over the many periods of the response: the oscillation decays slightly more slowly than it should. For ζ = 0.1 the error of *y* reaches about 1 % and the overshoot is about 1 point too large; for ζ = 0.05 about 2 % and 1.3 points. The settling time of such a loop can then be later by up to half a period π/ω<sub>d</sub>, when a peak is near the edge of the ±2 % band. A shorter simulation time can make *h* smaller, and the error with it (for ζ = 0.16, 0.45 % over 30 s against 0.75 % over 100 s).
 - **Very long simulation times.** At most 100 substeps are used between two recorded points. When the simulation time is more than about 8000/ω (ω: the gain crossover frequency, or *N*), *h* becomes larger than the target and the error grows. For example, with a crossover at 10 rad/s, keep the simulation time below about 800 s.
 - **Changes faster than the recorded points.** The response is recorded at 4000 points, so a change much faster than (simulation time)/4000 cannot be resolved, even with interpolation. For example, a rise time of 0.125 s simulated for 2000 s (a point every 0.5 s) is shown as about 0.41 s. Shorten the simulation time to see a fast response.
 - **The plotted *u*.** The control input is shown at the recorded points, so a very short peak, such as the derivative kick that decays in about 1/*N*, may look lower than it is.
