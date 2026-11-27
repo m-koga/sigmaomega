@@ -2,11 +2,11 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Interaction with the plots: zoom and pan, the pole-zero map, Bode and Nyquist options ================= */
 // PLOT_VIEWS[id] = {x:[min,max], y:[min,max]} set by the user; absent = automatic range
-import { S, lastFr, lastFrB, lastPZ } from './06-state.ts';
+import { S, lastFr, lastFrB, lastPZ, lastSim } from './06-state.ts';
 import { WR_MAX, WR_MIN, rangeSig } from './07-frequency.ts';
 import { $, byId, i18nText, i18nTitle, must } from './13-dom.ts';
 import { KEEP_ASPECT, PLOT_IDS, PLOT_VIEWS, fromU, resetPlotView, setPlotView, shownPanels, toU } from './14-view.ts';
-import { bodeDescDefault, drawBode, drawNyq, saveCanvasPNG } from './15-drawing.ts';
+import { bodeDescDefault, drawBode, drawNyq, drawTime, saveCanvasPNG } from './15-drawing.ts';
 import { PZM, drawPZ, pzCurrentView, pzHover, pzZoomAt, resetPZView } from './16-pole-zero.ts';
 import { scheduleRedraw, update } from './18-update.ts';
 import { applyLoopGain } from './19-controls.ts';
@@ -231,6 +231,9 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     S.wr.on = false;
     resetBodeViews();
     update();
+  };
+  $('timePlant').onchange = () => {
+    if (shownPanels.has('time') && lastSim) drawTime(lastSim);
   };
   $('nyqMs').onchange = () => {
     if (shownPanels.has('nyq') && lastFr) drawNyq(lastFr);

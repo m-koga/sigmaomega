@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.90.0 (2026-11-27)
+- Time response: the new tab "Display" under the plot can add the response of the plant alone to r(t) (open loop: P(s) with its dead time driven by the reference itself, without the controller and the feedback), drawn as a green dashed line beside the closed-loop output y for comparison, and saved as a column of the CSV
+
 ## v1.89.0 (2026-11-27)
 - Bode plot: the new button "Factors of the asymptotes" (off at first) draws the gain and phase lines of each factor of L(jω) — K/s^q, each pole and zero (a complex pair as one), the dead time — in its own color, named in the legend, so that the asymptote can be seen as their sum, as when it is drawn by hand
 

@@ -92,6 +92,20 @@ test('estimation exercise: the hidden step response, checking estimates, the ans
   expect(await page.evaluate(() => S.ex.n)).toBe(7);
 });
 
+test('time response: the response of the plant alone is drawn when chosen, and saved in the CSV', async ({ page }) => {
+  await page.click('#tinfo [data-itab=tdisp]');
+  await expect(page.locator('#timePlant')).not.toBeChecked(); // off at first
+  expect(await page.evaluate(() => plantAlone().length)).toBe(0);
+  await page.check('#timePlant');
+  expect(await page.evaluate(() => plantAlone().map(s => s.name))).toEqual([
+    await page.evaluate(() => T('Plant alone (open loop)')),
+  ]);
+  expect(await page.evaluate(() => timeCSV(lastSim!, null, plantAlone()[0].y).split('\n')[0])).toContain(
+    'y (plant alone)',
+  );
+  expect(await page.evaluate(() => viewOptions().timePlant)).toBe(true);
+});
+
 test('a parameter sweep is drawn in the Bode, Nyquist and pole-zero plots', async ({ page }) => {
   await openCard(page, 'sweep');
   await page.check('#sw-on');
@@ -415,13 +429,15 @@ test('the response metrics and the simulation time share one place, chosen with 
   // arrow keys, Home and End move between the tabs
   await tab('tsim').focus();
   await page.keyboard.press('ArrowRight');
+  await expect(tab('tdisp')).toBeFocused();
+  await page.keyboard.press('ArrowRight'); // from the last tab back to the first
   await expect(tab('metrics')).toBeFocused();
   await expect(tab('metrics')).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('End');
-  await expect(tab('tsim')).toHaveAttribute('aria-selected', 'true');
+  await expect(tab('tdisp')).toHaveAttribute('aria-selected', 'true');
   expect(
     await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#tinfo .ptab')].map(b => b.tabIndex)),
-  ).toEqual([-1, 0]);
+  ).toEqual([-1, -1, 0]);
   // changing how the metrics are shown brings their tab forward
   await pickView(page, '#mview', 'table');
   await expect(tab('metrics')).toHaveAttribute('aria-selected', 'true');
@@ -454,7 +470,7 @@ test('every area under a plot has its tabs; each tab shows its section, remember
   await page.reload();
   await page.waitForFunction(() => document.querySelector('#tex-C svg'));
   expect(await page.evaluate(() => layout.itabs)).toEqual({
-    tinfo: 'tsim',
+    tinfo: 'tdisp',
     binfo: 'bodenote',
     ninfo: 'nyqnote',
     pinfo: 'pzhelp',

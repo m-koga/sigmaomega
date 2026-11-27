@@ -6,7 +6,7 @@ import { numStr } from './03-math.ts';
 import { PLOTS } from './05-definitions.ts';
 import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
 import { distMetrics, mContour, twoDof } from './07-frequency.ts';
-import { impulseMetrics, metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
+import { impulseMetrics, metricWindow, simulatePlant, sineMetrics, stepMetrics } from './08-simulation.ts';
 import { bodeAsymptote, loopTFs, nyqCount } from './09-loop.ts';
 import type { BodeAsymptote } from './09-loop.ts';
 import { evalSpecs, specIcon, specOn } from './11-specs.ts';
@@ -354,6 +354,15 @@ export function stretch(r: { lo: number; hi: number }, a: readonly number[], kee
   });
 }
 
+// The response of the plant alone to r(t) (open loop), when chosen; computed again only when the settings change
+let plantRun: { key: string; run: ReturnType<typeof simulatePlant> } | null = null;
+export function plantAlone(): PlotSeries[] {
+  if (!$('timePlant').checked) return [];
+  const key = JSON.stringify(S);
+  if (plantRun?.key !== key) plantRun = { key, run: simulatePlant() };
+  const r = plantRun.run;
+  return [{ x: r.T, y: r.Y, color: COLORS.plant, width: 1.8, dash: [7, 4], name: T('Plant alone (open loop)') }];
+}
 // Time response: output y(t) and control input u(t) with their metrics
 export function drawTime(sim: SimResult) {
   const tmax = S.Tsim;
@@ -370,6 +379,7 @@ export function drawTime(sim: SimResult) {
       })),
       { x: sim.T, y: sim.R, color: COLORS.reference, width: 1.4, dash: [6, 4], name: T('Reference r') },
       ...sweepSeries(r => ({ x: r.sim.T, y: r.sim.Y })),
+      ...plantAlone(),
       { x: sim.T, y: sim.Y, color: COLORS.output, width: 2.4, name: T('Output y') },
     ],
     xmin: 0,
@@ -412,7 +422,12 @@ export function outputRange(sim: SimResult): { ymin?: number; ymax?: number } {
   if (sim.diverged || !(rmax > 0)) return {};
   const r = { lo: 0, hi: 0 };
   stretch(r, sim.R, () => true);
-  const ys = [...ghosts.map(g => g.Y), ...(lastSweep || []).filter(w => !w.sim.diverged).map(w => w.sim.Y), sim.Y];
+  const ys = [
+    ...ghosts.map(g => g.Y),
+    ...(lastSweep || []).filter(w => !w.sim.diverged).map(w => w.sim.Y),
+    ...plantAlone().map(s => s.y), // a diverging plant leaves the plot (only values near r count)
+    sim.Y,
+  ];
   ys.forEach(a => stretch(r, a, v => isFinite(v) && Math.abs(v) < 10 * rmax + 5));
   // the specification lines that are shown (overshoot limit, settling band, error limits) stay inside the plot
   const marks = specMarks();

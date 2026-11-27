@@ -21,7 +21,7 @@ export const COLORS = {
   reference: '#666b75', // reference r
   output: '#1f5fbf', // output y, L(jω), ωgc, ω > 0 of the Nyquist plot, plant poles and zeros
   input: '#d9822b', // control input u, C(jω), controller poles and zeros
-  plant: '#2e7d32', // P(jω)
+  plant: '#2e7d32', // P(jω), and the response of the plant alone in the time response
   sensitivity: '#8e24aa', // S(jω), Ms circle and limit line
   complementary: '#00897b', // T(jω)
   disturbanceTF: '#8d6e63', // Gyd(jω)
@@ -247,6 +247,7 @@ export const INFO_AREAS: Record<string, { label: string; tabs: [string, string][
     tabs: [
       ['metrics', 'Response metrics'],
       ['tsim', 'Simulation time'],
+      ['tdisp', 'Display'],
     ],
   },
   binfo: {

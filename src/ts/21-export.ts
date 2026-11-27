@@ -6,6 +6,7 @@ import { numStr } from './03-math.ts';
 import { paramSym } from './05-definitions.ts';
 import { S, lastFr, lastFrB, lastPZ, lastSim, lastSweep } from './06-state.ts';
 import { copyText, saveFile, toast } from './13-dom.ts';
+import { plantAlone } from './15-drawing.ts';
 
 /** A cell of a CSV file */
 type CsvCell = string | number | null | undefined;
@@ -19,14 +20,31 @@ export const csvRow = (a: CsvCell[]) =>
     .join(',');
 export const csvText = (rows: CsvCell[][]) => '﻿' + rows.map(csvRow).join('\r\n') + '\r\n'; // BOM so that Excel reads UTF-8
 // Time response: t, r, y, u (and y, u of each value of the parameter sweep)
-export function timeCSV(sim: SimResult, sweep: SweepRun[] | null): string {
+// plant: the output of the plant alone (open loop) when it is shown, empty where it stopped (diverged)
+export function timeCSV(sim: SimResult, sweep: SweepRun[] | null, plant: number[] | null = null): string {
   const sw = (sweep || []).filter(r => r.sim.T.length === sim.T.length),
     p = S.sweep.p,
     nm = (v: number) => `${paramSym(p)}=${numStr(v)}`;
-  const head = ['t', 'r', 'y', 'u', ...sw.map(r => `y (${nm(r.v)})`), ...sw.map(r => `u (${nm(r.v)})`)];
+  const head = [
+    't',
+    'r',
+    'y',
+    'u',
+    ...sw.map(r => `y (${nm(r.v)})`),
+    ...sw.map(r => `u (${nm(r.v)})`),
+    ...(plant ? ['y (plant alone)'] : []),
+  ];
   const rows: CsvCell[][] = [head];
   for (let i = 0; i < sim.T.length; i++)
-    rows.push([sim.T[i], sim.R[i], sim.Y[i], sim.U[i], ...sw.map(r => r.sim.Y[i]), ...sw.map(r => r.sim.U[i])]);
+    rows.push([
+      sim.T[i],
+      sim.R[i],
+      sim.Y[i],
+      sim.U[i],
+      ...sw.map(r => r.sim.Y[i]),
+      ...sw.map(r => r.sim.U[i]),
+      ...(plant ? [i < plant.length ? plant[i] : ''] : []),
+    ]);
   return csvText(rows);
 }
 // Frequency response: gains [dB] and phases [deg] of L, P, C, S, T, Gyd, Gyr
@@ -80,7 +98,7 @@ export async function exportCSV(kind: string) {
   let text: string, name: string;
   if (kind === 'time') {
     if (!lastSim) return;
-    text = timeCSV(lastSim, lastSweep);
+    text = timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null);
     name = 'time_response.csv';
   } else if (kind === 'bode') {
     if (!lastFr) return;

@@ -195,6 +195,38 @@ test('impulse reference: the response is the derivative of the step response, wi
   }
 });
 
+test('the plant alone (open loop): the analytical step and impulse responses, dead time, divergence', () => {
+  const a = fresh();
+  // K/(Ts + 1) e^(−Ls) with K = 2, T = 1.5, L = 0.5, step of 1 at t0 = 1: y = K(1 − e^(−(t − t0 − L)/T))
+  Object.assign(a.S, { plant: 'dead', K: 2, T: 1.5, L: 0.5, refType: 'step', R: 1, rT0: 1, Tsim: 20 });
+  let r = a.simulatePlant(),
+    err = 0;
+  r.T.forEach((t: number, i: number) => {
+    const tau = t - 1.5;
+    err = Math.max(err, Math.abs(r.Y[i] - (tau > 0 ? 2 * (1 - Math.exp(-tau / 1.5)) : 0)));
+  });
+  assert.ok(!r.diverged && err < 1e-3, `step: ${err}`);
+  // impulse of area 1: y = (K/T) e^(−(t − t0 − L)/T) after the dead time (checked away from the jump)
+  Object.assign(a.S, { refType: 'impulse' });
+  r = a.simulatePlant();
+  err = 0;
+  r.T.forEach((t: number, i: number) => {
+    const tau = t - 1.5;
+    if (tau > 0.1) err = Math.max(err, Math.abs(r.Y[i] - (2 / 1.5) * Math.exp(-tau / 1.5)));
+  });
+  assert.ok(err < 2e-3, `impulse: ${err}`);
+  // an unstable plant 1/(s − 1) diverges, and the run stops
+  Object.assign(a.S, { plant: 'unstable', refType: 'step', Tsim: 50 });
+  r = a.simulatePlant();
+  assert.ok(r.diverged && r.T.length < 4001);
+  // the controller does not matter (only through the number of substeps, a discretization difference)
+  Object.assign(a.S, { plant: 'second', zeta: 0.3, wn: 1, K: 1, Tsim: 20 });
+  const y1 = a.simulatePlant().Y;
+  Object.assign(a.S, { mode: 'P', Kp: 7 });
+  const y2 = a.simulatePlant().Y;
+  assert.ok(y2.every((v: number, i: number) => Math.abs(v - y1[i]) < 1e-4));
+});
+
 test('measurement noise: none gives identical runs, noise changes the output only around its mean', () => {
   const a = fresh();
   Object.assign(a.S, { plant: 'first', mode: 'PI', Kp: 2, Ki: 1, Tsim: 20 });

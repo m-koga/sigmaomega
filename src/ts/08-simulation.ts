@@ -293,6 +293,41 @@ export function simulate(st: State = S) {
   return { T, R, Y, U, iae, diverged, substeps: m };
 }
 
+// The plant alone (open loop, without the controller): P(s) driven by the reference r(t) itself (an impulse as in
+// simulate()), on the same recorded points and substeps; stops when the response diverges
+export function simulatePlant(st: State = S) {
+  const tf = PLANTS[st.plant].tf(st),
+    NS = SIM_POINTS,
+    { dt, m, h } = simSteps(tf, st),
+    ps = discretize(makeSS(tf.num, tf.den), h),
+    delay = delayLine(tf.L / h),
+    imp = st.refType === 'impulse';
+  let x: number[] = new Array(ps.n).fill(0),
+    rAbs = imp ? Math.abs(st.R) : 0;
+  for (let i = 0; i <= NS; i += 4) rAbs = Math.max(rAbs, Math.abs(refValue(i * dt, st)));
+  const lim = 1e3 * (rAbs + 1),
+    T: number[] = [],
+    Y: number[] = [];
+  let diverged = false;
+  outer: for (let i = 0; i <= NS; i++)
+    for (let q = 0; q < m; q++) {
+      const t = i * dt + q * h,
+        y = ssOut(ps, x, 0);
+      if (q === 0) {
+        T.push(t);
+        Y.push(y);
+        if (!isFinite(y) || Math.abs(y) > lim) {
+          diverged = true;
+          break outer;
+        }
+        if (i === NS) break outer;
+      }
+      const r0 = refValue(t, st),
+        r = imp && t <= st.rT0 && st.rT0 < t + h ? r0 + st.R / h : r0;
+      x = ssStepD(ps, x, delay(r));
+    }
+  return { T, Y, diverged };
+}
 export function metricWindow(sim: SimResult, st: State = S): { tEnd: number; last: number; i0: number } {
   const tEnd = st.dOn ? Math.min(st.td, st.Tsim) : st.Tsim;
   let last = 0;

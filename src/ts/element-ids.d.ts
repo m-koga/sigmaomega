@@ -212,6 +212,8 @@ interface ElementById {
   "tex-P": HTMLDivElement;
   "tex-r": HTMLDivElement;
   "tf-wrap": HTMLDivElement;
+  "timeOpts": HTMLDivElement;
+  "timePlant": HTMLInputElement;
   "tinfo": HTMLDivElement;
   "toast": HTMLDivElement;
   "Tsim": HTMLInputElement;

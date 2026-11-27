@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.90.0',
+    d: '2026-11-27',
+    en: [
+      'Time response: the new tab "Display" under the plot can add the response of the plant alone to r(t) (open loop: P(s) with its dead time driven by the reference itself, without the controller and the feedback), drawn as a green dashed line beside the closed-loop output y for comparison, and saved as a column of the CSV',
+    ],
+    ja: [
+      '時間応答：図の下の新しいタブ「表示」で、制御対象単体の r(t) に対する応答（開ループ：制御器もフィードバックもなく、むだ時間を含む P(s) に目標値をそのまま入力）を緑の破線で閉ループの出力 y に重ねて比べられるようにした。CSV にも列として保存する',
+    ],
+  },
+  {
     v: '1.89.0',
     d: '2026-11-27',
     en: [

@@ -221,6 +221,7 @@ export const VIEW_CHECKS = [
   'bodeR',
   'bodeA',
   'bodeAc',
+  'timePlant',
   'loopL',
   'loopS',
   'loopT',
