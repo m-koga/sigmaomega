@@ -25,10 +25,19 @@ import {
 } from './05-definitions.ts';
 import { S, ghosts, isTFMode, lastSim, lastSweep, switchDefaults } from './06-state.ts';
 import { resetLocus } from './09-loop.ts';
-import { TUNE_METHODS, TUNE_TYPES, tuneGains, tuneLabel } from './10-tuning.ts';
+import {
+  TUNE_METHODS,
+  TUNE_TYPES,
+  exerciseCheck,
+  exercisePlant,
+  fopdtStep,
+  tuneGains,
+  tuneLabel,
+} from './10-tuning.ts';
+import { plot } from './15-drawing.ts';
 import { parseSweep, sweepDefaults } from './12-sweep.ts';
 import { $, byId, errMessage, fmtVal, i18nText, must } from './13-dom.ts';
-import { PLOT_VIEWS, layout, saveLayout, subFolded } from './14-view.ts';
+import { COLORS, PLOT_VIEWS, layout, saveLayout, subFolded } from './14-view.ts';
 import {
   lastComp,
   lastTune,
@@ -409,6 +418,7 @@ export function buildStatic() {
   bindSliders(CTRL);
   buildTune();
   buildComp();
+  buildExercise();
   buildRef();
   $('input-params').innerHTML = entriesOf(INPUTS)
     .map(([k, d]) => slider(k, d))
@@ -546,6 +556,115 @@ export function applyTune() {
   buildCtrlCustom();
   renderTeX();
   update();
+}
+/* ---- Estimation exercise ---- */
+// The estimates last checked (drawn over the true response) and whether the answer is shown
+let exEst: { K: number; T: number; L: number } | null = null,
+  exShown = false;
+const exPlant = () => exercisePlant(S.ex.n);
+// The step response of the hidden plant (and of the estimates once checked), while its card is shown
+export function drawExercise() {
+  if (layout.scard !== 'ex') return;
+  const p = exPlant(),
+    tEnd = Math.ceil((p.L + 5 * p.T) / 2) * 2,
+    ts = Array.from({ length: 401 }, (_, i) => (tEnd * i) / 400),
+    est = exEst;
+  plot($('cvEx'), {
+    series: [
+      { x: ts, y: ts.map(t => (t >= 0 ? 1 : 0)), color: COLORS.reference, width: 1.2, dash: [6, 4] },
+      ...(est
+        ? [
+            {
+              x: ts,
+              y: ts.map(t => fopdtStep(est, t)),
+              color: COLORS.input,
+              width: 1.8,
+              dash: [5, 3],
+              name: T('Estimate'),
+            },
+          ]
+        : []),
+      {
+        x: ts,
+        y: ts.map(t => fopdtStep(p, t)),
+        color: COLORS.output,
+        width: 2.2,
+        name: est ? T('Step response') : undefined,
+      },
+    ],
+    xmin: 0,
+    xmax: tEnd,
+    ymin: Math.min(0, p.K) * 1.1,
+    ymax: Math.max(1, p.K) * 1.1,
+    xlabel: T('Time t [s]'),
+    ylabel: 'y',
+  });
+}
+// A new exercise: the estimates and the result cleared
+function resetExercise() {
+  exEst = null;
+  exShown = false;
+  $('exN').value = String(S.ex.n);
+  (['exK', 'exT', 'exL'] as const).forEach(id => ($(id).value = ''));
+  $('exOut').innerHTML = '';
+  $('exUse').disabled = true;
+  drawExercise();
+}
+export function buildExercise() {
+  $('exN').value = String(S.ex.n);
+  $('exUse').disabled = !exShown;
+  $('exN').onchange = () => {
+    const v = Math.floor(parseFloat($('exN').value));
+    if (isFinite(v) && v >= 1) S.ex.n = v;
+    resetExercise();
+  };
+  $('exNew').onclick = () => {
+    S.ex.n = 1 + Math.floor(Math.random() * 9999);
+    resetExercise();
+  };
+  $('exCheck').onclick = () => {
+    const e = { K: parseFloat($('exK').value), T: parseFloat($('exT').value), L: parseFloat($('exL').value) };
+    if (![e.K, e.T, e.L].every(isFinite) || e.T <= 0 || e.L < 0) {
+      $('exOut').innerHTML = `<span class="err">${T('Enter K, T (> 0) and L (≥ 0).')}</span>`;
+      return;
+    }
+    exEst = e;
+    const c = exerciseCheck(exPlant(), e),
+      line = (k: 'K' | 'T' | 'L') => `${k}: ${c.ok[k] ? '✓' : '✗'} ${T('error {e} %', { e: numStr(100 * c.err[k]) })}`,
+      n = Object.values(c.ok).filter(Boolean).length;
+    $('exOut').innerHTML =
+      (['K', 'T', 'L'] as const).map(line).join('<br>') +
+      `<br><b>${n === 3 ? T('All three within 10 %: well done!') : T('{n} of 3 within 10 %.', { n })}</b>`;
+    drawExercise();
+  };
+  $('exShow').onclick = () => {
+    const p = exPlant();
+    exShown = true;
+    $('exUse').disabled = false;
+    $('exOut').innerHTML =
+      (exEst ? $('exOut').innerHTML + '<br>' : '') +
+      T('Answer: K = {K}, T = {T} s, L = {L} s', { K: numStr(p.K), T: numStr(p.T), L: numStr(p.L) });
+  };
+  $('exUse').onclick = () => {
+    const p = exPlant();
+    S.plant = 'dead';
+    S.K = p.K;
+    S.T = p.T;
+    S.L = p.L;
+    buildPlant();
+    renderTeX();
+    update();
+  };
+  // the time and the output under the mouse
+  const cv = $('cvEx');
+  cv.onmousemove = e => {
+    const t = cv._tf;
+    if (!t) return;
+    const x = t.xmin + ((e.offsetX - t.m.l) / t.pw) * (t.xmax - t.xmin);
+    $('exRead').textContent =
+      x < t.xmin || x > t.xmax ? '' : `t = ${numStr(x)} s,  y = ${numStr(fopdtStep(exPlant(), x))}`;
+  };
+  cv.onmouseleave = () => ($('exRead').textContent = '');
 }
 // The card of the lead and lag compensator design: kind, target phase margin, gain Kc and allowance θ
 export function buildComp() {

@@ -158,6 +158,24 @@ window.MathJax = {
     </div>
 
     <div class="card">
+      <h2 data-i18n>Estimation exercise</h2>
+      <p class="hint" data-i18n>Estimate the gain K, the time constant T and the dead time L of a hidden plant P(s) = K e^(−Ls)/(Ts + 1) from its unit step response. Move the mouse over the plot to read t and y.</p>
+      <div class="tune-grid">
+        <label for="exN" data-i18n>Exercise number</label><input type="number" id="exN" step="1" min="1">
+      </div>
+      <div class="ex"><button class="chip" id="exNew" data-i18n>New exercise</button></div>
+      <canvas id="cvEx" class="cv-ex"></canvas>
+      <div class="ex-read" id="exRead"></div>
+      <div class="tune-grid">
+        <label for="exK" data-i18n>Gain K</label><input type="number" id="exK" step="any">
+        <label for="exT" data-i18n>Time constant T [s]</label><input type="number" id="exT" step="any" min="0">
+        <label for="exL" data-i18n>Dead time L [s]</label><input type="number" id="exL" step="any" min="0">
+      </div>
+      <div class="ex"><button class="chip" id="exCheck" data-i18n>Check</button><button class="chip" id="exShow" data-i18n>Show the answer</button><button class="chip" id="exUse" data-i18n>Use this plant</button></div>
+      <div class="poles" id="exOut"></div>
+    </div>
+
+    <div class="card">
       <h2 data-i18n>Save and load</h2>
       <div class="tune-grid">
         <label for="sc-name" data-i18n>Name</label><input type="text" id="sc-name" spellcheck="false">

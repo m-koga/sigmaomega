@@ -33,7 +33,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | File | Save and load, Compare & reset | Shows that one card in the settings panel |
 | Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Routh–Hurwitz test, Steady-state error, Bode plot, Nyquist plot, Nichols chart, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
 | System setup | Plant P(s), Controller C(s), Reference/disturbance/noise, Actuator saturation | Shows that card in the settings panel |
-| Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep | Shows that card in the settings panel |
+| Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep, Estimation exercise | Shows that card in the settings panel |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
 | Metrics display | Cards, Table | Changes how the response metrics are shown |
 | Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean and Thai); × , Esc or a click beside it closes it. On phones the button shows only its icon |
@@ -133,7 +133,7 @@ Holding the current response in the "Compare & reset" card overlays it as a gray
 
 ## 5. Design support
 
-Four cards in the "Analysis & design" menu check design specifications, tune controllers with tuning rules, design lead and lag compensators, and sweep parameters.
+Five cards in the "Analysis & design" menu check design specifications, tune controllers with tuning rules, design lead and lag compensators, sweep parameters, and give an estimation exercise.
 
 ### 5.1 Design specifications
 
@@ -180,6 +180,10 @@ The phase margin of C(s)P(s) is then computed. No design is made when K_c P has 
 ### 5.4 Parameter sweep
 
 One parameter of the plant or the controller is given up to 8 values, and the results for every value are overlaid in all plots in different colors. A table lists overshoot, settling time, stability margins, stability and the specification checks for each value; choosing a row applies that value to the settings.
+
+### 5.5 Estimation exercise
+
+The exercise number n (from 1) determines a hidden plant K e^(−Ls)/(Ts + 1) through a seeded random generator: K in 0.5 … 3 (2 decimals), T in 0.5 … 5 s (1 decimal), L in 0.1 … min(2, T) s (steps of 0.05). The card draws its unit step response over 0 … L + 5T (rounded up to an even number of seconds) with the unit step, and shows t and y under the mouse. "Check" draws the response of the estimates over it and marks each estimate ✓ when its relative error is at most 10 %; "Show the answer" gives the true values; "Use this plant" sets the plant to the first-order lag + dead time with those values. "New exercise" chooses n at random; n is kept with the scenario. The exercise does not change the simulation until "Use this plant".
 
 ## 6. Files
 

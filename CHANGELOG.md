@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.87.0 (2026-11-27)
+- New card "Estimation exercise" (Analysis & design): the unit step response of a hidden plant K e^(−Ls)/(Ts + 1), with t and y read under the mouse; enter estimates of K, T and L and "Check" draws their response over it and marks each one within 10 %; "Show the answer" gives the true values and "Use this plant" sets them as the plant. The same exercise number always gives the same plant (kept with the scenario), so a class can work on the same exercise
+
 ## v1.86.0 (2026-11-27)
 - New card "Lead and lag compensator design" (Analysis & design): from the target phase margin PM*, the gain K_c (for the steady-state error) and an allowance θ, it works through the classical frequency-response steps for K_c P(s) one by one — lead: φm, α, the new crossover ωm where |K_c P| = √α, and T1; lag: the frequency where the phase is −180° + PM* + θ, β and T2 = 10/ω — and shows the phase margin reached; "Apply to the controller" sets the compensator
 - Development: npm run pixcmp matches the canvases of the two pages by id, so that a new plot does not show as differences in the others

@@ -37,7 +37,7 @@ test('settings panel: three drop-down lists choose the one card shown, which is 
   await expect(page.locator('#smenuBtn-sys')).toHaveClass(/on/);
   // the items of each list: the cards of that group, named like their headings
   expect(await items('sys')).toEqual(['plant', 'ctrl', 'input', 'sat']);
-  expect(await items('ana')).toEqual(['spec', 'tune', 'comp', 'sweep']);
+  expect(await items('ana')).toEqual(['spec', 'tune', 'comp', 'sweep', 'ex']);
   expect(await items('file')).toEqual(['scen', 'compare']);
   for (const k of ['ctrl', 'tune', 'compare'])
     await expect(page.locator(`.smenu .vb-opt[data-card=${k}]`)).toHaveText(

@@ -45,6 +45,7 @@ interface ElementById {
   "ctrl-info": HTMLDivElement;
   "ctrl-params": HTMLDivElement;
   "ctrl-tune": HTMLDivElement;
+  "cvEx": HTMLCanvasElement;
   "cvG": HTMLCanvasElement;
   "cvN": HTMLCanvasElement;
   "cvNi": HTMLCanvasElement;
@@ -57,6 +58,16 @@ interface ElementById {
   "divBanner": HTMLDivElement;
   "dOn": HTMLInputElement;
   "dOnMeas": HTMLInputElement;
+  "exCheck": HTMLButtonElement;
+  "exK": HTMLInputElement;
+  "exL": HTMLInputElement;
+  "exN": HTMLInputElement;
+  "exNew": HTMLButtonElement;
+  "exOut": HTMLDivElement;
+  "exRead": HTMLDivElement;
+  "exShow": HTMLButtonElement;
+  "exT": HTMLInputElement;
+  "exUse": HTMLButtonElement;
   "ghostInfo": HTMLDivElement;
   "helpBack": HTMLDivElement;
   "helpBody": HTMLDivElement;

@@ -112,6 +112,8 @@ interface State {
   tune: { method: string; type: string; lam: number | null };
   /** lead/lag compensator design: kind, target phase margin [deg], gain Kc, allowance θ [deg] */
   comp: { method: string; pm: number; kc: number; theta: number };
+  /** estimation exercise: its number (the hidden plant follows from it) */
+  ex: { n: number };
   sweep: { on: boolean; p: NumKey; vals: number[] };
   /** frequency range of the Bode plot set by hand [rad/s]; sig: what the automatic range depended on then */
   wr: { on: boolean; lo: number; hi: number; sig: string };

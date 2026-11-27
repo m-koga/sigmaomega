@@ -6,7 +6,7 @@ import { cdiv, cmul, lastOf, polyRoots, trimPoly } from './03-math.ts';
 import { PLANTS } from './05-definitions.ts';
 import { S } from './06-state.ts';
 import { bodeSeries, evalPr, freqRange } from './07-frequency.ts';
-import { discretize, makeSS, ssOut, ssStepD } from './08-simulation.ts';
+import { discretize, makeSS, mulberry32, ssOut, ssStepD } from './08-simulation.ts';
 
 /** A tuning rule or plant model that cannot be applied: why (a code for tuneErr) */
 interface TuneFail {
@@ -375,4 +375,28 @@ export function compDesign(cs: CompSettings, st: State = S): CompDesign {
     verify(w => cmul([cs.kc, 0], cdiv([1, w * T2], [1, w * beta * T2])));
   }
   return out;
+}
+
+/* ---- Estimation exercise: a hidden first-order lag + dead time plant ---- */
+/** The hidden plant K e^{−Ls}/(Ts + 1) of exercise number n (the same number always gives the same plant):
+ *  K in 0.5 … 3 (2 decimals), T in 0.5 … 5 s (1 decimal), L in 0.1 … min(2, T) s (steps of 0.05) */
+export function exercisePlant(n: number): { K: number; T: number; L: number } {
+  const r = mulberry32(Math.floor(Math.abs(n)) * 2654435761 + 97),
+    K = Math.round((0.5 + 2.5 * r()) * 100) / 100,
+    T = Math.round((0.5 + 4.5 * r()) * 10) / 10,
+    L = Math.round((0.1 + (Math.min(2, T) - 0.1) * r()) * 20) / 20;
+  return { K, T, L };
+}
+/** Unit step response of K e^{−Ls}/(Ts + 1) at time t */
+export const fopdtStep = (p: { K: number; T: number; L: number }, t: number) =>
+  t <= p.L ? 0 : p.K * (1 - Math.exp(-(t - p.L) / p.T));
+/** Relative errors of the estimates (|estimate − true|/true) and whether each is within tol */
+export function exerciseCheck(
+  p: { K: number; T: number; L: number },
+  e: { K: number; T: number; L: number },
+  tol = 0.1,
+) {
+  const err = (k: 'K' | 'T' | 'L') => Math.abs(e[k] - p[k]) / p[k];
+  const r = { K: err('K'), T: err('T'), L: err('L') };
+  return { err: r, ok: { K: r.K <= tol, T: r.T <= tol, L: r.L <= tol } };
 }

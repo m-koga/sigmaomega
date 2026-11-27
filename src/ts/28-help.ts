@@ -55,7 +55,7 @@ export const HELP: HelpSection[] = [
 <tr><td>File</td><td>Cards <b>Save and load</b> and <b>Compare &amp; reset</b></td></tr>
 <tr><td>Plots to show</td><td>Shows or hides the panels (several at once; <b>All</b> shows every panel)</td></tr>
 <tr><td>System setup</td><td>Cards for the plant, the controller, the reference, disturbance and noise, and the actuator saturation</td></tr>
-<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b> and <b>Parameter sweep</b></td></tr>
+<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b>, <b>Parameter sweep</b> and <b>Estimation exercise</b></td></tr>
 <tr><td>Plot arrangement</td><td>How the panels are arranged (section 5)</td></tr>
 <tr><td>Metrics display</td><td>Metrics as cards or as a table</td></tr>
 <tr><td>Help</td><td>This manual</td></tr>
@@ -71,7 +71,7 @@ export const HELP: HelpSection[] = [
 <tr><td>ファイル</td><td><b>保存と読み込み</b>、<b>比較・リセット</b> のカード</td></tr>
 <tr><td>表示する図</td><td>区画の表示・非表示（続けて複数選べる。<b>すべて</b> で全部表示）</td></tr>
 <tr><td>系の設定</td><td>制御対象、制御器、目標値・外乱・ノイズ、操作量の飽和のカード</td></tr>
-<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b> のカード</td></tr>
+<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b>、<b>推定の演習</b> のカード</td></tr>
 <tr><td>図の並び方</td><td>区画の並べ方（5 章）</td></tr>
 <tr><td>指標の表示</td><td>指標をカードで表示するか表で表示するか</td></tr>
 <tr><td>使い方</td><td>このマニュアル</td></tr>
@@ -217,6 +217,8 @@ export const HELP: HelpSection[] = [
 <p>Choose a lead or lag compensator, the target phase margin PM*, the gain <i>K</i><sub>c</sub> (chosen for the steady-state error) and the allowance θ. The card works through the classical frequency-response steps for <i>K</i><sub>c</sub><i>P</i>(<i>s</i>) one by one — lead: the phase to add φ<sub>m</sub>, α, the new crossover ω<sub>m</sub> where |<i>K</i><sub>c</sub><i>P</i>| = √α, and <i>T</i><sub>1</sub>; lag: the new crossover where the phase is −180° + PM* + θ, β and <i>T</i><sub>2</sub> = 10/ω — and shows the phase margin reached. <b>Apply to the controller</b> sets the compensator. When the margin falls short (a lead shifts the crossover where the phase drops fast), increase θ.</p>
 <h4>Parameter sweep</h4>
 <p>Choose one parameter of the plant or the controller and give up to 8 values separated by commas. The results for every value are drawn in all plots in different colors, and a table lists the overshoot, settling time, margins, stability and the checks of the specifications. Click a row to use that value.</p>
+<h4>Estimation exercise</h4>
+<p>The card shows the unit step response of a hidden plant <i>P</i>(<i>s</i>) = <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1); moving the mouse over the plot reads <i>t</i> and <i>y</i>. Enter the estimates of <i>K</i>, <i>T</i> and <i>L</i> and press <b>Check</b>: the estimated response is drawn over the true one, and each estimate gets ✓ when it is within 10 %. <b>Show the answer</b> gives the true values, and <b>Use this plant</b> sets them as the plant. The same <b>Exercise number</b> always gives the same plant, so a teacher can give everyone the same exercise (or save it in a scenario); <b>New exercise</b> picks a number at random.</p>
 <h4>Comparing responses</h4>
 <p><b>File › Compare &amp; reset › Hold current response</b> keeps the current response as a gray line (up to 4) to compare with later settings. <b>Clear held</b> removes them, and <b>Reset to defaults</b> brings back the first settings.</p>`],
     ja: ['設計を支援する機能', `
@@ -228,6 +230,8 @@ export const HELP: HelpSection[] = [
 <p>位相進み補償器か位相遅れ補償器を選び、目標の位相余裕 PM*、ゲイン <i>K</i><sub>c</sub>（定常偏差から決める）、余裕 θ を入力します。<i>K</i><sub>c</sub><i>P</i>(<i>s</i>) の周波数応答から、古典的な手順を一つずつ示します。位相進みでは、加える位相 φ<sub>m</sub>、α、|<i>K</i><sub>c</sub><i>P</i>| = √α となる新しい交差周波数 ω<sub>m</sub>、<i>T</i><sub>1</sub>。位相遅れでは、位相が −180° + PM* + θ となる新しい交差周波数、β、<i>T</i><sub>2</sub> = 10/ω。最後に得られる位相余裕を示します。<b>制御器に適用</b> で補償器を設定します。位相余裕が目標に届かないとき（位相進みで、位相が急に下がるところへ交差周波数がずれたときなど）は θ を大きくします。</p>
 <h4>パラメータの掃引</h4>
 <p>制御対象か制御器のパラメータを 1 つ選び、値をカンマで区切って最大 8 個入力します。すべての値の結果を色を変えてすべての図に重ね、オーバーシュート、整定時間、安定余裕、安定性、設計仕様の判定を表にします。表の行をクリックするとその値を設定に使います。</p>
+<h4>推定の演習</h4>
+<p>隠された制御対象 <i>P</i>(<i>s</i>) = <i>K</i>e<sup>−<i>Ls</i></sup>/(<i>Ts</i> + 1) の単位ステップ応答を表示します。グラフにマウスを重ねると <i>t</i> と <i>y</i> を読めます。<i>K</i>、<i>T</i>、<i>L</i> の推定値を入力して <b>答え合わせ</b> を押すと、推定値による応答を真の応答に重ね、10 % 以内の推定値に ✓ を付けます。<b>答えを表示</b> で真の値を示し、<b>この制御対象を使う</b> でその値を制御対象に設定します。<b>演習の番号</b> が同じなら制御対象も同じなので、全員に同じ演習を出せます（例題に保存することもできます）。<b>新しい演習</b> は番号を無作為に選びます。</p>
 <h4>応答を比べる</h4>
 <p><b>ファイル › 比較・リセット › 現在の応答を保持</b> で今の応答を灰色の線として残し（最大 4 本）、設定を変えた後の応答と比べられます。<b>保持をクリア</b> で消し、<b>初期値に戻す</b> で最初の設定に戻ります。</p>`],
   },

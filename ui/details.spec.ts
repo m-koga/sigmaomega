@@ -67,6 +67,31 @@ test('lead and lag compensator design: the steps, the result and Apply', async (
   expect(await page.evaluate(() => S.mode)).toBe('lag');
 });
 
+test('estimation exercise: the hidden step response, checking estimates, the answer and using the plant', async ({
+  page,
+}) => {
+  await openCard(page, 'ex');
+  await expect(page.locator('#exN')).toHaveValue('1');
+  await expect(page.locator('#exUse')).toBeDisabled();
+  const p = await page.evaluate(() => exercisePlant(1));
+  // estimates 5 % off: all three within 10 %
+  await page.fill('#exK', String(p.K * 1.05));
+  await page.fill('#exT', String(p.T * 0.95));
+  await page.fill('#exL', String(p.L));
+  await page.click('#exCheck');
+  await expect(page.locator('#exOut')).toContainText(await page.evaluate(() => T('All three within 10 %: well done!')));
+  // the answer, then the plant is used in the simulator
+  await page.click('#exShow');
+  await expect(page.locator('#exUse')).toBeEnabled();
+  await page.click('#exUse');
+  expect(await page.evaluate(() => [S.plant, S.K, S.T, S.L])).toEqual(['dead', p.K, p.T, p.L]);
+  // another number gives another plant and clears the result
+  await page.fill('#exN', '7');
+  await page.press('#exN', 'Enter');
+  await expect(page.locator('#exOut')).toBeEmpty();
+  expect(await page.evaluate(() => S.ex.n)).toBe(7);
+});
+
 test('a parameter sweep is drawn in the Bode, Nyquist and pole-zero plots', async ({ page }) => {
   await openCard(page, 'sweep');
   await page.check('#sw-on');

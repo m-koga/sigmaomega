@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.87.0',
+    d: '2026-11-27',
+    en: [
+      'New card "Estimation exercise" (Analysis & design): the unit step response of a hidden plant K e^(−Ls)/(Ts + 1), with t and y read under the mouse; enter estimates of K, T and L and "Check" draws their response over it and marks each one within 10 %; "Show the answer" gives the true values and "Use this plant" sets them as the plant. The same exercise number always gives the same plant (kept with the scenario), so a class can work on the same exercise',
+    ],
+    ja: [
+      '新しいカード「推定の演習」（解析・設計）：隠された制御対象 K e^(−Ls)/(Ts + 1) の単位ステップ応答を表示し、マウスの位置の t と y を読める。K・T・L の推定値を入力して「答え合わせ」を押すと推定値の応答を重ね、10 % 以内の推定値に ✓ を付ける。「答えを表示」で真の値を示し、「この制御対象を使う」でその値を制御対象に設定する。演習の番号が同じなら制御対象も同じ（例題に保存される）なので、クラス全員で同じ演習に取り組める',
+    ],
+  },
+  {
     v: '1.86.0',
     d: '2026-11-27',
     en: [

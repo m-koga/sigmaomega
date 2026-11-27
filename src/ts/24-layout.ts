@@ -22,6 +22,7 @@ import {
 } from './14-view.ts';
 import { diagMaxH, fitTex, renderComp, renderTune } from './17-panels.ts';
 import { redraw, scheduleRedraw } from './18-update.ts';
+import { drawExercise } from './19-controls.ts';
 import { applyPanels } from './23-tiles.ts';
 
 /* ===== Resizing display areas (drag) ===== */
@@ -200,6 +201,7 @@ export function setSideCard(key: string) {
   });
   if (key === 'tune') renderTune();
   if (key === 'comp') renderComp();
+  if (key === 'ex') drawExercise();
 }
 // Shows section key of area a (the first one when key is not one of its sections)
 export function setInfoTab(a: string, key: string | undefined) {

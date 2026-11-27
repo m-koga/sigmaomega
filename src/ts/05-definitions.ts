@@ -443,6 +443,7 @@ export const CARD_KEYS: string[] = [
   'tune',
   'comp',
   'sweep',
+  'ex',
   'scen',
   'compare',
 ];
@@ -455,6 +456,7 @@ export const CARD_GROUP: Record<string, string> = {
   spec: 'ana',
   tune: 'ana',
   comp: 'ana',
+  ex: 'ana',
   sweep: 'ana',
   scen: 'file',
   compare: 'file',
