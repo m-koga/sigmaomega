@@ -145,129 +145,143 @@ export function diagramParts(st: State = S): DiagramParts {
     two: PID_MODES.includes(st.mode) && (st.tdof || (st.dOnMeas && hasTerm(st, 'D'))),
   };
 }
-// The drawing for the parts: its SVG and width
-export function diagramSVG(p: DiagramParts): { svg: string; w: number } {
+// Pen of the block diagram: lines (with an arrow by default) and shapes, text, and the SVG of all of them;
+// part: the data-part of what is drawn only with a part of the loop (saturation, disturbance, noise)
+function diagramPen() {
   const L: string[] = [], // lines
     X: string[] = [], // text
-    line = (x1: number, y1: number, x2: number, y2: number, arrow = true, part = '') =>
-      L.push(
-        `<line${part ? ` data-part="${part}"` : ''} x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${arrow ? ' marker-end="url(#ar)"' : ''}/>`,
-      ),
-    poly = (pts: number[], arrow: boolean) =>
+    dp = (part: string) => (part ? ` data-part="${part}"` : '');
+  return {
+    line: (x1: number, y1: number, x2: number, y2: number, arrow = true, part = '') =>
+      L.push(`<line${dp(part)} x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${arrow ? ' marker-end="url(#ar)"' : ''}/>`),
+    poly: (pts: number[], arrow: boolean) =>
       L.push(`<polyline points="${pts.join(',')}"${arrow ? ' marker-end="url(#ar)"' : ''}/>`),
-    rect = (x: number, y: number, w: number, h: number, part = '') =>
-      L.push(`<rect${part ? ` data-part="${part}"` : ''} x="${x}" y="${y}" width="${w}" height="${h}" rx="4"/>`),
-    circle = (cx: number, cy: number, r: number, part = '') =>
-      L.push(`<circle${part ? ` data-part="${part}"` : ''} cx="${cx}" cy="${cy}" r="${r}"/>`),
-    text = (x: number, y: number, t: string, attrs = '') => X.push(`<text x="${x}" y="${y}"${attrs}>${t}</text>`),
-    it = ' font-style="italic"',
-    mid = ' text-anchor="middle"',
-    Y = 60, // top row
-    FB = 135; // feedback path
-  if (p.plant) {
-    // the plant alone: its input u, the plant and its output y, without the controller and the feedback
-    line(20, Y, 98, Y);
-    text(18, 50, 'u', it);
-    rect(100, 38, 100, 44);
-    text(150, 66, 'P(s)', mid + it);
-    text(150, 97, '', ' text-anchor="middle" font-size="11" fill="#666b75" id="lbl-Pnote"');
-    line(200, Y, 280, Y);
-    text(288, 65, 'y', it);
-    text(150, 22, T('Plant alone'), ' text-anchor="middle" font-size="11" fill="#666b75"');
-    const w = 310;
-    return {
-      w,
-      svg:
-        `<svg viewBox="0 0 ${w} ${DIAG_H}" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">` +
-        '<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
-        '<path d="M0,0 L10,5 L0,10 z" fill="#1b1d22"/></marker></defs>' +
-        `<g stroke="#1b1d22" stroke-width="1.6" fill="none">${L.join('')}</g>` +
-        `<g font-size="15" fill="#1b1d22">${X.join('')}</g></svg>`,
-    };
+    raw: (svg: string) => L.push(svg),
+    rect: (x: number, y: number, w: number, h: number, part = '') =>
+      L.push(`<rect${dp(part)} x="${x}" y="${y}" width="${w}" height="${h}" rx="4"/>`),
+    circle: (cx: number, cy: number, r: number, part = '') =>
+      L.push(`<circle${dp(part)} cx="${cx}" cy="${cy}" r="${r}"/>`),
+    text: (x: number, y: number, t: string, attrs = '') => X.push(`<text x="${x}" y="${y}"${attrs}>${t}</text>`),
+    // the whole drawing, w wide; dots: filled dots (branch points) drawn over the lines
+    svg: (w: number, dots = '') =>
+      `<svg viewBox="0 0 ${w} ${DIAG_H}" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">` +
+      '<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
+      '<path d="M0,0 L10,5 L0,10 z" fill="#1b1d22"/></marker></defs>' +
+      `<g stroke="#1b1d22" stroke-width="1.6" fill="none">${L.join('')}</g>` +
+      dots +
+      `<g font-size="15" fill="#1b1d22">${X.join('')}</g></svg>`,
+  };
+}
+type DiagramPen = ReturnType<typeof diagramPen>;
+const IT = ' font-style="italic"',
+  MID = ' text-anchor="middle"',
+  DIAG_Y = 60, // top row
+  DIAG_FB = 135; // feedback path
+// The plant alone: its input u, the plant and its output y, without the controller and the feedback
+function diagramPlantAlone(d: DiagramPen): { svg: string; w: number } {
+  d.line(20, DIAG_Y, 98, DIAG_Y);
+  d.text(18, 50, 'u', IT);
+  d.rect(100, 38, 100, 44);
+  d.text(150, 66, 'P(s)', MID + IT);
+  d.text(150, 97, '', ' text-anchor="middle" font-size="11" fill="#666b75" id="lbl-Pnote"');
+  d.line(200, DIAG_Y, 280, DIAG_Y);
+  d.text(288, 65, 'y', IT);
+  d.text(150, 22, T('Plant alone'), ' text-anchor="middle" font-size="11" fill="#666b75"');
+  return { w: 310, svg: d.svg(310) };
+}
+// From the reference r to the control input u (the same in both forms up to x = 283); returns where u starts
+function diagramController(d: DiagramPen, two: boolean): number {
+  const Y = DIAG_Y;
+  d.text(18, 50, 'r', IT);
+  if (two) {
+    d.line(20, Y, 58, Y);
+    d.rect(60, 38, 96, 44);
+    d.text(108, 66, 'C<tspan font-size="11" dy="4">r</tspan><tspan dy="-4">(s)</tspan>', MID + IT);
+    d.text(108, 26, '', ' text-anchor="middle" font-size="11" fill="#c62828" font-weight="700" id="lbl-2dof"');
+    d.line(156, Y, 190, Y);
+    d.circle(203, Y, 13);
+    d.text(184, 52, '+', ' font-size="12"');
+    d.text(208, 88, '−', ' font-size="14"');
+    d.text(250, 52, 'u', IT);
+    return 216;
   }
-  // reference to the control input u (the same in both forms up to x = 283)
-  text(18, 50, 'r', it);
-  if (p.two) {
-    line(20, Y, 58, Y);
-    rect(60, 38, 96, 44);
-    text(108, 66, 'C<tspan font-size="11" dy="4">r</tspan><tspan dy="-4">(s)</tspan>', mid + it);
-    text(108, 26, '', ' text-anchor="middle" font-size="11" fill="#c62828" font-weight="700" id="lbl-2dof"');
-    line(156, Y, 190, Y);
-    circle(203, Y, 13);
-    text(184, 52, '+', ' font-size="12"');
-    text(208, 88, '−', ' font-size="14"');
-    text(250, 52, 'u', it);
-  } else {
-    line(20, Y, 72, Y);
-    circle(85, Y, 13);
-    text(66, 52, '+', ' font-size="12"');
-    text(90, 88, '−', ' font-size="14"');
-    line(98, Y, 138, Y);
-    text(112, 52, 'e', it);
-    rect(140, 38, 100, 44);
-    text(190, 66, 'C(s)', mid + it);
-    text(258, 52, 'u', it);
-  }
-  // the top row after u: each part starts 44 (block) or 46 (summing point) after the previous one ends
-  let out = p.two ? 216 : 240,
-    next = 285; // left edge of the first part after u
+  d.line(20, Y, 72, Y);
+  d.circle(85, Y, 13);
+  d.text(66, 52, '+', ' font-size="12"');
+  d.text(90, 88, '−', ' font-size="14"');
+  d.line(98, Y, 138, Y);
+  d.text(112, 52, 'e', IT);
+  d.rect(140, 38, 100, 44);
+  d.text(190, 66, 'C(s)', MID + IT);
+  d.text(258, 52, 'u', IT);
+  return 240;
+}
+// The top row after u: the saturation and the disturbance when they are applied, then the plant and y. Each part
+// starts 44 (block) or 46 (summing point) after the previous one ends. Returns the left and right edges of P(s)
+function diagramForward(d: DiagramPen, p: DiagramParts, out: number): { pl: number; po: number } {
+  const Y = DIAG_Y;
+  let next = 285; // left edge of the first part after u
   if (p.sat) {
-    line(out, Y, next - 2, Y);
-    rect(next, 38, 64, 44, 'sat');
-    L.push(
+    d.line(out, Y, next - 2, Y);
+    d.rect(next, 38, 64, 44, 'sat');
+    d.raw(
       `<polyline data-part="sat" points="${next + 10},72 ${next + 22},72 ${next + 42},48 ${next + 54},48" stroke-width="1.4"/>`,
     );
-    text(next + 32, 31, T('Saturation'), ' text-anchor="middle" font-size="11" fill="#666b75" data-part="sat"');
+    d.text(next + 32, 31, T('Saturation'), ' text-anchor="middle" font-size="11" fill="#666b75" data-part="sat"');
     out = next + 64;
     next = out + 46;
   }
   if (p.d) {
     const cx = next + 13;
-    line(out, Y, next, Y);
-    line(cx, 12, cx, 45, true, 'd');
-    circle(cx, Y, 13, 'd');
-    text(cx + 7, 14, 'd', it + ' data-part="d"');
+    d.line(out, Y, next, Y);
+    d.line(cx, 12, cx, 45, true, 'd');
+    d.circle(cx, Y, 13, 'd');
+    d.text(cx + 7, 14, 'd', IT + ' data-part="d"');
     out = cx + 13;
     next = out + 44;
   } else if (p.sat) next = out + 44;
-  line(out, Y, next - 2, Y);
-  const pl = next, // the plant
-    po = pl + 100,
-    br = po + 35; // branch point of the feedback
-  rect(pl, 38, 100, 44);
-  text(pl + 50, 66, 'P(s)', mid + it);
-  text(pl + 50, 97, '', ' text-anchor="middle" font-size="11" fill="#666b75" id="lbl-Pnote"');
-  line(po, Y, po + 80, Y);
-  text(po + 88, 65, 'y', it);
-  const fbEnd = p.two ? 342 : 85; // where the feedback path ends on the left (the right edge of C(s), or e)
-  // the feedback path: from the branch point down and to the left, through the noise
+  d.line(out, Y, next - 2, Y);
+  const pl = next,
+    po = pl + 100;
+  d.rect(pl, 38, 100, 44);
+  d.text(pl + 50, 66, 'P(s)', MID + IT);
+  d.text(pl + 50, 97, '', ' text-anchor="middle" font-size="11" fill="#666b75" id="lbl-Pnote"');
+  d.line(po, Y, po + 80, Y);
+  d.text(po + 88, 65, 'y', IT);
+  return { pl, po };
+}
+// The feedback path: from the branch point br down and to the left, through the noise, to e (or, in the 2-DOF
+// form, through C(s) to the summing point after C_r(s)); pl: the left edge of P(s)
+function diagramFeedback(d: DiagramPen, p: DiagramParts, br: number, pl: number) {
+  const Y = DIAG_Y,
+    FB = DIAG_FB,
+    fbEnd = p.two ? 342 : 85; // where the feedback path ends on the left (the right edge of C(s), or e)
   let from = br;
-  poly([br, Y, br, FB], false);
+  d.poly([br, Y, br, FB], false);
   if (p.n) {
     const cx = Math.max(pl - 47, p.two ? 384 : 140);
-    line(br, FB, cx + 12, FB, false);
-    circle(cx, FB, 12, 'n');
-    line(cx, 162, cx, 149, true, 'n');
-    text(cx + 8, 162, 'n', it + ' data-part="n"');
+    d.line(br, FB, cx + 12, FB, false);
+    d.circle(cx, FB, 12, 'n');
+    d.line(cx, 162, cx, 149, true, 'n');
+    d.text(cx + 8, 162, 'n', IT + ' data-part="n"');
     from = cx - 12;
   }
   if (p.two) {
-    line(from, FB, fbEnd, FB);
-    rect(244, 115, 96, 40);
-    text(292, 140, 'C(s)', mid + it);
-    poly([244, FB, 203, FB, 203, 75], true);
-  } else poly([from, FB, 85, FB, 85, 75], true);
+    d.line(from, FB, fbEnd, FB);
+    d.rect(244, 115, 96, 40);
+    d.text(292, 140, 'C(s)', MID + IT);
+    d.poly([244, FB, 203, FB, 203, 75], true);
+  } else d.poly([from, FB, 85, FB, 85, 75], true);
+}
+// The drawing for the parts: its SVG and width
+export function diagramSVG(p: DiagramParts): { svg: string; w: number } {
+  const d = diagramPen();
+  if (p.plant) return diagramPlantAlone(d);
+  const { pl, po } = diagramForward(d, p, diagramController(d, p.two)),
+    br = po + 35; // branch point of the feedback
+  diagramFeedback(d, p, br, pl);
   const w = po + 115;
-  return {
-    w,
-    svg:
-      `<svg viewBox="0 0 ${w} ${DIAG_H}" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">` +
-      '<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">' +
-      '<path d="M0,0 L10,5 L0,10 z" fill="#1b1d22"/></marker></defs>' +
-      `<g stroke="#1b1d22" stroke-width="1.6" fill="none">${L.join('')}</g>` +
-      `<circle cx="${br}" cy="${Y}" r="3" fill="#1b1d22"/>` +
-      `<g font-size="15" fill="#1b1d22">${X.join('')}</g></svg>`,
-  };
+  return { w, svg: d.svg(w, `<circle cx="${br}" cy="${DIAG_Y}" r="3" fill="#1b1d22"/>`) };
 }
 let diagKey = '';
 // Draws the block diagram again when its parts or the language changed, then its labels
@@ -845,15 +859,10 @@ export function scheduleSSE() {
 // The panel: the system type and the error constants of L(s), the steady-state errors to a step, ramp and parabola
 // of the reference and to a step disturbance (from the series of 1 − G_yr(s) and G_yd(s) at s = 0), beside the
 // error at the end of the simulation
-export function renderSSE() {
-  const box = byId('sseBox'),
-    k = errorConstants(),
-    e = steadyErrors(),
-    pz = lastPZ,
-    stable = !!e && !!pz && pz.cl.every(z => z[0] < 0),
-    sim = lastSim && !lastSim.diverged ? lastSim : null,
-    cur = SSE_ROW[S.refType] ?? -1;
-  // L(s) near s = 0
+type ErrorConstants = ReturnType<typeof errorConstants>;
+type SteadyErrors = ReturnType<typeof steadyErrors>;
+// The system type of L(s), its approximation near s = 0 and the table of the error constants
+function sseConstantsHTML(k: ErrorConstants): string {
   const near = k.zeroAtOrigin
     ? T('L(s) has a zero at the origin: L(0) = 0, so every error constant is 0.')
     : k.type === 0
@@ -878,8 +887,18 @@ export function renderSSE() {
       )
       .join('') +
     '</table>';
-  // the errors from the constants (textbook formulas) and from 1 − G_yr(s)
-  const book = [1 / (1 + k.Kp), k.Kv === 0 ? Infinity : 1 / k.Kv, k.Ka === 0 ? Infinity : 1 / k.Ka],
+  return `<p>${near}</p>${approx}${ctab}`;
+}
+// The table of the errors to a step, ramp and parabola of the reference: from 1 − G_yr(s) (and from the constants,
+// the textbook formulas, when they differ: with set-point weights), for the current amplitude, and in the
+// simulation (the row of the current reference). differ: the formulas do not hold
+function sseReferenceTable(
+  k: ErrorConstants,
+  e: SteadyErrors,
+  sim: SimResult | null,
+): { html: string; differ: boolean } {
+  const cur = SSE_ROW[S.refType] ?? -1,
+    book = [1 / (1 + k.Kp), k.Kv === 0 ? Infinity : 1 / k.Kv, k.Ka === 0 ? Infinity : 1 / k.Ka],
     same = (a: number, b: number) => a === b || Math.abs(a - b) <= 1e-9 * (1 + Math.abs(b)),
     differ = !!e && e.ref.some((v, i) => !same(v, book[i])),
     eRef = (i: number) => (e ? e.ref[i] : NaN);
@@ -894,7 +913,7 @@ export function renderSSE() {
     ['ramp', 'r(t)=v\\,t', 'e_{ss}=\\dfrac{v}{K_v}'],
     ['parab', 'r(t)=\\tfrac{a}{2}t^2', 'e_{ss}=\\dfrac{a}{K_a}'],
   ];
-  const rtab =
+  const html =
     `<table class="pzt"><tr><th>${T('Reference')}</th><th>${T('Unit input')}</th>` +
     `<th>${T('Current setting')}</th><th>${T('Simulation')}</th></tr>` +
     refs
@@ -908,7 +927,11 @@ export function renderSSE() {
       })
       .join('') +
     '</table>';
-  // the step disturbance at the plant input
+  return { html, differ };
+}
+// The table of the error to a step disturbance at the plant input: per unit, for the current d, and its change
+// after the disturbance in the simulation
+function sseDisturbanceTable(e: SteadyErrors, sim: SimResult | null): string {
   const dOn = S.dOn && S.td < S.Tsim;
   let dSim = '—';
   if (sim && dOn) {
@@ -916,15 +939,14 @@ export function renderSSE() {
       n = sim.T.length - 1;
     dSim = `${numStr(sim.R[n] - sim.Y[n] - (sim.R[w.last] - sim.Y[w.last]))}<br><small>t = ${numStr(sim.T[n])} s</small>`;
   }
-  const dtab =
+  return (
     `<table class="pzt"><tr><th>${T('Unit input')}</th><th>${T('Current setting')}</th><th>${T('Simulation')}</th></tr>` +
-    `<tr><td class="fc">${e ? infStr(e.dist) : '—'}</td><td>${e && dOn ? `${infStr(e.dist * S.d)}<br><small>d = ${numStr(S.d)}</small>` : T('(no disturbance)')}</td><td>${dOn ? dSim : ''}</td></tr></table>`;
-  const warn = !e
-    ? `<p class="verdict bad">${T('The closed loop has a pole at the origin: the error does not settle.')}</p>`
-    : !stable
-      ? `<p class="verdict bad">${T('The closed loop is unstable: the error does not settle, and these values do not apply.')}</p>`
-      : '';
-  const notes = [
+    `<tr><td class="fc">${e ? infStr(e.dist) : '—'}</td><td>${e && dOn ? `${infStr(e.dist * S.d)}<br><small>d = ${numStr(S.d)}</small>` : T('(no disturbance)')}</td><td>${dOn ? dSim : ''}</td></tr></table>`
+  );
+}
+// The notes under the tables: what differs from the textbook formulas and from the simulation
+function sseNotesHTML(differ: boolean, pz: PZResult | null): string {
+  return [
     differ
       ? T(
           'With set-point weights the controller acts on the reference as C_r(s), not on e = r − y: the formulas with K_p, K_v and K_a do not hold. The errors shown are found from E(s)/R(s) = 1 − G_yr(s) (the values of the formulas in small type).',
@@ -944,15 +966,29 @@ export function renderSSE() {
     .filter(Boolean)
     .map(t => `<p class="note">${t}</p>`)
     .join('');
+}
+export function renderSSE() {
+  const box = byId('sseBox'),
+    k = errorConstants(),
+    e = steadyErrors(),
+    pz = lastPZ,
+    stable = !!e && !!pz && pz.cl.every(z => z[0] < 0),
+    sim = lastSim && !lastSim.diverged ? lastSim : null,
+    ref = sseReferenceTable(k, e, sim);
+  const warn = !e
+    ? `<p class="verdict bad">${T('The closed loop has a pole at the origin: the error does not settle.')}</p>`
+    : !stable
+      ? `<p class="verdict bad">${T('The closed loop is unstable: the error does not settle, and these values do not apply.')}</p>`
+      : '';
   box.innerHTML =
     warn +
     `<h4>${T('System type and error constants')}</h4>` +
-    `<p>${near}</p>${approx}${ctab}` +
+    sseConstantsHTML(k) +
     `<h4>${T('Steady-state error to the reference')}</h4>` +
-    `<p>\\(e(t)=r(t)-y(t),\\quad e_{ss}=\\lim_{t\\to\\infty}e(t)=\\lim_{s\\to 0}sE(s)\\)</p>${rtab}` +
+    `<p>\\(e(t)=r(t)-y(t),\\quad e_{ss}=\\lim_{t\\to\\infty}e(t)=\\lim_{s\\to 0}sE(s)\\)</p>${ref.html}` +
     `<h4>${T('Steady-state error to a step disturbance')}</h4>` +
-    `<p>${T('A step disturbance d at the plant input:')} \\(e_{ss}=-d\\lim_{s\\to 0}G_{yd}(s),\\ G_{yd}(s)=\\dfrac{P(s)}{1+L(s)}\\). ${T('An integrator in the controller C(s) removes this error; one in the plant P(s) does not.')}</p>${dtab}` +
-    notes;
+    `<p>${T('A step disturbance d at the plant input:')} \\(e_{ss}=-d\\lim_{s\\to 0}G_{yd}(s),\\ G_{yd}(s)=\\dfrac{P(s)}{1+L(s)}\\). ${T('An integrator in the controller C(s) removes this error; one in the plant P(s) does not.')}</p>${sseDisturbanceTable(e, sim)}` +
+    sseNotesHTML(ref.differ, pz);
   if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([box]).catch(() => {});
 }
 /* ---- Design specifications: rows of the card and their results ---- */
@@ -1060,64 +1096,50 @@ export let lastComp: CompDesign | null = null;
 export function compVisible() {
   return layout.scard === 'comp'; // the card shown in the settings panel
 }
-export function renderComp() {
-  const box = byId('compOut');
-  // the card is built after the layout is restored at startup; update() renders it then
-  if (!box || !compVisible()) {
-    lastComp = null;
-    return;
-  } // computed only while its card is shown
-  const c = S.comp,
-    d = (lastComp = compDesign(c)),
-    n = numStr,
-    lead = c.method === 'lead',
-    ll = c.method === 'leadlag',
+type CompSettings = State['comp'];
+// The steps of a lead-lag design: the new crossover ωc, the phase to add there, then the lead (α, T₁) and the lag
+// (β, T₂)
+function compStepsLeadLag(c: CompSettings, d: CompDesign): string[] {
+  const n = numStr,
     steps: string[] = [];
+  if (d.wc === undefined) return steps;
   steps.push(
-    d.pm0 === null
-      ? T('With K_c = {k}, |K_c P(jω)| does not cross 0 dB (no gain crossover).', { k: n(c.kc) })
-      : T(
-          'With K_c = {k} (chosen for the steady-state error), K_c P(s) has the gain crossover ω = {w} rad/s and the phase margin {pm}°.',
-          {
-            k: n(c.kc),
-            w: n(d.wgc0!),
-            pm: n(d.pm0),
-          },
-        ),
+    T(
+      d.wcAuto
+        ? 'New crossover ωc = {w} rad/s, where the phase of K_c P(jω) is −180° (the phase crossover); there |K_c P| = {db} dB'
+        : 'New crossover ωc = {w} rad/s (given); there |K_c P| = {db} dB and its phase is {p}°',
+      { w: n(d.wc), db: n(d.gcDb!), p: n(d.phc!) },
+    ),
   );
-  if (ll && d.wc !== undefined) {
+  if (d.phiM !== undefined)
     steps.push(
-      T(
-        d.wcAuto
-          ? 'New crossover ωc = {w} rad/s, where the phase of K_c P(jω) is −180° (the phase crossover); there |K_c P| = {db} dB'
-          : 'New crossover ωc = {w} rad/s (given); there |K_c P| = {db} dB and its phase is {p}°',
-        { w: n(d.wc), db: n(d.gcDb!), p: n(d.phc!) },
-      ),
+      T('Phase to add at ωc: φm = PM* + θ − (180° + ∠K_c P(jωc)) = {a} + {c} − ({s}) = {p}°', {
+        a: n(c.pm),
+        c: n(c.theta),
+        s: n(180 + d.phc!),
+        p: n(d.phiM),
+      }),
     );
-    if (d.phiM !== undefined)
-      steps.push(
-        T('Phase to add at ωc: φm = PM* + θ − (180° + ∠K_c P(jωc)) = {a} + {c} − ({s}) = {p}°', {
-          a: n(c.pm),
-          c: n(c.theta),
-          s: n(180 + d.phc!),
-          p: n(d.phiM),
-        }),
-      );
-    if (d.alpha !== undefined) steps.push(T('α = (1 − sin φm)/(1 + sin φm) = {a}', { a: n(d.alpha) }));
-    if (d.T1 !== undefined)
-      steps.push(
-        T('T₁ = 1/(ωc √α) = {t} s (the largest phase lead at ωc, raising the gain by 1/√α there)', { t: n(d.T1) }),
-      );
-    if (d.beta !== undefined)
-      steps.push(
-        T('β = |K_c P(jωc)|/√α = {b}: the lag lowers the gain by 1/β, so that ωc becomes the gain crossover', {
-          b: n(d.beta),
-        }),
-      );
-    if (d.T2 !== undefined)
-      steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
-  }
-  if (lead && d.phiM !== undefined)
+  if (d.alpha !== undefined) steps.push(T('α = (1 − sin φm)/(1 + sin φm) = {a}', { a: n(d.alpha) }));
+  if (d.T1 !== undefined)
+    steps.push(
+      T('T₁ = 1/(ωc √α) = {t} s (the largest phase lead at ωc, raising the gain by 1/√α there)', { t: n(d.T1) }),
+    );
+  if (d.beta !== undefined)
+    steps.push(
+      T('β = |K_c P(jωc)|/√α = {b}: the lag lowers the gain by 1/β, so that ωc becomes the gain crossover', {
+        b: n(d.beta),
+      }),
+    );
+  if (d.T2 !== undefined)
+    steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
+  return steps;
+}
+// The steps of a lead design: the phase to add, α, the new crossover ωm and T₁
+function compStepsLead(c: CompSettings, d: CompDesign): string[] {
+  const n = numStr,
+    steps: string[] = [];
+  if (d.phiM !== undefined)
     steps.push(
       T('Phase to add: φm = PM* − PM + θ = {a} − {b} + {c} = {p}°', {
         a: n(c.pm),
@@ -1126,8 +1148,8 @@ export function renderComp() {
         p: n(d.phiM),
       }),
     );
-  if (lead && d.alpha !== undefined) steps.push(T('α = (1 − sin φm)/(1 + sin φm) = {a}', { a: n(d.alpha) }));
-  if (lead && d.wm !== undefined)
+  if (d.alpha !== undefined) steps.push(T('α = (1 − sin φm)/(1 + sin φm) = {a}', { a: n(d.alpha) }));
+  if (d.wm !== undefined)
     steps.push(
       T(
         'The lead raises the gain by 1/√α at ωm, so the new crossover is where |K_c P(jω)| = √α ({db} dB): ωm = {w} rad/s',
@@ -1137,23 +1159,34 @@ export function renderComp() {
         },
       ),
     );
-  if (lead && d.T1 !== undefined) steps.push(T('T₁ = 1/(ωm √α) = {t} s', { t: n(d.T1) }));
-  if (c.method === 'lag' && d.phiT !== undefined && d.wg !== undefined)
+  if (d.T1 !== undefined) steps.push(T('T₁ = 1/(ωm √α) = {t} s', { t: n(d.T1) }));
+  return steps;
+}
+// The steps of a lag design: the new crossover, β and T₂
+function compStepsLag(d: CompDesign): string[] {
+  const n = numStr,
+    steps: string[] = [];
+  if (d.phiT !== undefined && d.wg !== undefined)
     steps.push(
       T('New crossover where the phase of K_c P(jω) is −180° + PM* + θ = {p}°: ω = {w} rad/s', {
         p: n(d.phiT),
         w: n(d.wg),
       }),
     );
-  if (c.method === 'lag' && d.beta !== undefined)
+  if (d.beta !== undefined)
     steps.push(
       T('β = |K_c P(jω)| there = {b} ({db} dB): the lag lowers the gain by 1/β', {
         b: n(d.beta),
         db: n(20 * Math.log10(d.beta)),
       }),
     );
-  if (c.method === 'lag' && d.T2 !== undefined)
+  if (d.T2 !== undefined)
     steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
+  return steps;
+}
+// Why no compensator was designed, or the phase margin it gives
+function compOutcomeHTML(c: CompSettings, d: CompDesign): string {
+  const n = numStr;
   const err = d.err
     ? `<p class="err">${T(
         {
@@ -1174,7 +1207,35 @@ export function renderComp() {
             : T('phase margin {pm}° at ω = {w} rad/s', { pm: n(d.pm), w: n(d.wgc!) })
         }${d.pm !== null && d.pm < c.pm - 0.5 ? ` <span class="err">${T('(short of the target: increase θ and design again)')}</span>` : ''}</p>`
       : '';
-  box.innerHTML = `<ol class="comp-steps">${steps.map(s => `<li>${s.replace(/K_c/g, 'K<sub>c</sub>')}</li>`).join('')}</ol>${err}${res}`;
+  return err + res;
+}
+export function renderComp() {
+  const box = byId('compOut');
+  // the card is built after the layout is restored at startup; update() renders it then
+  if (!box || !compVisible()) {
+    lastComp = null;
+    return;
+  } // computed only while its card is shown
+  const c = S.comp,
+    d = (lastComp = compDesign(c)),
+    n = numStr,
+    steps: string[] = [];
+  steps.push(
+    d.pm0 === null
+      ? T('With K_c = {k}, |K_c P(jω)| does not cross 0 dB (no gain crossover).', { k: n(c.kc) })
+      : T(
+          'With K_c = {k} (chosen for the steady-state error), K_c P(s) has the gain crossover ω = {w} rad/s and the phase margin {pm}°.',
+          {
+            k: n(c.kc),
+            w: n(d.wgc0!),
+            pm: n(d.pm0),
+          },
+        ),
+  );
+  if (c.method === 'leadlag') steps.push(...compStepsLeadLag(c, d));
+  if (c.method === 'lead') steps.push(...compStepsLead(c, d));
+  if (c.method === 'lag') steps.push(...compStepsLag(d));
+  box.innerHTML = `<ol class="comp-steps">${steps.map(s => `<li>${s.replace(/K_c/g, 'K<sub>c</sub>')}</li>`).join('')}</ol>${compOutcomeHTML(c, d)}`;
   $('compApply').disabled = d.err !== undefined;
 }
 /* ---- Parameter sweep: its inputs and the table of results ---- */

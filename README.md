@@ -98,7 +98,7 @@ They check the following (`tests/` folder).
 | `publish-edits.test.ts` | Publishing as text replacements (`scripts/publish-edits.ts`): the edits give the new page, each old text unique when applied (also for a line that occurs many times, at the first and last lines), scattered changes merged into at most 64 edits, the lines read back after publishing (changed, around deleted lines, samples of long regions); the compact page script drops only blanks, keeps the lines, has no long runs of spaces and compiles |
 | `help.test.ts` | The user manual: every figure and table has an id and a caption and is referred to in the text, every reference has its target, and the English and Japanese texts have the same figures and tables in the same sections |
 | `pages.test.ts` | The GitHub Pages files (`scripts/pages.ts`): the page differs from `index.html` only by the manifest link and the theme colour, and the manifest names the app and icons that exist with the right sizes |
-| `modules.test.ts` | The layers of `src/ts`: a file imports only from files with a lower number (so there are no cycles), and the computing files 01–12 do not touch the page |
+| `modules.test.ts` | The layers of `src/ts`: a file imports only from files with a lower number (so there are no cycles), and the computing files 01–12 do not touch the page; no function is longer than 80 lines |
 | `license-headers.test.ts` | Every source file starts with the SPDX license identifier and the copyright line |
 | `tutorial.test.ts` | The numbers quoted in the user manual's chapter "Trying the exercises": each step of the four exercises (manual tuning, tuning rules, the sweep of K_I, set-point weights, stabilizing an unstable plant) gives the values the manual states |
 | `performance.test.ts` | Time efficiency (PERFORMANCE.md): the root locus and the stable gain ranges, the root finding with large poles, the simulation with the most time steps and a sweep of 8 values stay far below the time they took before they were made faster |
@@ -202,7 +202,7 @@ npm run typecheck   # type-check src/ts, the build scripts and the tests with Ty
 npm run format   # format the TypeScript files with Prettier (npm run format:check only checks)
 npm test         # build, type-check, then run the automated tests
 npm run docs     # build, then generate CHANGELOG.md and CHANGELOG.ja.md
-npm run pixcmp -- old.html   # compare the plots and metrics of an older build with index.html pixel by pixel
+npm run pixcmp -- old.html   # compare the plots, metrics, analysis panels and block diagram of an older build with index.html exactly
 npm run accuracy # compare the results with exact solutions and print the tables of ACCURACY.md (about 30 s)
 npm run performance # measure the times in Chrome and print the tables of PERFORMANCE.md (about 8 minutes)
 npm run edits -- 1.62.1      # text replacements from the published version 1.62.1 to index.html (/tmp/publish-edits.json),
@@ -245,6 +245,8 @@ A lower file never calls a higher one: rendering does not call `update()`, and w
 - The layout (`layout`, `14-view.ts`; applied by `24-layout.ts`) is separate from the settings: it is saved in the browser and can be saved with a scenario.
 - Colours of the plots are in `COLORS` at the top of `14-view.ts`, named by role (`output`, `alert`, `spec`, ...).
 - Common changes: a plant, a controller, a parameter, a tuning rule, a plot, a design specification or a language → see [Adding plants, controllers, tuning rules, plots, specifications and languages](#adding-plants-controllers-tuning-rules-plots-specifications-and-languages); a UI string → write it in English with `T('…')` and add its translations to `src/i18n.json`; an element with an id → `npm run build` updates the element types.
+- A function is at most 80 lines long (`tests/modules.test.ts`): a longer one is split into named parts, each with a comment saying what it does (for example `drawBode` uses `bodeAsymCurves`, `bodeGainRange`, `bodePhaseRange` and `bodeNoteHTML`). Event handlers of more than a few lines are named functions too, assigned in the `build…()` function of their card.
+- A refactoring that should not change what is shown is checked with `npm run pixcmp` against the previous build: it compares every canvas, the text of the metrics and of the analysis panels (Routh table, steady-state errors, Bode asymptotes, Nyquist criterion, root-locus rules, tuning and compensator cards for each method) and the block diagram for every combination of its parts.
 - Unused variables and parameters are type errors (`noUnusedLocals`, `noUnusedParameters`); a parameter that must stay can be named with a leading underscore (`_t`).
 
 ### Adding plants, controllers, tuning rules, plots, specifications and languages

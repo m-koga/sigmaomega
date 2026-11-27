@@ -710,6 +710,83 @@ function resetExercise() {
 }
 // The true values of the current exercise
 const exTrue = (): [number, number, number] => (exBode() ? exFreq().v : stepVals(exPlant()));
+// "Check": the estimates typed in, each against the true value (within 10 %)
+function checkExercise() {
+  const e: [number, number, number] = [
+      parseFloat($('exK').value),
+      parseFloat($('exT').value),
+      parseFloat($('exL').value),
+    ],
+    deadTime = !exBode() || exFreq().kind === 'dead';
+  if (!e.every(isFinite) || e[0] <= 0 || e[1] <= 0 || (deadTime ? e[2] < 0 : e[2] <= 0)) {
+    $('exOut').innerHTML = `<span class="err">${T(exText().invalid)}</span>`;
+    return;
+  }
+  const c = exBode() ? freqExCheck(exFreq(), e) : exerciseCheck(exPlant(), stepPlant(e)),
+    ok = 'est' in c ? c.ok : [c.ok.K, c.ok.T, c.ok.L],
+    err = 'est' in c ? c.err : [c.err.K, c.err.T, c.err.L],
+    names = exText().sym,
+    n = ok.filter(Boolean).length;
+  exEst = 'est' in c ? c.est : e;
+  $('exOut').innerHTML =
+    names.map((nm, i) => `${nm}: ${ok[i] ? '✓' : '✗'} ${T('error {e} %', { e: numStr(100 * err[i]) })}`).join('<br>') +
+    `<br><b>${n === 3 ? T('All three within 10 %: well done!') : T('{n} of 3 within 10 %.', { n })}</b>`;
+  drawExercise();
+}
+// "Show the answer": the true values (the plant can then be used)
+function showExerciseAnswer() {
+  const [a, b, c] = exTrue();
+  exShown = true;
+  $('exUse').disabled = false;
+  $('exOut').innerHTML =
+    (exEst ? $('exOut').innerHTML + '<br>' : '') + T(exText().answer, { a: numStr(a), b: numStr(b), c: numStr(c) });
+}
+// "Use this plant": the true plant of the exercise becomes the plant of the simulator
+function useExercisePlant() {
+  const [a, b, c] = exTrue(),
+    kind = exBode() ? exFreq().kind : 'dead';
+  if (kind === 'lags') {
+    S.plant = 'custom';
+    S.cNumStr = numStr(a);
+    S.cDenStr = `(${numStr(b)}s+1)(${numStr(c)}s+1)`;
+    S.cNum = parsePoly(S.cNumStr);
+    S.cDen = parsePoly(S.cDenStr);
+    S.cUnstable = false;
+    buildPlant();
+    S.L = 0;
+  } else if (kind === 'second') {
+    S.plant = 'second';
+    S.K = a;
+    S.wn = b;
+    S.zeta = c;
+  } else {
+    S.plant = 'dead';
+    S.K = a;
+    S.T = b;
+    S.L = c;
+  }
+  buildPlant();
+  renderTeX();
+  update();
+}
+// The values under the mouse on the plot of the exercise
+function readExercise(cv: HTMLCanvasElement, e: MouseEvent) {
+  const t = cv._tf;
+  if (!t) return;
+  const f = (e.offsetX - t.m.l) / t.pw;
+  if (f < 0 || f > 1) {
+    $('exRead').textContent = '';
+    return;
+  }
+  if (exBode()) {
+    const w = t.xmin * (t.xmax / t.xmin) ** f,
+      r = freqExResponse(exFreq(), w);
+    $('exRead').textContent = `ω = ${numStr(w)} rad/s,  ${numStr(r.db)} dB,  ${numStr(r.ph)}°`;
+  } else {
+    const x = t.xmin + f * (t.xmax - t.xmin);
+    $('exRead').textContent = `t = ${numStr(x)} s,  y = ${numStr(fopdtStep(exPlant(), x))}`;
+  }
+}
 export function buildExercise() {
   $('exN').value = String(S.ex.n);
   $('exUse').disabled = !exShown;
@@ -727,85 +804,12 @@ export function buildExercise() {
     S.ex.n = 1 + Math.floor(Math.random() * 9999);
     resetExercise();
   };
-  $('exCheck').onclick = () => {
-    const e: [number, number, number] = [
-        parseFloat($('exK').value),
-        parseFloat($('exT').value),
-        parseFloat($('exL').value),
-      ],
-      deadTime = !exBode() || exFreq().kind === 'dead';
-    if (!e.every(isFinite) || e[0] <= 0 || e[1] <= 0 || (deadTime ? e[2] < 0 : e[2] <= 0)) {
-      $('exOut').innerHTML = `<span class="err">${T(exText().invalid)}</span>`;
-      return;
-    }
-    const c = exBode() ? freqExCheck(exFreq(), e) : exerciseCheck(exPlant(), stepPlant(e)),
-      ok = 'est' in c ? c.ok : [c.ok.K, c.ok.T, c.ok.L],
-      err = 'est' in c ? c.err : [c.err.K, c.err.T, c.err.L],
-      names = exText().sym,
-      n = ok.filter(Boolean).length;
-    exEst = 'est' in c ? c.est : e;
-    $('exOut').innerHTML =
-      names
-        .map((nm, i) => `${nm}: ${ok[i] ? '✓' : '✗'} ${T('error {e} %', { e: numStr(100 * err[i]) })}`)
-        .join('<br>') +
-      `<br><b>${n === 3 ? T('All three within 10 %: well done!') : T('{n} of 3 within 10 %.', { n })}</b>`;
-    drawExercise();
-  };
-  $('exShow').onclick = () => {
-    const [a, b, c] = exTrue();
-    exShown = true;
-    $('exUse').disabled = false;
-    $('exOut').innerHTML =
-      (exEst ? $('exOut').innerHTML + '<br>' : '') + T(exText().answer, { a: numStr(a), b: numStr(b), c: numStr(c) });
-  };
-  $('exUse').onclick = () => {
-    const [a, b, c] = exTrue(),
-      kind = exBode() ? exFreq().kind : 'dead';
-    if (kind === 'lags') {
-      S.plant = 'custom';
-      S.cNumStr = numStr(a);
-      S.cDenStr = `(${numStr(b)}s+1)(${numStr(c)}s+1)`;
-      S.cNum = parsePoly(S.cNumStr);
-      S.cDen = parsePoly(S.cDenStr);
-      S.cUnstable = false;
-      buildPlant();
-      S.L = 0;
-    } else if (kind === 'second') {
-      S.plant = 'second';
-      S.K = a;
-      S.wn = b;
-      S.zeta = c;
-    } else {
-      S.plant = 'dead';
-      S.K = a;
-      S.T = b;
-      S.L = c;
-    }
-    buildPlant();
-    renderTeX();
-    update();
-  };
-  // the values under the mouse
-  const read = (cv: HTMLCanvasElement) => (e: MouseEvent) => {
-    const t = cv._tf;
-    if (!t) return;
-    const f = (e.offsetX - t.m.l) / t.pw;
-    if (f < 0 || f > 1) {
-      $('exRead').textContent = '';
-      return;
-    }
-    if (exBode()) {
-      const w = t.xmin * (t.xmax / t.xmin) ** f,
-        r = freqExResponse(exFreq(), w);
-      $('exRead').textContent = `ω = ${numStr(w)} rad/s,  ${numStr(r.db)} dB,  ${numStr(r.ph)}°`;
-    } else {
-      const x = t.xmin + f * (t.xmax - t.xmin);
-      $('exRead').textContent = `t = ${numStr(x)} s,  y = ${numStr(fopdtStep(exPlant(), x))}`;
-    }
-  };
+  $('exCheck').onclick = checkExercise;
+  $('exShow').onclick = showExerciseAnswer;
+  $('exUse').onclick = useExercisePlant;
   (['cvEx', 'cvEx2'] as const).forEach(id => {
     const cv = $(id);
-    cv.onmousemove = read(cv);
+    cv.onmousemove = e => readExercise(cv, e);
     cv.onmouseleave = () => ($('exRead').textContent = '');
   });
 }

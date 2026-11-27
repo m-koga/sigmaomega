@@ -477,40 +477,35 @@ function loopAt(g: LoopTF, s: Complex): Complex {
       : [1, 0];
   return cdiv(cmul(n, e), polyval(g.den0, s));
 }
-export function nyquistCount(st: State = S): NyquistCount | null {
-  const g = loopTFs(st).L;
-  if (g.num.every(v => v === 0)) return null;
-  const poles = groupRoots(polyRoots(g.den0)),
-    zeros = polyRoots(g.num),
-    size = Math.max(1, ...poles.map(p => Math.hypot(p.z[0], p.z[1])), ...zeros.map(z => Math.hypot(z[0], z[1]))),
-    tolRe = 1e-7 * size,
-    rhp = poles.filter(p => p.z[0] > tolRe).flatMap(p => Array<Complex>(p.mult).fill(p.z)),
-    onAxis = poles.filter(p => Math.abs(p.z[0]) <= tolRe),
-    axis = onAxis.filter(p => p.z[1] >= 0).map(p => ({ w: p.z[1], mult: p.mult }));
-  // the contour as pieces s(t): the imaginary axis between the half circles (ω = c sinh t: dense near 0 and spread
-  // over decades), and the half circles of radius ε around the poles on the axis
-  const W = 1e4 * size,
-    c = 1e-3 * Math.min(1, ...poles.concat(zeros.map(z => ({ z, mult: 1 }))).map(p => Math.hypot(p.z[0], p.z[1]) || 1)),
-    ws = onAxis.map(p => p.z[1]).sort((a, b) => a - b),
-    sing = [...poles.map(p => p.z), ...zeros],
-    eps = ws.map(w =>
-      Math.min(
-        1e-4 * (1 + Math.abs(w)),
-        ...sing
-          .map(z => Math.hypot(z[0], z[1] - w))
-          .filter(d => d > 1e-9)
-          .map(d => d / 10),
-      ),
-    );
-  const pieces: { f: (t: number) => Complex; t0: number; t1: number; arc: number | null }[] = [];
+/** A piece s(t), t0 ≤ t ≤ t1, of the Nyquist contour; arc: ω of the pole it goes around, or null on the axis */
+interface ContourPiece {
+  f: (t: number) => Complex;
+  t0: number;
+  t1: number;
+  arc: number | null;
+}
+// The Nyquist contour up to |ω| = W: the imaginary axis between half circles of radius ε to the right of the poles
+// on the axis (ws: their ω), the axis as ω = c sinh t (dense near 0 and spread over decades)
+function nyquistContour(ws: number[], sing: Complex[], c: number, W: number): ContourPiece[] {
+  const eps = ws.map(w =>
+    Math.min(
+      1e-4 * (1 + Math.abs(w)),
+      ...sing
+        .map(z => Math.hypot(z[0], z[1] - w))
+        .filter(d => d > 1e-9)
+        .map(d => d / 10),
+    ),
+  );
+  const axis = (a: number, b: number): ContourPiece => ({
+    f: t => [0, c * Math.sinh(t)],
+    t0: Math.asinh(a / c),
+    t1: Math.asinh(b / c),
+    arc: null,
+  });
+  const pieces: ContourPiece[] = [];
   let from = -W;
   ws.forEach((w, i) => {
-    pieces.push({
-      f: t => [0, c * Math.sinh(t)],
-      t0: Math.asinh(from / c),
-      t1: Math.asinh((w - eps[i]) / c),
-      arc: null,
-    });
+    pieces.push(axis(from, w - eps[i]));
     pieces.push({
       f: t => [eps[i] * Math.cos(t), w + eps[i] * Math.sin(t)],
       t0: -Math.PI / 2,
@@ -519,8 +514,12 @@ export function nyquistCount(st: State = S): NyquistCount | null {
     });
     from = w + eps[i];
   });
-  pieces.push({ f: t => [0, c * Math.sinh(t)], t0: Math.asinh(from / c), t1: Math.asinh(W / c), arc: null });
-  // follow 1 + L(s), refining where its angle changes by more than 0.2 rad between samples
+  pieces.push(axis(from, W));
+  return pieces;
+}
+// Follow 1 + L(s) along the contour, refining where its angle changes by more than 0.2 rad between samples: the
+// total angle, whether the contour passes through a closed-loop pole, and the crossings of L to the left of −1
+function followNyquist(g: LoopTF, pieces: ContourPiece[]) {
   let theta = 0,
     through = false;
   const crossings: NyquistCount['crossings'] = [];
@@ -532,6 +531,20 @@ export function nyquistCount(st: State = S): NyquistCount | null {
       return { t, s, l, a: arg([1 + l[0], l[1]]) };
     };
     type Pt = ReturnType<typeof at>;
+    // a crossing of the real axis to the left of −1 (1 + L crosses the negative real axis), found by bisection
+    const crossing = (p: Pt, q: Pt) => {
+      let lo = p,
+        hi = q;
+      for (let i = 0; i < 60 && hi.l[1] !== 0; i++) {
+        const mid = at((lo.t + hi.t) / 2);
+        if (mid.t === lo.t || mid.t === hi.t) break;
+        if (Math.sign(mid.l[1]) === Math.sign(lo.l[1])) lo = mid;
+        else hi = mid;
+      }
+      const u = lo.l[1] === hi.l[1] ? 0 : lo.l[1] / (lo.l[1] - hi.l[1]),
+        x = lo.l[0] + u * (hi.l[0] - lo.l[0]);
+      if (x < -1) crossings.push({ x, w: lo.s[1] + u * (hi.s[1] - lo.s[1]), arc: pc.arc, dir: p.l[1] < 0 ? 1 : -1 });
+    };
     const step = (p: Pt, q: Pt, depth: number) => {
       let d = q.a - p.a;
       if (d > Math.PI) d -= 2 * Math.PI;
@@ -544,25 +557,35 @@ export function nyquistCount(st: State = S): NyquistCount | null {
       }
       if (Math.abs(d) > 0.2) through = true; // the angle jumps however finely sampled: 1 + L(s) = 0 on the contour
       theta += d;
-      // a crossing of the real axis to the left of −1 (1 + L crosses the negative real axis), found by bisection
-      if ((p.l[1] < 0 && q.l[1] >= 0) || (p.l[1] > 0 && q.l[1] <= 0)) {
-        let lo = p,
-          hi = q;
-        for (let i = 0; i < 60 && hi.l[1] !== 0; i++) {
-          const mid = at((lo.t + hi.t) / 2);
-          if (mid.t === lo.t || mid.t === hi.t) break;
-          if (Math.sign(mid.l[1]) === Math.sign(lo.l[1])) lo = mid;
-          else hi = mid;
-        }
-        const u = lo.l[1] === hi.l[1] ? 0 : lo.l[1] / (lo.l[1] - hi.l[1]),
-          x = lo.l[0] + u * (hi.l[0] - lo.l[0]);
-        if (x < -1) crossings.push({ x, w: lo.s[1] + u * (hi.s[1] - lo.s[1]), arc: pc.arc, dir: p.l[1] < 0 ? 1 : -1 });
-      }
+      if ((p.l[1] < 0 && q.l[1] >= 0) || (p.l[1] > 0 && q.l[1] <= 0)) crossing(p, q);
     };
     const n = 400,
       pts = Array.from({ length: n + 1 }, (_, i) => at(pc.t0 + ((pc.t1 - pc.t0) * i) / n));
     for (let i = 0; i < n; i++) step(pts[i], pts[i + 1], 0);
   }
+  return { theta, through, crossings };
+}
+// The Nyquist stability criterion for the loop: P open-loop poles in the right half-plane, N clockwise
+// encirclements of −1, Z = N + P closed-loop poles there (null without a loop: the controller gain is zero)
+export function nyquistCount(st: State = S): NyquistCount | null {
+  const g = loopTFs(st).L;
+  if (g.num.every(v => v === 0)) return null;
+  const poles = groupRoots(polyRoots(g.den0)),
+    zeros = polyRoots(g.num),
+    size = Math.max(1, ...poles.map(p => Math.hypot(p.z[0], p.z[1])), ...zeros.map(z => Math.hypot(z[0], z[1]))),
+    tolRe = 1e-7 * size,
+    rhp = poles.filter(p => p.z[0] > tolRe).flatMap(p => Array<Complex>(p.mult).fill(p.z)),
+    onAxis = poles.filter(p => Math.abs(p.z[0]) <= tolRe),
+    axis = onAxis.filter(p => p.z[1] >= 0).map(p => ({ w: p.z[1], mult: p.mult }));
+  const c =
+      1e-3 * Math.min(1, ...poles.concat(zeros.map(z => ({ z, mult: 1 }))).map(p => Math.hypot(p.z[0], p.z[1]) || 1)),
+    contour = nyquistContour(
+      onAxis.map(p => p.z[1]).sort((a, b) => a - b),
+      [...poles.map(p => p.z), ...zeros],
+      c,
+      1e4 * size,
+    );
+  const { theta, through, crossings } = followNyquist(g, contour);
   const N = Math.round(-theta / (2 * Math.PI)) + 0;
   return { P: rhp.length, rhp, axis, N, Z: N + rhp.length, crossings, through, delay: g.delay };
 }
@@ -610,22 +633,16 @@ function groupRoots(rs: Complex[]): { z: Complex; mult: number }[] {
 }
 // Derivative of a polynomial (descending powers)
 const pDer = (p: Poly): Poly => (p.length < 2 ? [0] : p.slice(0, -1).map((c, i) => c * (p.length - 1 - i)));
-export function locusRules(st: State = S): LocusRules | null {
-  const { num, den, tf } = loopRational(st);
-  if (num.every(v => v === 0)) return null;
-  const N = trimPoly(num),
-    D = trimPoly(den),
-    n = D.length - 1,
-    m = N.length - 1,
-    sign = Math.sign(N[0] / D[0]),
-    poles = polyRoots(D),
-    zeros = polyRoots(N),
-    gp = groupRoots(poles),
-    gz = groupRoots(zeros),
-    q = n - m;
-  // real-axis segments: an odd (180° locus) or even (0° locus) number of real poles and zeros to the right (the
-  // repeated ones counted with their multiplicity)
-  const realG = [...gp, ...gz].filter(g => g.z[1] === 0),
+type RootGroup = ReturnType<typeof groupRoots>[number];
+// k = −D(s)/N(s) at s: the gain factor that puts a closed-loop pole there (real and positive on the locus)
+function gainAt(N: Poly, D: Poly, z: Complex): Complex {
+  const v = cdiv(polyval(D, z), polyval(N, z));
+  return [-v[0], -v[1]];
+}
+// Real-axis segments: an odd (180° locus) or even (0° locus) number of real poles and zeros to the right (the
+// repeated ones counted with their multiplicity)
+function locusSegments(groups: RootGroup[], sign: number): [number, number][] {
+  const realG = groups.filter(g => g.z[1] === 0),
     reals = realG.flatMap(g => Array<number>(g.mult).fill(g.z[0])),
     cuts = realG
       .map(g => g.z[0])
@@ -648,48 +665,45 @@ export function locusRules(st: State = S): LocusRules | null {
       else segments.push([a, b]);
     }
   }
-  // asymptotes
-  const asymAngles =
-    q > 0 ? Array.from({ length: q }, (_, i) => wrapDeg(((2 * i + (sign > 0 ? 1 : 0)) * 180) / q)) : [];
-  const centroid = q > 0 ? (poles.reduce((s, z) => s + z[0], 0) - zeros.reduce((s, z) => s + z[0], 0)) / q : null;
-  // breakaway and break-in points: dk/ds = 0 with k = −D/N real and positive
-  const kAt = (z: Complex) => {
-    const v = cdiv(polyval(D, z), polyval(N, z));
-    return [-v[0], -v[1]] as Complex;
-  };
+  return segments;
+}
+// Breakaway and break-in points: dk/ds = 0 with k = −D/N real and positive, away from the poles and zeros
+function locusBreakaway(N: Poly, D: Poly, groups: RootGroup[]): LocusRules['breakaway'] {
   const kReal = (x: number) => -polyval(D, [x, 0])[0] / polyval(N, [x, 0])[0];
   const bp = trimPoly(pAddDesc(pMul(N, pDer(D)), pScale(pMul(pDer(N), D), -1))),
-    breakaway: LocusRules['breakaway'] = [];
+    out: LocusRules['breakaway'] = [];
   if (bp.length > 1)
     for (const { z } of groupRoots(polyRoots(bp))) {
       if (z[1] < 0) continue;
-      const kk = kAt(z);
+      const kk = gainAt(N, D, z);
       if (!isFinite(kk[0]) || kk[0] <= 1e-12 || Math.abs(kk[1]) > 1e-6 * Math.abs(kk[0])) continue;
-      if ([...gp, ...gz].some(g => Math.hypot(g.z[0] - z[0], g.z[1] - z[1]) <= 1e-3 * (1 + Math.hypot(z[0], z[1]))))
-        continue; // at a pole or a zero (k = 0 or ∞, or a cancelled pair)
+      if (groups.some(g => Math.hypot(g.z[0] - z[0], g.z[1] - z[1]) <= 1e-3 * (1 + Math.hypot(z[0], z[1])))) continue; // at a pole or a zero (k = 0 or ∞, or a cancelled pair)
       // along the real axis k has a maximum where the branches leave it and a minimum where they meet it
       const h = 1e-4 * (1 + Math.abs(z[0])),
         kind: 'breakaway' | 'break-in' =
           z[1] === 0 && kReal(z[0] - h) + kReal(z[0] + h) > 2 * kk[0] ? 'break-in' : 'breakaway';
-      breakaway.push({ s: z, k: kk[0], kind });
+      out.push({ s: z, k: kk[0], kind });
     }
-  breakaway.sort((a, b) => a.s[0] - b.s[0]);
-  // imaginary-axis crossings: D(jω) + k N(jω) = 0, i.e. Im(D(jω) conj N(jω)) = 0 with k = −D/N > 0
-  const parts = (p: Poly): [Poly, Poly] => {
-    const re: number[] = [],
-      im: number[] = [];
-    p.forEach((c, i) => {
-      const e = p.length - 1 - i,
-        r = e % 4; // j^e = 1, j, −1, −j
-      re.push(r === 0 ? c : r === 2 ? -c : 0);
-      im.push(r === 1 ? c : r === 3 ? -c : 0);
-    });
-    return [re, im];
-  };
-  const [Dr, Di] = parts(D),
-    [Nr, Ni] = parts(N),
+  return out.sort((a, b) => a.s[0] - b.s[0]);
+}
+// Real and imaginary parts of p(jω), as polynomials in ω (descending powers)
+function jwParts(p: Poly): [Poly, Poly] {
+  const re: number[] = [],
+    im: number[] = [];
+  p.forEach((c, i) => {
+    const e = p.length - 1 - i,
+      r = e % 4; // j^e = 1, j, −1, −j
+    re.push(r === 0 ? c : r === 2 ? -c : 0);
+    im.push(r === 1 ? c : r === 3 ? -c : 0);
+  });
+  return [re, im];
+}
+// Imaginary-axis crossings: D(jω) + k N(jω) = 0, i.e. Im(D(jω) conj N(jω)) = 0 with k = −D/N > 0
+function locusCrossings(N: Poly, D: Poly): LocusRules['crossings'] {
+  const [Dr, Di] = jwParts(D),
+    [Nr, Ni] = jwParts(N),
     cp = trimPoly(pAddDesc(pMul(Di, Nr), pScale(pMul(Dr, Ni), -1))),
-    crossings: LocusRules['crossings'] = [];
+    out: LocusRules['crossings'] = [];
   const ws = cp.every(v => Math.abs(v) < 1e-14)
     ? []
     : polyRoots(cp)
@@ -697,16 +711,19 @@ export function locusRules(st: State = S): LocusRules | null {
         .map(z => z[0]);
   if (Math.abs(lastOf(cp)) < 1e-14 && !ws.includes(0)) ws.push(0);
   for (const w of [...new Set(ws)].sort((a, b) => a - b)) {
-    const kk = kAt([0, w]);
+    const kk = gainAt(N, D, [0, w]);
     if (!isFinite(kk[0]) || kk[0] <= 1e-12 || Math.abs(kk[1]) > 1e-6 * (1 + Math.abs(kk[0]))) continue;
-    if (!crossings.some(c => Math.abs(c.w - w) <= 1e-6 * (1 + w))) crossings.push({ w, k: kk[0] });
+    if (!out.some(c => Math.abs(c.w - w) <= 1e-6 * (1 + w))) out.push({ w, k: kk[0] });
   }
-  // departure and arrival angles: at a pole of multiplicity r, r θ = 180° + Σ∠(p − zeros) − Σ∠(p − other poles)
-  // (0° for the 0° locus), and the reverse for zeros. A zero at the same point (a cancelled pair) lowers r and is
-  // left out of the sums; a point cancelled completely does not move and has no angle
+  return out;
+}
+// Departure and arrival angles: at a pole of multiplicity r, r θ = 180° + Σ∠(p − zeros) − Σ∠(p − other poles)
+// (0° for the 0° locus), and the reverse for zeros. A zero at the same point (a cancelled pair) lowers r and is
+// left out of the sums; a point cancelled completely does not move and has no angle
+function locusAngles(gp: RootGroup[], gz: RootGroup[], sign: number) {
   const base = sign > 0 ? 180 : 0,
     near = (a: Complex, b: Complex) => Math.hypot(a[0] - b[0], a[1] - b[1]) <= 1e-3 * (1 + Math.hypot(a[0], a[1]));
-  const angles = (at: Complex, r: number, same: typeof gp, other: typeof gz, s: number) => {
+  const angles = (at: Complex, r: number, same: RootGroup[], other: RootGroup[], s: number) => {
     let a = base;
     other.forEach(o => {
       if (!near(o.z, at)) a += s * o.mult * argDeg([at[0] - o.z[0], at[1] - o.z[1]]);
@@ -716,26 +733,43 @@ export function locusRules(st: State = S): LocusRules | null {
     });
     return Array.from({ length: r }, (_, l) => wrapDeg((s * a + 360 * l) / r)).sort((x, y) => x - y);
   };
-  const leaving = (same: typeof gp, other: typeof gz, s: number) =>
+  const leaving = (same: RootGroup[], other: RootGroup[], s: number) =>
     same
       .map(g => ({ g, r: g.mult - other.filter(o => near(o.z, g.z)).reduce((t, o) => t + o.mult, 0) }))
       .filter(({ g, r }) => r > 0 && (g.z[1] > 0 || (g.z[1] === 0 && r > 1)))
       .map(({ g, r }) => ({ at: g.z, mult: r, angles: angles(g.z, r, same, other, s) }));
-  const departures = leaving(gp, gz, 1),
-    arrivals = leaving(gz, gp, -1);
+  return { departures: leaving(gp, gz, 1), arrivals: leaving(gz, gp, -1) };
+}
+// The construction rules of the root locus of the loop (null without a loop: the controller gain is zero)
+export function locusRules(st: State = S): LocusRules | null {
+  const { num, den, tf } = loopRational(st);
+  if (num.every(v => v === 0)) return null;
+  const N = trimPoly(num),
+    D = trimPoly(den),
+    n = D.length - 1,
+    m = N.length - 1,
+    sign = Math.sign(N[0] / D[0]),
+    poles = polyRoots(D),
+    zeros = polyRoots(N),
+    gp = groupRoots(poles),
+    gz = groupRoots(zeros),
+    q = n - m;
+  // asymptotes: q = n − m of them, at equal angles about the centroid of the poles and zeros
+  const asymAngles =
+    q > 0 ? Array.from({ length: q }, (_, i) => wrapDeg(((2 * i + (sign > 0 ? 1 : 0)) * 180) / q)) : [];
+  const centroid = q > 0 ? (poles.reduce((s, z) => s + z[0], 0) - zeros.reduce((s, z) => s + z[0], 0)) / q : null;
   return {
     n,
     m,
     sign,
     poles,
     zeros,
-    segments,
+    segments: locusSegments([...gp, ...gz], sign),
     asymAngles,
     centroid,
-    breakaway,
-    crossings,
-    departures,
-    arrivals,
+    breakaway: locusBreakaway(N, D, [...gp, ...gz]),
+    crossings: locusCrossings(N, D),
+    ...locusAngles(gp, gz, sign),
     approx: tf.L > 0,
   };
 }

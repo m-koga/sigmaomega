@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.94.1',
+    d: '2026-11-27',
+    en: [
+      'Development: the ten functions of more than 80 lines (the Bode plot, the root-locus rules, the Nyquist criterion, the block diagram, the steady-state error and compensator panels, the exercise and scenario cards, the frequency response and the root-locus rules panel) are split into named parts, each with a comment saying what it does; the block diagram and the scenario buttons lose their repeated code; tests/modules.test.ts now keeps every function at 80 lines or fewer',
+      'Development: npm run pixcmp also compares the analysis panels (Routh table, steady-state errors, Bode asymptotes, Nyquist criterion, root-locus rules, tuning and the compensator card for each method) and the block diagram for every combination of its parts, so that a refactoring of them is checked too; with it, this version shows exactly what 1.94.0 showed. A test of the Nichols CSV export was added (it was the one export no test ran)',
+    ],
+    ja: [
+      '開発：80 行を超えていた 10 個の関数（ボード線図、根軌跡の作図規則、ナイキストの安定判別、ブロック線図、定常偏差と補償器設計のパネル、演習と例題のカード、周波数応答、作図規則のパネル）を、何をするかをコメントに書いた名前付きの部分に分けた。ブロック線図と例題のボタンの重複したコードをなくした。すべての関数が 80 行以内であることを tests/modules.test.ts が確かめる',
+      '開発：npm run pixcmp が解析のパネル（ラウス表、定常偏差、ボード線図の漸近線、ナイキストの安定判別、根軌跡の作図規則、自動調整、補償器設計（設計法ごと））と、部品のすべての組み合わせのブロック線図も比べるようにし、それらのリファクタリングも確かめられるようにした。これにより、この版の表示は 1.94.0 と完全に一致することを確かめた。ニコルス線図の CSV の書き出しのテストを追加（どのテストも実行していなかった唯一の書き出し）',
+    ],
+  },
+  {
     v: '1.94.0',
     d: '2026-11-27',
     en: [

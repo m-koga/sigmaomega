@@ -653,26 +653,45 @@ const cStr = (z: Complex) =>
   z[1] === 0 ? numStr(z[0]) : `${numStr(z[0])} ${z[1] < 0 ? '−' : '+'} ${numStr(Math.abs(z[1]))}j`;
 const inf = (x: number) => (x === -Infinity ? '−∞' : x === Infinity ? '∞' : numStr(x));
 const degs = (as: number[]) => as.map(a => `${numStr(a)}°`).join(', ');
-export function renderRules(r: LocusRules | null) {
-  const box = byId('pzRulesBox');
-  if (!r) {
-    box.innerHTML = `<p class="note">${T('No root locus: the controller gain is zero.')}</p>`;
-    return;
-  }
-  const none = T('none'),
-    q = r.n - r.m,
-    at = (z: Complex, mult: number) => cStr(z) + (mult > 1 ? ` (×${mult})` : ''),
-    angleRows = (list: LocusRules['departures']) =>
-      list.length
-        ? list
-            .map(
-              d =>
-                `${at(d.at, d.mult)}: ${degs(d.angles)}` +
-                (d.at[1] > 0 ? ` ${T('(conjugate: {a})', { a: degs(d.angles.map(a => -a)) })}` : ''),
-            )
-            .join('<br>')
-        : none;
-  const rows: [string, string, string][] = [
+// The values of the rules as text ('none' when there is nothing): the real-axis segments, the breakaway and
+// break-in points, the imaginary-axis crossings, and the departure or arrival angles
+const atPoint = (z: Complex, mult: number) => cStr(z) + (mult > 1 ? ` (×${mult})` : '');
+function segmentsText(r: LocusRules): string {
+  return r.segments.length
+    ? r.segments.map(([a, b]) => `${isFinite(a) ? '[' : '('}${inf(a)}, ${inf(b)}${isFinite(b) ? ']' : ')'}`).join(', ')
+    : T('none');
+}
+function breakawayText(r: LocusRules): string {
+  return r.breakaway.length
+    ? r.breakaway
+        .map(
+          b =>
+            `${cStr(b.s)}${b.s[1] !== 0 ? ` ${T('(and its conjugate)')}` : ''} (k = ${numStr(b.k)}, ${b.kind === 'breakaway' ? T('breakaway') : T('break-in')})`,
+        )
+        .join('<br>')
+    : T('none');
+}
+function crossingsText(r: LocusRules): string {
+  return r.crossings.length
+    ? r.crossings.map(c => `${c.w === 0 ? 's = 0' : `s = ±j${numStr(c.w)}`} (k = ${numStr(c.k)})`).join('<br>')
+    : T('none');
+}
+function anglesText(list: LocusRules['departures']): string {
+  return list.length
+    ? list
+        .map(
+          d =>
+            `${atPoint(d.at, d.mult)}: ${degs(d.angles)}` +
+            (d.at[1] > 0 ? ` ${T('(conjugate: {a})', { a: degs(d.angles.map(a => -a)) })}` : ''),
+        )
+        .join('<br>')
+    : T('none');
+}
+// The rows of the table of rules: [rule, how it is found, value]
+function rulesRows(r: LocusRules): [string, string, string][] {
+  const q = r.n - r.m,
+    pos = r.sign > 0;
+  return [
     [
       T('Poles and zeros of L(s)'),
       T('n poles, m zeros: n branches start at the poles (k = 0); m end at the zeros, n − m go to infinity (k → ∞)'),
@@ -680,51 +699,33 @@ export function renderRules(r: LocusRules | null) {
     ],
     [
       T('Real axis'),
-      r.sign > 0
+      pos
         ? T('on the locus where the number of real poles and zeros to the right is odd')
         : T('on the locus where the number of real poles and zeros to the right is even'),
-      r.segments.length
-        ? r.segments
-            .map(([a, b]) => `${isFinite(a) ? '[' : '('}${inf(a)}, ${inf(b)}${isFinite(b) ? ']' : ')'}`)
-            .join(', ')
-        : none,
+      segmentsText(r),
     ],
     [
       T('Asymptotes'),
-      (r.sign > 0 ? 'θ = (2q + 1)·180° / (n − m)' : 'θ = q·360° / (n − m)') + ',  σ = (Σp − Σz) / (n − m)',
-      q > 0 ? `θ = ${degs(r.asymAngles)};  σ = ${numStr(r.centroid ?? 0)}` : none,
+      (pos ? 'θ = (2q + 1)·180° / (n − m)' : 'θ = q·360° / (n − m)') + ',  σ = (Σp − Σz) / (n − m)',
+      q > 0 ? `θ = ${degs(r.asymAngles)};  σ = ${numStr(r.centroid ?? 0)}` : T('none'),
     ],
-    [
-      T('Breakaway and break-in points'),
-      `dk/ds = 0 ⇔ N(s)D′(s) − N′(s)D(s) = 0, k = −D(s)/N(s) > 0`,
-      r.breakaway.length
-        ? r.breakaway
-            .map(
-              b =>
-                `${cStr(b.s)}${b.s[1] !== 0 ? ` ${T('(and its conjugate)')}` : ''} (k = ${numStr(b.k)}, ${b.kind === 'breakaway' ? T('breakaway') : T('break-in')})`,
-            )
-            .join('<br>')
-        : none,
-    ],
-    [
-      T('Imaginary-axis crossings'),
-      `D(jω) + k N(jω) = 0`,
-      r.crossings.length
-        ? r.crossings.map(c => `${c.w === 0 ? 's = 0' : `s = ±j${numStr(c.w)}`} (k = ${numStr(c.k)})`).join('<br>')
-        : none,
-    ],
+    [T('Breakaway and break-in points'), `dk/ds = 0 ⇔ N(s)D′(s) − N′(s)D(s) = 0, k = −D(s)/N(s) > 0`, breakawayText(r)],
+    [T('Imaginary-axis crossings'), `D(jω) + k N(jω) = 0`, crossingsText(r)],
     [
       T('Departure angles from poles'),
-      (r.sign > 0 ? 'rθ = 180°' : 'rθ = 0°') + ' + Σ∠(p − zᵢ) − Σ∠(p − pᵢ)',
-      angleRows(r.departures),
+      (pos ? 'rθ = 180°' : 'rθ = 0°') + ' + Σ∠(p − zᵢ) − Σ∠(p − pᵢ)',
+      anglesText(r.departures),
     ],
     [
       T('Arrival angles at zeros'),
-      (r.sign > 0 ? 'rφ = 180°' : 'rφ = 0°') + ' + Σ∠(z − pᵢ) − Σ∠(z − zᵢ)',
-      angleRows(r.arrivals),
+      (pos ? 'rφ = 180°' : 'rφ = 0°') + ' + Σ∠(z − pᵢ) − Σ∠(z − zᵢ)',
+      anglesText(r.arrivals),
     ],
   ];
-  const notes = [
+}
+// The notes under the table: what L(s) and r are, the 0° locus, and the dead time
+function rulesNotes(r: LocusRules): string {
+  return [
     T(
       'L(s) = N(s)/D(s) is the loop transfer function with the controller multiplied by k; r: the multiplicity of the pole or zero. Angles are measured from the positive real axis.',
     ),
@@ -738,10 +739,19 @@ export function renderRules(r: LocusRules | null) {
     .filter(Boolean)
     .map(t => `<p class="note">${t}</p>`)
     .join('');
+}
+export function renderRules(r: LocusRules | null) {
+  const box = byId('pzRulesBox');
+  if (!r) {
+    box.innerHTML = `<p class="note">${T('No root locus: the controller gain is zero.')}</p>`;
+    return;
+  }
   box.innerHTML =
     `<div class="pzwrap-tbl"><table class="pzt rules"><thead><tr><th>${T('Rule')}</th><th>${T('Value')}</th></tr></thead><tbody>` +
-    rows.map(([a, b, c]) => `<tr><td>${a}<span class="how">${b}</span></td><td>${c}</td></tr>`).join('') +
-    `</tbody></table></div>${notes}`;
+    rulesRows(r)
+      .map(([a, b, c]) => `<tr><td>${a}<span class="how">${b}</span></td><td>${c}</td></tr>`)
+      .join('') +
+    `</tbody></table></div>${rulesNotes(r)}`;
 }
 // View of the pole-zero map; the automatic view is fixed when the user first zooms or pans
 // Back to the automatic view of the map

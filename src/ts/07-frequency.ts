@@ -152,96 +152,88 @@ export function bodeSeries(W: number[], F: (w: number) => Complex, Ld: number) {
   });
   return { mag, ph, cs };
 }
-// Frequency response over the automatic range, or over rng (powers of 10) when it is given
-export function freqResp(st: State = S, rng?: [number, number]) {
-  const tf = PLANTS[st.plant].tf(st);
-  const [w0, w1] = rng || freqRange(tf, st);
-  const NW = Math.max(2, Math.min(2400, Math.round(150 * (w1 - w0))));
-  const W: number[] = [];
+// Frequencies from 10^w0 to 10^w1: 150 per decade, at most 2400
+function freqGrid(w0: number, w1: number): number[] {
+  const NW = Math.max(2, Math.min(2400, Math.round(150 * (w1 - w0)))),
+    W: number[] = [];
   for (let i = 0; i < NW; i++) W.push(Math.pow(10, w0 + ((w1 - w0) * i) / (NW - 1)));
-  const Ls = bodeSeries(W, w => evalCP(w, tf, st), tf.L),
-    Ps = bodeSeries(W, w => evalPr(w, tf), tf.L),
-    Cs = bodeSeries(W, w => evalC(w, st), 0);
-  const Lc = Ls.cs,
-    mag = Ls.mag,
-    ph = Ls.ph;
-  // Margins
+  return W;
+}
+// Gain and phase margins of L: the first crossings of 0 dB and of −180°, interpolated between the grid points
+function stabilityMargins(W: number[], mag: number[], ph: number[]) {
   let wgc: number | null = null,
     pm: number | null = null,
     wpc: number | null = null,
     gm: number | null = null;
-  for (let i = 1; i < NW; i++) {
+  const at = (i: number, a: number) =>
+    Math.pow(10, Math.log10(W[i - 1]) + a * (Math.log10(W[i]) - Math.log10(W[i - 1])));
+  for (let i = 1; i < W.length; i++) {
     if (wgc === null && mag[i - 1] >= 0 && mag[i] < 0) {
       const a = mag[i - 1] / (mag[i - 1] - mag[i]);
-      wgc = Math.pow(10, Math.log10(W[i - 1]) + a * (Math.log10(W[i]) - Math.log10(W[i - 1])));
+      wgc = at(i, a);
       pm = 180 + ph[i - 1] + a * (ph[i] - ph[i - 1]);
     }
     if (wpc === null && ph[i - 1] > -180 && ph[i] <= -180) {
       const a = (ph[i - 1] + 180) / (ph[i - 1] - ph[i]);
-      wpc = Math.pow(10, Math.log10(W[i - 1]) + a * (Math.log10(W[i]) - Math.log10(W[i - 1])));
+      wpc = at(i, a);
       gm = -(mag[i - 1] + a * (mag[i] - mag[i - 1]));
     }
   }
-  // Sensitivity S = 1/(1+L) and complementary sensitivity T = L/(1+L)
-  let ii = 0;
-  const Ss = bodeSeries(W, () => cdiv([1, 0], cadd([1, 0], Lc[ii++])), 0);
-  ii = 0;
-  const Ts = bodeSeries(
-    W,
-    () => {
-      const L = Lc[ii++];
-      return cdiv(L, cadd([1, 0], L));
-    },
-    0,
-  );
-  // L(jω) with the dead time, for refining the peaks of |S| and |T| between the grid points
-  const Lw = (w: number): Complex => cmul(evalCP(w, tf, st), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]);
-  const sens = sensMetrics(W, Ss.mag, Ts.mag, Lw);
-  // Disturbance at the plant input to the output: P/(1+L) = P S; reference to the output: Cr P/(1+L)
-  ii = 0;
-  const Ds = bodeSeries(
-    W,
-    () => {
-      const i = ii++;
-      return cmul(Ps.cs[i], Ss.cs[i]);
-    },
-    0,
-  );
-  ii = 0;
-  const Rs = bodeSeries(
-    W,
-    () => {
-      const i = ii++;
-      return cmul(cmul(evalCr(W[i], st), Ps.cs[i]), Ss.cs[i]);
-    },
-    0,
-  );
-  let dmax = -Infinity,
-    wdmax: number | null = null;
-  Ds.mag.forEach((v, i) => {
-    if (isFinite(v) && v > dmax) {
-      dmax = v;
-      wdmax = W[i];
+  return { wgc, pm, wpc, gm };
+}
+// The closed-loop responses on the grid, from L(jω) and P(jω): the sensitivity S = 1/(1+L), the complementary
+// sensitivity T = L/(1+L), the disturbance at the plant input to the output P/(1+L) = P S, and the reference to
+// the output Cr P/(1+L)
+function closedLoopSeries(W: number[], Lc: Complex[], Pc: Complex[], st: State) {
+  const one: Complex = [1, 0],
+    series = (f: (i: number) => Complex) => {
+      let i = 0;
+      return bodeSeries(W, () => f(i++), 0);
+    };
+  const Ss = series(i => cdiv(one, cadd(one, Lc[i]))),
+    Ts = series(i => cdiv(Lc[i], cadd(one, Lc[i]))),
+    Ds = series(i => cmul(Pc[i], Ss.cs[i])),
+    Rs = series(i => cmul(cmul(evalCr(W[i], st), Pc[i]), Ss.cs[i]));
+  return { Ss, Ts, Ds, Rs };
+}
+// The largest finite value of mag [dB] (as a ratio) and its frequency
+function peakOf(W: number[], mag: number[]): { dmax: number | null; wdmax: number | null } {
+  let max = -Infinity,
+    w: number | null = null;
+  mag.forEach((v, i) => {
+    if (isFinite(v) && v > max) {
+      max = v;
+      w = W[i];
     }
   });
+  return { dmax: isFinite(max) ? Math.pow(10, max / 20) : null, wdmax: w };
+}
+// Frequency response over the automatic range, or over rng (powers of 10) when it is given: L, P, C and the
+// closed-loop responses, the margins and the peaks of the sensitivities
+export function freqResp(st: State = S, rng?: [number, number]) {
+  const tf = PLANTS[st.plant].tf(st);
+  const [w0, w1] = rng || freqRange(tf, st);
+  const W = freqGrid(w0, w1);
+  const Ls = bodeSeries(W, w => evalCP(w, tf, st), tf.L),
+    Ps = bodeSeries(W, w => evalPr(w, tf), tf.L),
+    Cs = bodeSeries(W, w => evalC(w, st), 0);
+  const { Ss, Ts, Ds, Rs } = closedLoopSeries(W, Ls.cs, Ps.cs, st);
+  // L(jω) with the dead time, for refining the peaks of |S| and |T| between the grid points
+  const Lw = (w: number): Complex => cmul(evalCP(w, tf, st), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]);
   return {
     W,
-    Lc,
-    mag,
-    ph,
+    Lc: Ls.cs,
+    mag: Ls.mag,
+    ph: Ls.ph,
     P: Ps,
     C: Cs,
     S: Ss,
     T: Ts,
     D: Ds,
     Gyr: Rs,
-    dmax: isFinite(dmax) ? Math.pow(10, dmax / 20) : null,
-    wdmax,
-    ...sens,
-    wgc,
-    pm,
-    wpc,
-    gm,
+    ...peakOf(W, Ds.mag),
+    ...sensMetrics(W, Ss.mag, Ts.mag, Lw),
+    ...stabilityMargins(W, Ls.mag, Ls.ph),
     w0,
     w1,
     openUnstable: !!PLANTS[st.plant].unstable?.(st) || !!CONTROLLERS[st.mode].unstable?.(st),

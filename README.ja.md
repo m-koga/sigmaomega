@@ -97,7 +97,7 @@ npm run test:watch                                 # 変更のたびに自動で
 | `publish-edits.test.ts` | 文字列の置き換えによる公開（`scripts/publish-edits.ts`）：置き換えで新しいページになること、各置き換え元が適用時に 1 か所だけであること（何度も現れる行、先頭と末尾の行も）、散らばった変更を 64 個以内にまとめること、公開後に読んで確かめる行（変わった行、削除した行の前後、長い部分の見本）。詰めたページのスクリプトが空白だけを除き、行を保ち、長い空白の並びがなく、構文として正しいこと |
 | `help.test.ts` | 利用者マニュアル：すべての図と表に id と説明文があり本文から参照されていること、すべての参照に行き先があること、英語と日本語で同じ章に同じ図と表があること |
 | `pages.test.ts` | GitHub Pages 用のファイル（`scripts/pages.ts`）：ページと `index.html` の違いがマニフェストへのリンクとテーマの色だけであること、マニフェストに名前と、正しい大きさで実在するアイコンがあること |
-| `modules.test.ts` | `src/ts` の層：各ファイルは番号の小さいファイルからだけ import すること（循環がない）、計算のファイル 01–12 はページに触れないこと |
+| `modules.test.ts` | `src/ts` の層：各ファイルは番号の小さいファイルからだけ import すること（循環がない）、計算のファイル 01–12 はページに触れないこと。80 行を超える関数がないこと |
 | `license-headers.test.ts` | すべてのソースファイルの先頭に、SPDX のライセンス識別子と著作権の行があること |
 | `tutorial.test.ts` | 利用者マニュアルの章「例題で試す」に書いた数値：4 つの演習の各手順（手での調整、チューニング則、K_I の掃引、目標値の重み、不安定な系の安定化）が本文どおりの値になること |
 | `performance.test.ts` | 時間効率（PERFORMANCE.ja.md）：根軌跡と安定なゲインの範囲、大きな根の計算、時間刻みが最多のシミュレーション、8 個の値の掃引が、高速化する前の時間を大きく下回ることを確かめる |
@@ -201,7 +201,7 @@ npm run typecheck   # TypeScript で src/ts、ビルド用のプログラム、�
 npm run format   # Prettier で TypeScript のファイルを整形する（npm run format:check は確認だけ）
 npm test         # ビルドと型チェックをしてから自動テストを実行する
 npm run docs     # ビルドしてから CHANGELOG.md と CHANGELOG.ja.md を生成する
-npm run pixcmp -- old.html   # 古いビルドと index.html の図と指標を画素単位で比べる
+npm run pixcmp -- old.html   # 古いビルドと index.html の図・指標・解析のパネル・ブロック線図を完全に一致するか比べる
 npm run accuracy # 結果を厳密解と比べ、ACCURACY.md の表を出力する（約 30 秒）
 npm run performance # Chrome で時間を計測し、PERFORMANCE.md の表を出力する（約 8 分）
 npm run edits -- 1.62.1      # 公開中の版 1.62.1 から index.html への文字列の置き換え（/tmp/publish-edits.json）と、
@@ -244,6 +244,8 @@ layout（14：大きさ、図、折りたたみ） ──▶ applyLayout() (24) 
 - レイアウト（`layout`、`14-view.ts`。表示に反映するのは `24-layout.ts`）は設定とは別に扱います。ブラウザに保存され、例題と一緒に保存することもできます。
 - グラフの色は、`14-view.ts` の先頭の `COLORS` に役割の名前（`output`、`alert`、`spec` など）で並べています。
 - よくある変更：制御対象・制御器・パラメータ・調整則・グラフ・設計仕様・言語の追加 → [制御対象・制御器・調整則・グラフ・設計仕様・言語の追加](#制御対象制御器調整則グラフ設計仕様言語の追加)。画面の文字列 → 英語で `T('…')` と書き、訳を `src/i18n.json` に追加。id を持つ要素の追加 → `npm run build` で要素の型が更新される。
+- 関数は 80 行以内にします（`tests/modules.test.ts`）。長くなる関数は、何をするかをコメントに書いた名前付きの部分に分けます（例：`drawBode` は `bodeAsymCurves`、`bodeGainRange`、`bodePhaseRange`、`bodeNoteHTML` を使う）。数行を超えるイベント処理も名前付きの関数にし、そのカードの `build…()` で割り当てます。
+- 表示を変えないはずのリファクタリングは、前のビルドと `npm run pixcmp` で比べて確かめます。すべての canvas、指標と解析のパネル（ラウス表、定常偏差、ボード線図の漸近線、ナイキストの安定判別、根軌跡の作図規則、自動調整と補償器設計のカード（設計法ごと））の文字列、部品のすべての組み合わせのブロック線図を比べます。
 - 使われていない変数や引数は型エラーになります（`noUnusedLocals`、`noUnusedParameters`）。残す必要がある引数は、名前の先頭に下線を付けます（`_t`）。
 
 ### 制御対象・制御器・調整則・グラフ・設計仕様・言語の追加

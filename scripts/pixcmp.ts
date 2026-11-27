@@ -52,7 +52,7 @@ async function render(file: string, c: Case) {
   await page.waitForFunction(() => document.querySelector('#tex-C svg'));
   await page.evaluate((c: Case) => {
     // Names of the page's script, declared as globals in tests/app-api.d.ts
-    shownPanels = new Set(['time', 'bode', 'nyq', 'pz']);
+    shownPanels = new Set(['time', 'bode', 'nyq', 'nich', 'pz']);
     panelsChanged();
     for (const id of ['bodeL', 'bodeP', 'bodeC', 'bodeS', 'bodeT', 'bodeD', 'bodeR', 'pzCtrl', 'pzGrid', 'pzLocus']) {
       const e = document.getElementById(id) as HTMLInputElement | null;
@@ -77,13 +77,39 @@ async function render(file: string, c: Case) {
       redraw();
     }
   }, c);
-  await page.waitForTimeout(300);
-  const out = await page.evaluate(() => ({
-    canvases: [...document.querySelectorAll('canvas')].map(cv => [cv.id, cv.toDataURL()]),
-    text: ['metrics', 'margins', 'pzTable', 'pzRange', 'pzBanner', 'sw-table'].map(
-      id => document.getElementById(id)?.innerHTML ?? '',
-    ),
-  }));
+  await page.waitForTimeout(300); // the Routh table and the steady-state errors are rendered after 120 ms
+  // the text and tables of the panels and of the analysis cards (the tuning and compensator cards render only
+  // while they are shown)
+  const html = (ids: string[]) => ids.map(id => document.getElementById(id)?.innerHTML ?? '');
+  const text = await page.evaluate(html, [
+    ...['metrics', 'margins', 'pzTable', 'pzRange', 'pzBanner', 'sw-table', 'specSum', 'ctrl-info'],
+    ...['routhBox', 'sseBox', 'bodeAsym', 'bodeNote', 'nyqCrit', 'pzRulesBox', 'diagBox'],
+  ]);
+  // the block diagram for every combination of its parts, and for the plant alone
+  text.push(
+    await page.evaluate(() => {
+      const all: string[] = [];
+      for (let i = 0; i < 16; i++)
+        all.push(diagramSVG({ sat: !!(i & 1), d: !!(i & 2), n: !!(i & 4), two: !!(i & 8) }).svg);
+      all.push(diagramSVG({ sat: false, d: false, n: false, two: false, plant: true }).svg);
+      return all.join('\n');
+    }),
+  );
+  for (const [card, method] of [['tune'], ['comp', 'lead'], ['comp', 'lag'], ['comp', 'leadlag']]) {
+    await page.evaluate(
+      ([card, method]) => {
+        if (method) S.comp.method = method;
+        setSideCard(card);
+        update();
+      },
+      [card, method] as const,
+    );
+    text.push(...(await page.evaluate(html, [card === 'tune' ? 'tuneOut' : 'compOut'])));
+  }
+  const out = {
+    canvases: await page.evaluate(() => [...document.querySelectorAll('canvas')].map(cv => [cv.id, cv.toDataURL()])),
+    text,
+  };
   await page.close();
   return out;
 }
@@ -103,10 +129,12 @@ for (const c of cases) {
   a.text.forEach((t, i) => {
     if (t !== b.text[i]) {
       bad++;
-      console.log(`DIFF ${c.name}: text #${i}`);
+      console.log(`DIFF ${c.name}: text #${i}\n  old: ${t.slice(0, 300)}\n  new: ${b.text[i].slice(0, 300)}`);
     }
   });
-  console.log(`${c.name}: ${a.canvases.length} canvases compared`);
+  console.log(
+    `${c.name}: ${a.canvases.length} canvases and ${a.text.filter(t => t).length} of ${a.text.length} texts compared`,
+  );
 }
 await browser.close();
 console.log(bad ? `${bad} differences` : 'identical');

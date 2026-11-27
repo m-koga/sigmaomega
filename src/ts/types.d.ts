@@ -336,7 +336,14 @@ interface PlotOptions {
   /** place of the legend: top right (default) or bottom left */
   legend?: 'tr' | 'bl';
   /** marks: × (default) or a small circle */
-  points?: { x: number; y: number; color: string; shape?: 'x' | 'o' }[];
+  points?: PlotPoint[];
+}
+/** A point marked on a plot */
+interface PlotPoint {
+  x: number;
+  y: number;
+  color: string;
+  shape?: 'x' | 'o';
 }
 /** Label and value of a metric */
 type Metric = [string, string];

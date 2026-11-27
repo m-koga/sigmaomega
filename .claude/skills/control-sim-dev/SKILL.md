@@ -40,6 +40,7 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
   - `TUNE_RULES`：`10-tuning.ts`
   - `INFO_AREAS`：`14-view.ts`（図の下のタブ付き区画）
   - `tests/kinds.test.ts` が全項目を確かめる。
+- 関数は 80 行以内（`tests/modules.test.ts`）。長くなったら、何をするかをコメントに書いた名前付きの部分に分ける。数行を超えるイベント処理も名前付きの関数にして `build…()` で割り当てる。
 - 計算関数は設定を最後の引数 `st: State = S` で受け取る（グローバルを暗黙に読まない）。
 - 数値精度は `ACCURACY.md`（`npm run accuracy`、`tests/accuracy.test.ts`）、時間効率は `PERFORMANCE.md`（`npm run performance`、約 8 分、`tests/performance.test.ts`）。計算や描画を変えて結果や時間が変わったら、日英の表を更新する。
 - レイアウト（`layout`）は設定と別。ブラウザに保存し、例題にも入る（読み込みの検証は `25-scenarios.ts` の `scLayout`）。新しい項目は、既定値を `14-view.ts` の `defaultLayout()`（1 か所）に足し、保存するなら 14 の読み込みと 25 の `scLayout` の検証にも足す。
@@ -127,4 +128,4 @@ gh run list -L 1        # 開始したことだけ確かめる（完了は待た
 
 ## 付録：ピクセル比較
 
-`scripts/pixcmp.ts`（`npm run pixcmp -- <古い index.html> [<新しい index.html>]`）。6 つの設定で古い版と新しい版を描き、すべての canvas と指標の文字列が完全に一致するかを調べる。Chrome は `CHROME_PATH`、`/usr/bin/google-chrome`、Playwright の Chromium の順に探す。比べる設定を増やすときはこのスクリプトの `cases` に足す。
+`scripts/pixcmp.ts`（`npm run pixcmp -- <古い index.html> [<新しい index.html>]`）。6 つの設定で古い版と新しい版を描き、すべての canvas、指標と解析のパネル（ラウス表・定常偏差・漸近線・ナイキスト・作図規則・自動調整・補償器設計（設計法ごと））の HTML、部品の全組み合わせのブロック線図の SVG が完全に一致するかを調べる。Chrome は `CHROME_PATH`、`/usr/bin/google-chrome`、Playwright の Chromium の順に探す。比べる設定を増やすときはこのスクリプトの `cases` に足す。

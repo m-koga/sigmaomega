@@ -662,11 +662,99 @@ interface BodeCurve {
   width: number;
 }
 
+// The straight-line approximation of L for the Bode plot (buttons "L asymptotes" and "Factors"): the sum, dashed,
+// with dots at its break frequencies, and the lines of its factors in their own colors. The phase is shifted by a
+// multiple of 360° onto the branch of the plotted phase of L (with the factor K/s^q, which carries that shift).
+interface BodeAsymCurves {
+  asym: ReturnType<typeof bodeAsymptote>;
+  gain: PlotSeries[];
+  phase: PlotSeries[];
+  gainPts: PlotPoint[];
+  phasePts: PlotPoint[];
+  parts: (key: 'gain' | 'ph') => PlotSeries[];
+}
+function bodeAsymCurves(frB: FreqResult): BodeAsymCurves {
+  const showParts = $('bodeAc').checked,
+    drawSum = $('bodeA').checked,
+    asym = drawSum || showParts ? bodeAsymptote() : null,
+    W = frB.W;
+  if (!asym) return { asym, gain: [], phase: [], gainPts: [], phasePts: [], parts: () => [] };
+  const phOff = 360 * Math.round((frB.ph[0] - asym.phase(W[0])) / 360);
+  const sum = (y: number[]): PlotSeries[] =>
+    drawSum ? [{ x: W, y, color: COLORS.asymptote, width: 2, dash: [6, 4], name: T('L asymptotes') }] : [];
+  const gainPts: PlotPoint[] = drawSum
+    ? asym.breaks
+        .filter(b => b.w >= W[0] && b.w <= W[W.length - 1])
+        .map(b => ({ x: b.w, y: asym.gain(b.w), color: COLORS.asymptote, shape: 'o' as const }))
+    : [];
+  return {
+    asym,
+    gain: sum(W.map(asym.gain)),
+    phase: sum(W.map(w => asym.phase(w) + phOff)),
+    gainPts,
+    phasePts: gainPts.map(p => ({ ...p, y: asym.phase(p.x) + phOff })),
+    parts: (key: 'gain' | 'ph'): PlotSeries[] =>
+      showParts
+        ? asym.parts.map((p, i) => ({
+            x: W,
+            y: W.map(w => (key === 'gain' ? p.gain(w) : p.phase(w) + (p.kind === 'K' ? phOff : 0))),
+            color: COLORS.asymParts[i % COLORS.asymParts.length],
+            width: 1.4,
+            name: asymPartLabel(asym, p),
+          }))
+        : [],
+  };
+}
+// Vertical range of the gain: whole multiples of 20 dB, at least −20 … 20 dB, at most ±120 dB
+function bodeGainRange(curves: number[][], runs: FreqResult[], empty: boolean): [number, number] {
+  const r = { lo: Infinity, hi: -Infinity };
+  curves.forEach(c => stretch(r, c));
+  if (empty) Object.assign(r, { lo: -20, hi: 20 });
+  r.lo = Math.max(r.lo, -120);
+  r.hi = Math.min(r.hi, 120);
+  runs.forEach(f =>
+    f.mag.forEach(v => {
+      if (isFinite(v)) {
+        r.lo = Math.min(r.lo, Math.max(v, -120));
+        r.hi = Math.max(r.hi, Math.min(v, 120));
+      }
+    }),
+  );
+  return [Math.floor(Math.min(r.lo, -20) / 20) * 20, Math.ceil(Math.max(r.hi, 20) / 20) * 20];
+}
+// Vertical range of the phase: whole multiples of 90°, at least −180 … 0°, at most ±720°
+function bodePhaseRange(curves: number[][], runs: FreqResult[], empty: boolean): [number, number] {
+  const r = { lo: Infinity, hi: -Infinity };
+  curves.forEach(c => stretch(r, c));
+  if (empty) Object.assign(r, { lo: -180, hi: 0 });
+  runs.forEach(f => stretch(r, f.ph));
+  r.lo = Math.max(r.lo, -720);
+  r.hi = Math.min(r.hi, 720);
+  return [Math.floor(Math.min(r.lo, -180) / 90) * 90, Math.ceil(Math.max(r.hi, 0) / 90) * 90];
+}
+// Ticks of the phase: every 45°, or every 90° over more than 360°
+function phaseTicks(a: number, b: number): number[] {
+  const t: number[] = [];
+  const step = b - a > 360 ? 90 : 45;
+  for (let v = Math.ceil(a / step) * step; v <= b; v += step) t.push(v);
+  return t;
+}
+// The note of the Bode plot: the frequency range (or why L is not shown on its own) and the straight-line rules
+function bodeNoteHTML(fr: FreqResult): string {
+  const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  return (
+    `<p>${esc(fr.openUnstable ? T(TXT_BODE_UNSTABLE) : T(TXT_BODE_RANGE, { a: fr.w0, b: fr.w1 }))}</p>` +
+    `<p><b>${esc(T('Straight-line approximation (button “L asymptotes”)'))}</b></p><ul>` +
+    ASYM_NOTES.map(k => `<li>${esc(T(k))}</li>`).join('') +
+    '</ul>'
+  );
+}
 // Bode plot: gain and phase of the selected curves (and of L(jω) for each sweep run), with the margins.
 // The curves are drawn from frB (the range set by hand, or the automatic one); the margins always come from fr.
 export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   const showL = $('bodeL').checked,
-    showS = $('bodeS').checked;
+    showS = $('bodeS').checked,
+    spec = (k: SpecKey) => S.spec.show && specOn(k);
   const sets = bodeCurves(frB),
     vl: PlotLine[] = [];
   if (showL) {
@@ -676,57 +764,8 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   const sw = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).mag })) : [],
     swp = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).ph })) : [],
     runs = showL ? (lastSweep || []).map(r => r.frB || r.fr) : [];
-  // the straight-line approximation of the gain of L, with its break frequencies, and the lines of its factors
-  const showParts = $('bodeAc').checked,
-    asym = $('bodeA').checked || showParts ? bodeAsymptote() : null,
-    drawSum = $('bodeA').checked,
-    asymSeries: PlotSeries[] =
-      asym && drawSum
-        ? [
-            {
-              x: frB.W,
-              y: frB.W.map(asym.gain),
-              color: COLORS.asymptote,
-              width: 2,
-              dash: [6, 4],
-              name: T('L asymptotes'),
-            },
-          ]
-        : [],
-    asymPts =
-      asym && drawSum
-        ? asym.breaks
-            .filter(b => b.w >= frB.W[0] && b.w <= frB.W[frB.W.length - 1])
-            .map(b => ({ x: b.w, y: asym.gain(b.w), color: COLORS.asymptote, shape: 'o' as const }))
-        : [];
-  // the phase approximation, shifted by a multiple of 360° onto the branch of the plotted phase of L
-  const phOff = asym ? 360 * Math.round((frB.ph[0] - asym.phase(frB.W[0])) / 360) : 0,
-    phAsym: PlotSeries[] =
-      asym && drawSum
-        ? [
-            {
-              x: frB.W,
-              y: frB.W.map(w => asym.phase(w) + phOff),
-              color: COLORS.asymptote,
-              width: 2,
-              dash: [6, 4],
-              name: T('L asymptotes'),
-            },
-          ]
-        : [],
-    phPts = asymPts.map(p => ({ ...p, y: asym!.phase(p.x) + phOff }));
-  // the factors: thin lines in their own colors, named in the legend (the shift of the phase goes with K/s^q)
-  const parts = (key: 'gain' | 'ph'): PlotSeries[] =>
-    asym && showParts
-      ? asym.parts.map((p, i) => ({
-          x: frB.W,
-          y: frB.W.map(w => (key === 'gain' ? p.gain(w) : p.phase(w) + (p.kind === 'K' ? phOff : 0))),
-          color: COLORS.asymParts[i % COLORS.asymParts.length],
-          width: 1.4,
-          name: asymPartLabel(asym, p),
-        }))
-      : [];
-  const named = sets.length > 0 || sw.length > 0 || !!asym; // a legend whenever a curve is shown, also a single one
+  const A = bodeAsymCurves(frB);
+  const named = sets.length > 0 || sw.length > 0 || !!A.asym; // a legend whenever a curve is shown, also a single one
   const curves = (key: 'mag' | 'ph') =>
     sets.map(s => ({
       x: frB.W,
@@ -743,71 +782,38 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
     xlabel: T('Frequency ω [rad/s]'),
     vlines: vl,
   };
-  // gain: whole multiples of 20 dB, at least −20 … 20 dB, at most ±120 dB
-  const gr = { lo: Infinity, hi: -Infinity };
-  sets.forEach(s => stretch(gr, s.mag));
-  asymSeries.forEach(s => stretch(gr, s.y));
-  if (!sets.length && !asym) Object.assign(gr, { lo: -20, hi: 20 });
-  gr.lo = Math.max(gr.lo, -120);
-  gr.hi = Math.min(gr.hi, 120);
-  runs.forEach(r =>
-    r.mag.forEach(v => {
-      if (isFinite(v)) {
-        gr.lo = Math.min(gr.lo, Math.max(v, -120));
-        gr.hi = Math.max(gr.hi, Math.min(v, 120));
-      }
-    }),
-  );
+  const [gmin, gmax] = bodeGainRange([...sets.map(s => s.mag), ...A.gain.map(s => s.y)], runs, !sets.length && !A.asym);
   plot($('cvG'), {
     ...common,
-    series: [...sw, ...parts('gain'), ...curves('mag'), ...asymSeries],
-    points: asymPts,
-    ymin: Math.floor(Math.min(gr.lo, -20) / 20) * 20,
-    ymax: Math.ceil(Math.max(gr.hi, 20) / 20) * 20,
+    series: [...sw, ...A.parts('gain'), ...curves('mag'), ...A.gain],
+    points: A.gainPts,
+    ymin: gmin,
+    ymax: gmax,
     ylabel: T('Gain [dB]'),
     hlines: [
       { v: 0, color: COLORS.zeroDb, dash: [3, 3] },
-      ...(S.spec.show && specOn('gm') && showL ? [{ v: -S.spec.gm.v, color: COLORS.spec, dash: [6, 4] }] : []),
-      ...(S.spec.show && specOn('ms') && showS
-        ? [{ v: 20 * Math.log10(S.spec.ms.v), color: COLORS.sensitivity, dash: [2, 3] }]
-        : []),
+      ...(spec('gm') && showL ? [{ v: -S.spec.gm.v, color: COLORS.spec, dash: [6, 4] }] : []),
+      ...(spec('ms') && showS ? [{ v: 20 * Math.log10(S.spec.ms.v), color: COLORS.sensitivity, dash: [2, 3] }] : []),
     ],
     yticks: (a, b) => niceTicks(a, b, 6),
   });
-  // phase: whole multiples of 90°, at least −180 … 0°, at most ±720°
-  const pr = { lo: Infinity, hi: -Infinity };
-  sets.forEach(s => stretch(pr, s.ph));
-  phAsym.forEach(s => stretch(pr, s.y));
-  if (!sets.length) Object.assign(pr, { lo: -180, hi: 0 });
-  runs.forEach(r => stretch(pr, r.ph));
-  pr.lo = Math.max(pr.lo, -720);
-  pr.hi = Math.min(pr.hi, 720);
+  const [pmin, pmax] = bodePhaseRange([...sets.map(s => s.ph), ...A.phase.map(s => s.y)], runs, !sets.length);
   plot($('cvPh'), {
     ...common,
-    series: [...swp, ...parts('ph'), ...curves('ph'), ...phAsym],
-    points: phPts,
-    ymin: Math.floor(Math.min(pr.lo, -180) / 90) * 90,
-    ymax: Math.ceil(Math.max(pr.hi, 0) / 90) * 90,
+    series: [...swp, ...A.parts('ph'), ...curves('ph'), ...A.phase],
+    points: A.phasePts,
+    ymin: pmin,
+    ymax: pmax,
     ylabel: T('Phase [deg]'),
     hlines: [
       { v: -180, color: COLORS.alert, dash: [3, 3] },
-      ...(S.spec.show && specOn('pm') && showL ? [{ v: -180 + S.spec.pm.v, color: COLORS.spec, dash: [6, 4] }] : []),
+      ...(spec('pm') && showL ? [{ v: -180 + S.spec.pm.v, color: COLORS.spec, dash: [6, 4] }] : []),
     ],
-    yticks: (a, b) => {
-      const t: number[] = [];
-      const step = b - a > 360 ? 90 : 45;
-      for (let v = Math.ceil(a / step) * step; v <= b; v += step) t.push(v);
-      return t;
-    },
+    yticks: phaseTicks,
   });
   showBodeRange(frB, frB !== fr);
   $('margins').innerHTML = metricsHTML(marginMetrics(fr));
-  const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  $('bodeNote').innerHTML =
-    `<p>${esc(fr.openUnstable ? T(TXT_BODE_UNSTABLE) : T(TXT_BODE_RANGE, { a: fr.w0, b: fr.w1 }))}</p>` +
-    `<p><b>${esc(T('Straight-line approximation (button “L asymptotes”)'))}</b></p><ul>` +
-    ASYM_NOTES.map(k => `<li>${esc(T(k))}</li>`).join('') +
-    '</ul>';
+  $('bodeNote').innerHTML = bodeNoteHTML(fr);
 }
 
 // The frequency range of the Bode plot in its inputs, and whether it was set by hand

@@ -454,42 +454,89 @@ export function fillScenarioForm(d: Scenario) {
   $('sc-name').value = d.name || '';
   $('sc-note').value = d.note || '';
 }
-export function buildScenarios() {
-  const cur = () => scenarioData($('sc-name').value.trim(), $('sc-note').value.trim(), $('sc-withLayout').checked);
-  $('sc-save').onclick = () => {
-    const d = cur();
-    if (!d.name) {
-      scMsg(T('Enter a name'), true);
-      $('sc-name').focus();
-      return;
+// The scenario of the current settings, with the name, note and layout choice of the form
+const scCurrent = () => scenarioData($('sc-name').value.trim(), $('sc-note').value.trim(), $('sc-withLayout').checked);
+// "Save in this browser": first in the list, replacing one of the same name
+function scSaveHere() {
+  const d = scCurrent();
+  if (!d.name) {
+    scMsg(T('Enter a name'), true);
+    $('sc-name').focus();
+    return;
+  }
+  d.saved = new Date().toISOString();
+  const a = scLoadAll().filter(x => x.name !== d.name);
+  a.unshift(d);
+  scMsg(
+    scSaveAll(a.slice(0, SC_MAX))
+      ? T('Saved "{n}"', { n: d.name })
+      : T('Could not save (browser storage is not available)'),
+    false,
+  );
+  renderScenarios();
+}
+// Copy t to the clipboard; where that is not allowed, show it selected under the buttons to copy by hand
+async function scCopyOrSelect(t: string): Promise<boolean> {
+  const ok = await copyText(t);
+  if (!ok) {
+    $('sc-text').value = t;
+    $('sc-text').select();
+  }
+  return ok;
+}
+// "Load from text": the scenario pasted in the text box
+function scLoadText() {
+  try {
+    const d = parseScenarioText($('sc-text').value);
+    applyScenario(d, { layout: scUseLayout() });
+    fillScenarioForm(d);
+    scMsg(T('Loaded "{n}"', { n: d.name || '' }));
+  } catch (e) {
+    scMsg(T('Could not read the scenario. Paste the whole text copied with "Copy as text".'), true);
+  }
+}
+// "Save to a file": a .json file, or its text selected where the page cannot save files
+async function scExport() {
+  const d = scCurrent();
+  d.saved = new Date().toISOString();
+  const r = await exportScenarioFile(d);
+  if (r === 'saved') scMsg(T('Saved as "{f}" (usually in the Downloads folder)', { f: scFileName(d.name) }));
+  else if (r === 'declined') scMsg('');
+  else {
+    $('sc-text').value = JSON.stringify(d, null, 2);
+    $('sc-text').select();
+    scMsg(T('This page cannot save files. Copy the selected text below and save it as a .json file.'), true);
+  }
+}
+// "Load from a file": the file chosen in the file input
+function scImportChosen() {
+  const f = $('sc-file').files?.[0];
+  if (!f) return;
+  const rd = new FileReader(),
+    failed = () => scMsg(T('Could not read the file. Choose a .json file saved with "Save to a file".'), true);
+  rd.onload = () => {
+    try {
+      const r = importScenarioFile(String(rd.result));
+      scMsg(
+        r.count !== undefined
+          ? T('Added {n} scenario(s) from the file', { n: r.count })
+          : T('Loaded "{n}"', { n: r.name ?? '' }),
+      );
+    } catch (err) {
+      failed();
     }
-    d.saved = new Date().toISOString();
-    const a = scLoadAll().filter(x => x.name !== d.name);
-    a.unshift(d);
-    scMsg(
-      scSaveAll(a.slice(0, SC_MAX))
-        ? T('Saved "{n}"', { n: d.name })
-        : T('Could not save (browser storage is not available)'),
-      false,
-    );
-    renderScenarios();
   };
+  rd.onerror = failed;
+  rd.readAsText(f);
+}
+export function buildScenarios() {
+  $('sc-save').onclick = scSaveHere;
   $('sc-copy').onclick = async () => {
-    const t = scenarioText(cur());
-    const ok = await copyText(t);
-    if (!ok) {
-      $('sc-text').value = t;
-      $('sc-text').select();
-    }
+    const ok = await scCopyOrSelect(scenarioText(scCurrent()));
     scMsg(ok ? T('Copied to the clipboard') : T('Copy the selected text below'), !ok);
   };
   $('sc-link').onclick = async () => {
-    const t = scenarioLink(cur());
-    const ok = await copyText(t);
-    if (!ok) {
-      $('sc-text').value = t;
-      $('sc-text').select();
-    }
+    const ok = await scCopyOrSelect(scenarioLink(scCurrent()));
     scMsg(
       ok
         ? T(
@@ -499,51 +546,13 @@ export function buildScenarios() {
       !ok,
     );
   };
-  $('sc-load').onclick = () => {
-    try {
-      const d = parseScenarioText($('sc-text').value);
-      applyScenario(d, { layout: scUseLayout() });
-      fillScenarioForm(d);
-      scMsg(T('Loaded "{n}"', { n: d.name || '' }));
-    } catch (e) {
-      scMsg(T('Could not read the scenario. Paste the whole text copied with "Copy as text".'), true);
-    }
-  };
-  $('sc-export').onclick = async () => {
-    const d = cur();
-    d.saved = new Date().toISOString();
-    const r = await exportScenarioFile(d);
-    if (r === 'saved') scMsg(T('Saved as "{f}" (usually in the Downloads folder)', { f: scFileName(d.name) }));
-    else if (r === 'declined') scMsg('');
-    else {
-      $('sc-text').value = JSON.stringify(d, null, 2);
-      $('sc-text').select();
-      scMsg(T('This page cannot save files. Copy the selected text below and save it as a .json file.'), true);
-    }
-  };
+  $('sc-load').onclick = scLoadText;
+  $('sc-export').onclick = scExport;
   $('sc-import').onclick = () => {
     $('sc-file').value = '';
     $('sc-file').click();
   };
-  $('sc-file').onchange = () => {
-    const f = $('sc-file').files?.[0];
-    if (!f) return;
-    const rd = new FileReader();
-    rd.onload = () => {
-      try {
-        const r = importScenarioFile(String(rd.result));
-        scMsg(
-          r.count !== undefined
-            ? T('Added {n} scenario(s) from the file', { n: r.count })
-            : T('Loaded "{n}"', { n: r.name ?? '' }),
-        );
-      } catch (err) {
-        scMsg(T('Could not read the file. Choose a .json file saved with "Save to a file".'), true);
-      }
-    };
-    rd.onerror = () => scMsg(T('Could not read the file. Choose a .json file saved with "Save to a file".'), true);
-    rd.readAsText(f);
-  };
+  $('sc-file').onchange = scImportChosen;
   $('taskClose').onclick = () => $('taskBanner').classList.remove('on');
   renderScenarios();
 }

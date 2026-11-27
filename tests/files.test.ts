@@ -101,7 +101,7 @@ test('scenario files: a single scenario is applied; file names are sanitized', (
   );
 });
 
-test('CSV export: time response, frequency response, Nyquist and poles', () => {
+test('CSV export: time response, frequency response, Nyquist, Nichols and poles', () => {
   const a = fresh();
   Object.assign(a.S, { plant: 'third', mode: 'P', Kp: 2 });
   const sim = a.simulate(),
@@ -126,6 +126,13 @@ test('CSV export: time response, frequency response, Nyquist and poles', () => {
   const row = n[100].split(',').map(Number);
   assert.ok(
     near(row[0], fr.W[99], 1e-6 * fr.W[99]) && near(row[1], fr.Lc[99][0], 1e-6) && near(row[2], fr.Lc[99][1], 1e-6),
+  );
+  const ni = lines(a.nichCSV(fr));
+  assert.equal(ni[0], 'omega [rad/s],phase L [deg],gain L [dB]');
+  assert.equal(ni.length, fr.W.length + 1);
+  const nrow = ni[100].split(',').map(Number);
+  assert.ok(
+    near(nrow[0], fr.W[99], 1e-6 * fr.W[99]) && near(nrow[1], fr.ph[99], 1e-6) && near(nrow[2], fr.mag[99], 1e-6),
   );
   const p = lines(a.pzCSV(pz));
   assert.equal(p.filter(l => l.startsWith('closed-loop pole')).length, 3);
