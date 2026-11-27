@@ -7,7 +7,7 @@ import { SPECS, SPEC_KEYS } from './10-definitions.ts';
 import { S } from './11-state.ts';
 import { tuneErr, tuneGains, tuneRule } from './24-tuning.ts';
 import type { TuneResult } from './24-tuning.ts';
-import { compDesign, isCompMethod } from './25-compensator.ts';
+import { COMP_METHODS, compDesign, isCompMethod } from './25-compensator.ts';
 import type { CompDesign, CompMethod, CompSettings } from './25-compensator.ts';
 import { evalSpecs, specIcon } from './27-specs.ts';
 import { $, byId, i18nText } from './40-dom.ts';
@@ -204,25 +204,95 @@ function compStepsLag(d: CompDesign): string[] {
     steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
   return steps;
 }
+// A complex number with its conjugate: −1 ± 2j
+const pairStr = (z: Complex) => (Math.abs(z[1]) < 1e-9 ? numStr(z[0]) : `${numStr(z[0])} ± ${numStr(Math.abs(z[1]))}j`);
+// The steps of a lead design on the root locus: the dominant poles to place, the angle condition, the bisector
+// method, the magnitude condition and the compensator
+function compStepsLocus(c: CompSettings, d: CompDesign): string[] {
+  const n = numStr,
+    steps: string[] = [];
+  if (!d.sd) return steps;
+  const zeta = c.zeta ?? 0.5,
+    wn = c.wn ?? 2;
+  steps.push(
+    T(
+      'Dominant poles to place: s_d = −ζωn ± jωn√(1 − ζ²) = {s} (overshoot ≈ {os} %, settling time ≈ 4/(ζωn) = {ts} s)',
+      {
+        s: pairStr(d.sd),
+        os: n(100 * Math.exp((-Math.PI * zeta) / Math.sqrt(1 - zeta * zeta))),
+        ts: n(4 / (zeta * wn)),
+      },
+    ),
+  );
+  if (d.angP !== undefined && d.phi !== undefined)
+    steps.push(
+      T(
+        'Angle condition ∠C(s_d)P(s_d) = −180°: the plant gives ∠P(s_d) = {a}°, so the lead must add φ = −180° − ∠P(s_d) = {p}°',
+        { a: n(d.angP), p: n(d.phi) },
+      ),
+    );
+  if (d.z !== undefined && d.p !== undefined && d.gamma !== undefined)
+    steps.push(
+      T(
+        'Bisector method: γ = {g}° is the angle at s_d between the horizontal line and the line to the origin; the zero and the pole lie on the rays from s_d at γ/2 ± φ/2: zero z = {z}, pole p = {p}',
+        { g: n(d.gamma), z: n(d.z), p: n(d.p) },
+      ),
+    );
+  if (d.K !== undefined && d.Kc !== undefined && d.T1 !== undefined && d.alpha !== undefined) {
+    steps.push(T('Magnitude condition |C(s_d)P(s_d)| = 1: K = |s_d − p| / (|s_d − z| |P(s_d)|) = {k}', { k: n(d.K) }));
+    steps.push(
+      T('C(s) = K (s − z)/(s − p) = K_c (T₁s + 1)/(αT₁s + 1): K_c = K z/p = {kc}, T₁ = −1/z = {t} s, α = z/p = {a}', {
+        kc: n(d.Kc),
+        t: n(d.T1),
+        a: n(d.alpha),
+      }),
+    );
+  }
+  return steps;
+}
+// The closed-loop poles with the designed lead, and whether s_d is dominant among them
+function compLocusOutcome(d: CompDesign): string {
+  if (!d.cl || !d.sd) return '';
+  const sd = d.sd,
+    list = d.cl.filter(z => z[1] >= -1e-9).sort((a, b) => b[0] - a[0]),
+    slower = list.filter(
+      z => z[0] > sd[0] * 0.999 && Math.hypot(z[0] - sd[0], Math.abs(z[1]) - sd[1]) > 1e-3 * Math.hypot(...sd),
+    );
+  return (
+    `<p><b>${T('Closed-loop poles')}</b>: ${list.map(pairStr).join(', ')}</p>` +
+    (slower.length
+      ? `<p class="err">${T('Poles at least as slow as s_d remain ({p}): s_d is not dominant, and the response differs from the second-order one.', { p: slower.map(pairStr).join(', ') })}</p>`
+      : '')
+  );
+}
 // The steps shown for each kind of compensator design (every kind of COMP_METHODS needs an entry)
 const COMP_STEPS: Record<CompMethod, (c: CompSettings, d: CompDesign) => string[]> = {
   lead: compStepsLead,
   lag: (_c, d) => compStepsLag(d),
   leadlag: compStepsLeadLag,
+  rlead: compStepsLocus,
 };
 // Why no compensator was designed, or the phase margin it gives
 function compOutcomeHTML(c: CompSettings, d: CompDesign): string {
-  const n = numStr;
+  const n = numStr,
+    locus = isCompMethod(c.method) && COMP_METHODS[c.method].locus;
   const err = d.err
     ? `<p class="err">${T(
         {
           'no-crossover': 'No gain crossover: the phase margin is not defined.',
           'not-needed': 'The target phase margin is already met: no compensator is needed.',
-          'too-much': 'More than 80° to add: one lead stage is not enough (use two, or lower the target).',
+          'too-much': locus
+            ? 'The phase to add is more than γ: one lead stage cannot add it (lower ωn or ζ, or use two stages).'
+            : 'More than 80° to add: one lead stage is not enough (use two, or lower the target).',
           'no-frequency': 'No frequency with the required gain or phase was found.',
           'lead-not-needed': 'No phase lead is needed at ωc: a lag compensator is enough.',
           'lag-not-needed': 'No attenuation is needed at ωc: a lead compensator is enough.',
+          'on-locus': 's_d is already on the root locus: the gain K = {k} alone places it (no lead is needed).',
+          'needs-lag':
+            'The phase of P(s_d) is above −180°: a lead cannot place s_d (it would need a phase lag; or choose s_d farther from the origin).',
+          'bad-target': 'Give a damping ratio 0 < ζ < 1 and a natural frequency ωn > 0.',
         }[d.err],
+        { k: n(d.K ?? 0) },
       )}</p>`
     : '';
   const res =
@@ -231,9 +301,9 @@ function compOutcomeHTML(c: CompSettings, d: CompDesign): string {
           d.pm === null
             ? T('no gain crossover')
             : T('phase margin {pm}° at ω = {w} rad/s', { pm: n(d.pm), w: n(d.wgc!) })
-        }${d.pm !== null && d.pm < c.pm - 0.5 ? ` <span class="err">${T('(short of the target: increase θ and design again)')}</span>` : ''}</p>`
+        }${d.pm !== null && d.pm < c.pm - 0.5 && !locus ? ` <span class="err">${T('(short of the target: increase θ and design again)')}</span>` : ''}</p>`
       : '';
-  return err + res;
+  return err + (locus && d.err === undefined ? compLocusOutcome(d) : '') + res;
 }
 export function renderComp() {
   const box = byId('compOut');
@@ -246,18 +316,19 @@ export function renderComp() {
     d = (lastComp = compDesign(c)),
     n = numStr,
     steps: string[] = [];
-  steps.push(
-    d.pm0 === null
-      ? T('With K_c = {k}, |K_c P(jω)| does not cross 0 dB (no gain crossover).', { k: n(c.kc) })
-      : T(
-          'With K_c = {k} (chosen for the steady-state error), K_c P(s) has the gain crossover ω = {w} rad/s and the phase margin {pm}°.',
-          {
-            k: n(c.kc),
-            w: n(d.wgc0!),
-            pm: n(d.pm0),
-          },
-        ),
-  );
+  if (!(isCompMethod(c.method) && COMP_METHODS[c.method].locus))
+    steps.push(
+      d.pm0 === null
+        ? T('With K_c = {k}, |K_c P(jω)| does not cross 0 dB (no gain crossover).', { k: n(c.kc) })
+        : T(
+            'With K_c = {k} (chosen for the steady-state error), K_c P(s) has the gain crossover ω = {w} rad/s and the phase margin {pm}°.',
+            {
+              k: n(c.kc),
+              w: n(d.wgc0!),
+              pm: n(d.pm0),
+            },
+          ),
+    );
   if (isCompMethod(c.method)) steps.push(...COMP_STEPS[c.method](c, d));
   box.innerHTML = `<ol class="comp-steps">${steps.map(s => `<li>${s.replace(/K_c/g, 'K<sub>c</sub>')}</li>`).join('')}</ol>${compOutcomeHTML(c, d)}`;
   $('compApply').disabled = d.err !== undefined;

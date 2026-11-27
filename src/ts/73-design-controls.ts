@@ -103,19 +103,38 @@ export function buildComp() {
       )
         .map(m => `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(COMP_METHODS[m].label)}</option>`)
         .join('')}</select>
-      <label for="compPm">${T('Target phase margin PM* [°]')}</label><input type="number" id="compPm" step="any" min="1" value="${c.pm}">
-      <label for="compKc">${T('Gain K_c (for the steady-state error)').replace('K_c', 'K<sub>c</sub>')}</label><input type="number" id="compKc" step="any" min="0" value="${c.kc}">
-      <label for="compTheta">${T('Allowance θ [°]')}</label><input type="number" id="compTheta" step="any" min="0" value="${c.theta}">
+      <label for="compZeta" id="compZetaL">${T('Damping ratio ζ of the dominant poles')}</label><input type="number" id="compZeta" step="any" min="0.01" max="0.99" value="${c.zeta}">
+      <label for="compWn" id="compWnL">${T('Natural frequency ωn of the dominant poles [rad/s]')}</label><input type="number" id="compWn" step="any" min="0" value="${c.wn}">
+      <label for="compPm" id="compPmL">${T('Target phase margin PM* [°]')}</label><input type="number" id="compPm" step="any" min="1" value="${c.pm}">
+      <label for="compKc" id="compKcL">${T('Gain K_c (for the steady-state error)').replace('K_c', 'K<sub>c</sub>')}</label><input type="number" id="compKc" step="any" min="0" value="${c.kc}">
+      <label for="compTheta" id="compThetaL">${T('Allowance θ [°]')}</label><input type="number" id="compTheta" step="any" min="0" value="${c.theta}">
       <label for="compWc" id="compWcL">${T('New crossover ωc [rad/s]')}</label><input type="number" id="compWc" step="any" min="0" placeholder="${T('auto (phase crossover)')}" value="${c.wc ?? ''}">
     </div>
     <div class="poles" id="compOut"></div>
     <button class="chip" id="compApply">${T('Apply to the controller')}</button>
-    <div class="hint">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); lead-lag: the product of the two; all keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>`;
-  // the new crossover is asked only for the kinds that take it (the lead-lag design)
-  const showWc = () =>
-    (['compWc', 'compWcL'] as const).forEach(
-      id => ($(id).style.display = isCompMethod(c.method) && COMP_METHODS[c.method].askWc ? '' : 'none'),
-    );
+    <div class="hint" id="compHintF">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); lead-lag: the product of the two; all keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>
+    <div class="hint" id="compHintL">${T('Designed on the root locus: the lead C(s) = K (s − z)/(s − p) makes the closed loop have the poles s_d = −ζωn ± jωn√(1 − ζ²). ζ sets the overshoot and ζωn the settling time; the steps show their values.')}</div>`;
+  // each kind shows the settings it uses (the new crossover only for the lead-lag; ζ and ωn for the root locus)
+  const showWc = () => {
+    const ask: readonly string[] = isCompMethod(c.method) ? COMP_METHODS[c.method].ask : [];
+    (
+      [
+        ['zeta', 'compZeta'],
+        ['wn', 'compWn'],
+        ['pm', 'compPm'],
+        ['kc', 'compKc'],
+        ['theta', 'compTheta'],
+        ['wc', 'compWc'],
+      ] as const
+    ).forEach(([k, id]) => {
+      const on = ask.includes(k) ? '' : 'none';
+      $(id).style.display = on;
+      byId(id + 'L').style.display = on;
+    });
+    const locus = isCompMethod(c.method) && COMP_METHODS[c.method].locus;
+    byId('compHintF').style.display = locus ? 'none' : '';
+    byId('compHintL').style.display = locus ? '' : 'none';
+  };
   showWc();
   byId<HTMLSelectElement>('compMethod').onchange = e => {
     c.method = (e.target as HTMLSelectElement).value;
@@ -136,12 +155,14 @@ export function buildComp() {
       ['compPm', 'pm', 1],
       ['compKc', 'kc', 1e-9],
       ['compTheta', 'theta', 0],
+      ['compZeta', 'zeta', 1e-3],
+      ['compWn', 'wn', 1e-9],
     ] as const
   ).forEach(([id, k, lo]) => {
     const inp = byId<HTMLInputElement>(id);
     inp.onchange = () => {
       const v = parseFloat(inp.value);
-      if (isFinite(v) && v >= lo) c[k] = v;
+      if (isFinite(v) && v >= lo && (k !== 'zeta' || v < 1)) c[k] = v;
       inp.value = String(c[k]);
       renderComp();
     };
@@ -159,9 +180,9 @@ export function applyComp() {
   if (prev !== 'custom' && !isTFMode(S)) S.lastPid = prev;
   const m = S.comp.method;
   if (!isCompMethod(m)) return;
-  // the controller of the same name, with the parameters the design gives
-  S.Kc = +S.comp.kc.toPrecision(4);
-  S.mode = m;
+  // the controller the design sets, with the parameters it gives (and its gain, when the design finds it)
+  S.Kc = +(d.Kc ?? S.comp.kc).toPrecision(4);
+  S.mode = COMP_METHODS[m].ctrl;
   for (const p of COMP_METHODS[m].params) S[p] = +(d[p as keyof CompDesign] as number).toPrecision(4);
   (['Kc', 'T1', 'alpha', 'T2', 'beta'] as NumKey[]).forEach(showCtrlParam);
   buildCtrlCustom();

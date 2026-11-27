@@ -6,6 +6,15 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.99.0 (2026-11-27)
+- Pole-zero map: drag a pole or zero of the plant to move it (a real one along the real axis, a complex pair together, to a double pole on the axis); the plant becomes "Enter transfer function" with the new factors, its gain at s = 0 kept, and every plot follows while dragging
+- Time response, tab "Second-order approximation": the dominant closed-loop poles (ζ, ωn) and the textbook formulas of the overshoot, peak time, settling time and rise time beside the simulated values, with whether the approximation holds (the next pole far enough, no zero of Gyr nearby; poles nearly cancelled by a zero left out); an option draws the approximate step response
+- Time response, tab "Modes": for a step, ramp, parabola, impulse or sine reference, y(t) as the sum of the terms of the poles of Y(s) = Gyr(s)R(s) from its partial fractions (repeated and complex poles included), as a formula and a table with the time constants, checked against the simulation; an option draws each term
+- Lead and lag compensator design: "Lead compensator (root locus)" places the dominant poles given by ζ and ωn: the angle condition, the bisector method and the magnitude condition step by step, the closed-loop poles reached (with a warning when they are not dominant), and Apply sets the lead
+- Nyquist plot, tab "Contour mapping": the Nyquist contour in the s-plane with the poles and zeros of L(s), and a slider or a play button moving a point along it while its image L(s) and the arrow from −1 move on the Nyquist plot; the clockwise turns of the arrow add up to N, and Z = N + P at the end
+- User manual (every language) and specification: the new aids; the screenshots of the exercises taken again (the tabs under the time response)
+- Development: update() and redraw() call the files after them through AFTER_UPDATE and DRAW_HOOKS; pixcmp ignores the numbering of MathJax and shows where two texts differ; new tests (tests/learning.test.ts, ui/learning.spec.ts, the root-locus design in tests/compensator.test.ts)
+
 ## v1.98.2 (2026-11-27)
 - Time efficiency (PERFORMANCE.md and the manual) measured again for this version: with every panel, curve and analysis shown a change takes 31–60 ms (0.16–0.28 s on a processor 4 times slower), the page is ready after 0.33 s (1.3 s), and changing the language takes 0.15 s (0.7 s); a new section compares the start-up and the update with version 1.75.0, and the download times are corrected for the larger page
 - Development: npm run performance also times the straight-line approximation, the Nyquist count, the root-locus rules, the Routh–Hurwitz and steady-state panels and the change of language, and shows every curve and analysis; a test checks that the analyses of the loop stay fast

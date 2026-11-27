@@ -59,17 +59,17 @@ export function ctrlTF(st: State = S, w: { b: number; c: number } = { b: 1, c: 1
   }
   return { num, den };
 }
+/** The third-order Padé approximation of e^{−Ls} as Nd(s)/Dd(s) (1/1 when there is no dead time) */
+export function pade3(L: number): { Nd: Poly; Dd: Poly } {
+  return L > 0
+    ? { Nd: [-(L ** 3) / 120, (L * L) / 10, -L / 2, 1], Dd: [L ** 3 / 120, (L * L) / 10, L / 2, 1] }
+    : { Nd: [1], Dd: [1] };
+}
 // Open-loop transfer function L(s) = num/den (dead time replaced by a third-order Padé approximation)
 export function loopRational(st: State = S) {
   const tf = PLANTS[st.plant].tf(st),
     c = ctrlTF(st);
-  let Nd = [1],
-    Dd = [1];
-  if (tf.L > 0) {
-    const L = tf.L;
-    Nd = [-(L ** 3) / 120, (L * L) / 10, -L / 2, 1];
-    Dd = [L ** 3 / 120, (L * L) / 10, L / 2, 1];
-  } // third-order Padé approximation
+  const { Nd, Dd } = pade3(tf.L);
   return { num: trimPoly(pMul(pMul(tf.num, c.num), Nd)), den: trimPoly(pMul(pMul(tf.den, c.den), Dd)), tf, c };
 }
 /** A transfer function of the loop as num(s)·e^{−Ls}/(den0(s) + den1(s)·e^{−Ls}): delay tells whether the numerator

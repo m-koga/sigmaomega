@@ -121,6 +121,24 @@ function followNyquist(g: LoopTF, pieces: ContourPiece[]) {
 // The Nyquist stability criterion for the loop: P open-loop poles in the right half-plane, N clockwise
 // encirclements of −1, Z = N + P closed-loop poles there (null without a loop: the controller gain is zero)
 export function nyquistCount(st: State = S): NyquistCount | null {
+  const lc = loopContour(st);
+  if (!lc) return null;
+  const { theta, through, crossings } = followNyquist(lc.g, lc.contour);
+  const N = Math.round(-theta / (2 * Math.PI)) + 0;
+  return {
+    P: lc.rhp.length,
+    rhp: lc.rhp,
+    axis: lc.axis,
+    N,
+    Z: N + lc.rhp.length,
+    crossings,
+    through,
+    delay: lc.g.delay,
+  };
+}
+// The loop L(s), its poles and zeros, those in the right half-plane and on the imaginary axis, and its Nyquist
+// contour (null without a loop: the controller gain is zero)
+function loopContour(st: State) {
   const g = loopTFs(st).L;
   if (g.num.every(v => v === 0)) return null;
   const poles = groupRoots(polyRoots(g.den0)),
@@ -132,13 +150,77 @@ export function nyquistCount(st: State = S): NyquistCount | null {
     axis = onAxis.filter(p => p.z[1] >= 0).map(p => ({ w: p.z[1], mult: p.mult }));
   const c =
       1e-3 * Math.min(1, ...poles.concat(zeros.map(z => ({ z, mult: 1 }))).map(p => Math.hypot(p.z[0], p.z[1]) || 1)),
+    W = 1e4 * size,
     contour = nyquistContour(
       onAxis.map(p => p.z[1]).sort((a, b) => a - b),
       [...poles.map(p => p.z), ...zeros],
       c,
-      1e4 * size,
+      W,
     );
-  const { theta, through, crossings } = followNyquist(g, contour);
-  const N = Math.round(-theta / (2 * Math.PI)) + 0;
-  return { P: rhp.length, rhp, axis, N, Z: N + rhp.length, crossings, through, delay: g.delay };
+  return { g, poles, zeros, rhp, axis, contour, W };
+}
+/** A point of the Nyquist contour s and its image L(s): arc, the ω of the pole on the imaginary axis it goes around
+ *  (null elsewhere); big: on the large half circle; turns: the clockwise turns of 1 + L(s) about 0 (of L about −1)
+ *  from the start of the contour (−j∞) up to this point */
+export interface NyqPathPoint {
+  s: Complex;
+  l: Complex;
+  arc: number | null;
+  big: boolean;
+  turns: number;
+}
+/** The Nyquist contour sampled for following it: up the imaginary axis from −jW to +jW (around the poles on it),
+ *  then clockwise along the large half circle |s| = W back to −jW; with the poles and zeros of L(s) and P */
+export function nyquistPath(st: State = S): {
+  pts: NyqPathPoint[];
+  poles: Complex[];
+  zeros: Complex[];
+  P: number;
+  W: number;
+} | null {
+  const lc = loopContour(st);
+  if (!lc) return null;
+  const pts: NyqPathPoint[] = [];
+  let turns = 0;
+  const push = (s: Complex, arc: number | null, big: boolean) => {
+    const l = loopAt(lc.g, s),
+      prev = pts[pts.length - 1];
+    if (prev) {
+      let d = Math.atan2(l[1], 1 + l[0]) - Math.atan2(prev.l[1], 1 + prev.l[0]);
+      d -= 2 * Math.PI * Math.round(d / (2 * Math.PI));
+      turns -= d / (2 * Math.PI);
+    }
+    pts.push({ s, l, arc, big, turns });
+  };
+  // samples of a piece, finer where L(s) moves far or turns about −1 quickly
+  for (const pc of lc.contour) {
+    const far = (a: Complex, b: Complex) => {
+      const la = loopAt(lc.g, a),
+        lb = loopAt(lc.g, b),
+        d = Math.hypot(la[0] - lb[0], la[1] - lb[1]),
+        t = Math.abs(Math.atan2(la[1], 1 + la[0]) - Math.atan2(lb[1], 1 + lb[0]));
+      return d > 0.03 * (1 + Math.min(Math.hypot(...la), Math.hypot(...lb))) || Math.min(t, 2 * Math.PI - t) > 0.05;
+    };
+    const fill = (t0: number, t1: number, depth: number) => {
+      if (depth < 12 && far(pc.f(t0), pc.f(t1))) {
+        const m = (t0 + t1) / 2;
+        fill(t0, m, depth + 1);
+        fill(m, t1, depth + 1);
+      } else push(pc.f(t1), pc.arc, false);
+    };
+    const n = 200;
+    if (!pts.length) push(pc.f(pc.t0), pc.arc, false);
+    for (let i = 0; i < n; i++) fill(pc.t0 + ((pc.t1 - pc.t0) * i) / n, pc.t0 + ((pc.t1 - pc.t0) * (i + 1)) / n, 0);
+  }
+  for (let i = 1; i <= 60; i++) {
+    const a = Math.PI / 2 - (Math.PI * i) / 60;
+    push([lc.W * Math.cos(a), lc.W * Math.sin(a)], null, true);
+  }
+  return {
+    pts,
+    poles: lc.poles.flatMap(p => Array<Complex>(p.mult).fill(p.z)),
+    zeros: lc.zeros,
+    P: lc.rhp.length,
+    W: lc.W,
+  };
 }

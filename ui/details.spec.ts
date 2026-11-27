@@ -478,7 +478,7 @@ test('hovering a pole shows its tooltip even without the root locus (regression 
   });
   const b = await boxOf(page, '#cvPZ');
   await page.mouse.move(b.x + q.x, b.y + q.y);
-  await expect(page.locator('#pzTip')).toHaveText(q.label);
+  await expect(page.locator('#pzTip')).toContainText(q.label); // with the hint that the plant's poles can be dragged
 });
 
 test('the design region of the pole specifications is drawn on the pole-zero map', async ({ page }) => {
@@ -546,7 +546,7 @@ test('the response metrics and the simulation time share one place, chosen with 
   await expect(tab('tdisp')).toHaveAttribute('aria-selected', 'true');
   expect(
     await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('#tinfo .ptab')].map(b => b.tabIndex)),
-  ).toEqual([-1, -1, 0]);
+  ).toEqual([-1, -1, -1, -1, 0]);
   // changing how the metrics are shown brings their tab forward
   await pickView(page, '#mview', 'table');
   await expect(tab('metrics')).toHaveAttribute('aria-selected', 'true');
@@ -570,7 +570,7 @@ test('every area under a plot has its tabs; each tab shows its section, remember
       await page.click(`#${a} [data-itab=${k}]`);
       await expect(page.locator(`#${a} .tsec[data-sec=${k}]`)).toBeVisible();
       for (const o of keys.filter(o => o !== k)) await expect(page.locator(`#${a} .tsec[data-sec=${o}]`)).toBeHidden();
-      if (['pzrules', 'nyqcrit', 'bodeasym', 'bodenote'].includes(k))
+      if (['pzrules', 'nyqcrit', 'bodeasym', 'bodenote', 'so2', 'modes', 'nyqmap'].includes(k))
         expect((await boxOf(page, `#${a}`)).height).toBeGreaterThan(h);
       else expect((await boxOf(page, `#${a}`)).height).toBe(h);
     }

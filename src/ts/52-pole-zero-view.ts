@@ -47,8 +47,8 @@ export function pzHover(mx: number, my: number): number | null {
   };
   const p = nearest(pzPts, 10),
     l = p ? null : nearest(pzLocusPts, 7);
-  $('cvPZ').style.cursor = l ? 'pointer' : '';
-  if (p) showPZTip(pzLabel(p.p), p.px, p.py);
+  $('cvPZ').style.cursor = p && isPlantPoint(p.p) ? 'grab' : l ? 'pointer' : '';
+  if (p) showPZTip(pzLabel(p.p) + (isPlantPoint(p.p) ? '  ' + T('(drag to move it)') : ''), p.px, p.py);
   else if (l) {
     const [x, y] = l.z,
       wn = Math.hypot(x, y);
@@ -60,4 +60,24 @@ export function pzHover(mx: number, my: number): number | null {
     );
   } else $('pzTip').style.display = 'none';
   return l ? l.k : null;
+}
+// A pole or zero of the plant: it can be dragged to another place
+const isPlantPoint = (p: PZPoint) => p.k === 'pp' || p.k === 'pz';
+/** The pole or zero of the plant drawn within 10 px of (mx, my), or null */
+export function pzPlantAt(mx: number, my: number): PZPoint | null {
+  let best: PZPoint | null = null,
+    bd = 10;
+  for (const q of pzPts) {
+    const d = Math.hypot(q.px - mx, q.py - my);
+    if (isPlantPoint(q.p) && d < bd) [bd, best] = [d, q.p];
+  }
+  return best;
+}
+/** The point of the complex plane at (mx, my) [px on the canvas] in the current view */
+export function pzWorldAt(mx: number, my: number): Complex {
+  const cv = $('cvPZ'),
+    v = pzCurrentView();
+  const ox = PZM.l + (cv.clientWidth - PZM.l - PZM.r) / 2,
+    oy = PZM.t + (cv.clientHeight - PZM.t - PZM.b) / 2;
+  return [v.cx + (mx - ox) / v.k, v.cy - (my - oy) / v.k];
 }

@@ -35,6 +35,7 @@ export const COLORS = {
   asymptote: '#d81b60', // straight-line approximation of the gain of L(jω) and its break frequencies (a color apart
   // from the blue of L, which it covers away from the breaks)
   mContour: 'rgba(110,110,120,.45)', // M contours of the Nichols chart
+  approx: '#d81b60', // second-order approximation of the time response (dashed)
   // the straight lines of the factors of L(jω) that add up to its asymptotes (K/s^q, each pole or zero, dead time)
   asymParts: ['#ef6c00', '#2e7d32', '#6a1b9a', '#00838f', '#9e9d24', '#5d4037', '#1565c0', '#c62828'],
   mLabel: 'rgba(90,90,100,.9)', // their labels
@@ -269,6 +270,8 @@ export const INFO_AREAS: Record<string, { label: string; tabs: [string, string][
     label: 'Response metrics and simulation time',
     tabs: [
       ['metrics', 'Response metrics'],
+      ['so2', 'Second-order approximation'],
+      ['modes', 'Modes'],
       ['tsim', 'Simulation time'],
       ['tdisp', 'Display'],
     ],
@@ -287,6 +290,7 @@ export const INFO_AREAS: Record<string, { label: string; tabs: [string, string][
     tabs: [
       ['nyqopts', 'Options'],
       ['nyqcrit', 'Nyquist criterion'],
+      ['nyqmap', 'Contour mapping'],
       ['nyqnote', 'Note'],
     ],
   },

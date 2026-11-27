@@ -475,6 +475,16 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 #nyqCrit .verdict.ok{color:#2e7d32}
 #nyqCrit .verdict.bad{color:#c62828}
 table.pzt.rules th,table.pzt.rules td{text-align:left;vertical-align:top;white-space:normal}
+table.pzt.so2 td:nth-child(2),table.pzt.modes td:nth-child(2){font-family:inherit}
+table.pzt.modes td:last-child,table.pzt.modes th:last-child{text-align:left;font-family:inherit;white-space:normal}
+.so2-notes{margin:4px 0;padding-left:20px}
+.so2-notes.warn li{color:#a5520f}
+.modes-sum{overflow-x:auto}
+.nyqmap-row{display:flex;gap:10px;align-items:center}
+.nyqmap-row input[type=range]{flex:1}
+.nyqmap-body{display:flex;gap:12px;align-items:flex-start;margin:8px 0}
+.cv-ns{width:240px;height:240px;flex:none;border:1px solid var(--line);border-radius:6px;background:#fff}
+.nyqmap-read{font-size:13px;line-height:1.6;min-width:0}
 table.pzt.rules td:first-child{font-family:inherit;width:45%}
 table.pzt.rules.asym td:first-child{font-family:"JetBrains Mono",monospace;width:auto}
 table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"JetBrains Mono",monospace;font-size:.88em}

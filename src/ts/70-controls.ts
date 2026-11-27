@@ -251,3 +251,24 @@ export function showRoots() {
   S.cUnstable = r.unstable;
   $('cPoles').innerHTML = r.html;
 }
+/** Set the plant to the transfer function numStr/denStr (from moving a pole or zero on the pole-zero map): the plant
+ *  becomes "Enter transfer function", keeping its dead time, and its inputs show the new polynomials */
+export function setPlantTF(numStr: string, denStr: string) {
+  if (S.plant !== 'custom') {
+    S.L_custom = PLANTS[S.plant].tf(S).L; // the dead time of the plant (0 for the plants without one)
+    S.plant = 'custom';
+    $('plant').value = 'custom';
+  }
+  S.cNumStr = numStr;
+  S.cDenStr = denStr;
+  S.cNum = parsePoly(numStr);
+  S.cDen = parsePoly(denStr);
+  if (document.getElementById('cNum')) {
+    $('cNum').value = numStr;
+    $('cDen').value = denStr;
+    $('cErr').textContent = '';
+    showRoots();
+  } else buildPlant();
+  scheduleTeX();
+  update();
+}

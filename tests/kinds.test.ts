@@ -215,9 +215,9 @@ test('panels: each has its card with a title row in the page, and the CSV button
   assert.ok(!/data-tab=/.test(pageHTML));
 });
 
-test('compensator designs: each sets the controller of its name, with parameters it has', () => {
+test('compensator designs: each sets its kind of controller, with parameters it has', () => {
   for (const [m, d] of Object.entries(a.COMP_METHODS)) {
-    const c = a.CONTROLLERS[m];
+    const c = a.CONTROLLERS[d.ctrl];
     assert.ok(c, `${m}: a kind of controller`);
     for (const p of [...d.params, 'Kc']) assert.ok(c.p.includes(p as NumKey), `${m}: ${p} is a parameter of it`);
   }
@@ -225,7 +225,7 @@ test('compensator designs: each sets the controller of its name, with parameters
   // margin grows (a single lead may stay short of the target for this plant: that is the method, not an error)
   const b = fresh();
   Object.assign(b.S, { plant: 'third', mode: 'P' });
-  for (const m of Object.keys(b.COMP_METHODS)) {
+  for (const m of Object.keys(b.COMP_METHODS).filter(k => !b.COMP_METHODS[k as 'lead'].locus)) {
     const d = b.compDesign({ method: m, pm: 50, kc: 4, theta: 5, wc: null });
     assert.equal(d.err, undefined, `${m}: ${d.err}`);
     for (const p of b.COMP_METHODS[m as 'lead'].params) {

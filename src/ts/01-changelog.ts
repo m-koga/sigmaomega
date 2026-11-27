@@ -8,6 +8,28 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.99.0',
+    d: '2026-11-27',
+    en: [
+      'Pole-zero map: drag a pole or zero of the plant to move it (a real one along the real axis, a complex pair together, to a double pole on the axis); the plant becomes "Enter transfer function" with the new factors, its gain at s = 0 kept, and every plot follows while dragging',
+      'Time response, tab "Second-order approximation": the dominant closed-loop poles (ζ, ωn) and the textbook formulas of the overshoot, peak time, settling time and rise time beside the simulated values, with whether the approximation holds (the next pole far enough, no zero of Gyr nearby; poles nearly cancelled by a zero left out); an option draws the approximate step response',
+      'Time response, tab "Modes": for a step, ramp, parabola, impulse or sine reference, y(t) as the sum of the terms of the poles of Y(s) = Gyr(s)R(s) from its partial fractions (repeated and complex poles included), as a formula and a table with the time constants, checked against the simulation; an option draws each term',
+      'Lead and lag compensator design: "Lead compensator (root locus)" places the dominant poles given by ζ and ωn: the angle condition, the bisector method and the magnitude condition step by step, the closed-loop poles reached (with a warning when they are not dominant), and Apply sets the lead',
+      'Nyquist plot, tab "Contour mapping": the Nyquist contour in the s-plane with the poles and zeros of L(s), and a slider or a play button moving a point along it while its image L(s) and the arrow from −1 move on the Nyquist plot; the clockwise turns of the arrow add up to N, and Z = N + P at the end',
+      'User manual (every language) and specification: the new aids; the screenshots of the exercises taken again (the tabs under the time response)',
+      'Development: update() and redraw() call the files after them through AFTER_UPDATE and DRAW_HOOKS; pixcmp ignores the numbering of MathJax and shows where two texts differ; new tests (tests/learning.test.ts, ui/learning.spec.ts, the root-locus design in tests/compensator.test.ts)',
+    ],
+    ja: [
+      '極・零点配置：制御対象の極や零点をドラッグして動かせるようにした（実数のものは実軸に沿って、複素共役の対は一緒に。実軸に寄せると重根）。制御対象は新しい因数の「伝達関数を入力（任意）」になり（s = 0 のゲインは保つ）、ドラッグ中もすべての図が追従する',
+      '時間応答のタブ「2次系近似」：閉ループの代表極（ζ、ωn）と、オーバーシュート・行き過ぎ時間・整定時間・立ち上がり時間の教科書の公式をシミュレーションの値と並べ、近似が成り立つか（次の極が十分遠いか、Gyr の零点が近くにないか。零点でほぼ打ち消される極は除く）を示す。選択で近似のステップ応答を描く',
+      '時間応答のタブ「モード」：ステップ・ランプ・定加速度・インパルス・正弦波の目標値について、y(t) を Y(s) = Gyr(s)R(s) の部分分数展開による極ごとの項の和（重根・複素数の極も）として、式と時定数付きの表で示し、シミュレーションと照合する。選択で各項を描く',
+      '位相進み・遅れ補償器の設計：「位相進み補償器（根軌跡法）」を追加。ζ と ωn で決まる代表極を配置する。角度条件・二等分線法・大きさの条件を順に示し、補償後の閉ループ極（代表極にならないときは注意）を示す。「制御器に適用」で位相進み補償器を設定する',
+      'ナイキスト線図のタブ「経路の写像」：L(s) の極と零点を描いた s 平面のナイキスト経路と、その上の点をスライダーか再生ボタンで動かすと、ナイキスト線図上の像 L(s) と −1 からの矢印が一緒に動く。矢印が時計回りに回った回数の合計が N になり、最後に Z = N + P を示す',
+      '利用者マニュアル（全言語）と仕様書：新しい機能を説明した。例題のスクリーンショットを撮り直した（時間応答の下のタブ）',
+      '開発：update() と redraw() は後のファイルを AFTER_UPDATE と DRAW_HOOKS を通して呼ぶ。pixcmp は MathJax の通し番号を無視し、テキストの違う位置を示す。テストを追加した（tests/learning.test.ts、ui/learning.spec.ts、tests/compensator.test.ts の根軌跡法による設計）',
+    ],
+  },
+  {
     v: '1.98.2',
     d: '2026-11-27',
     en: [

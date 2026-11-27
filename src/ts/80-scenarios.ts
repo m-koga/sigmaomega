@@ -228,6 +228,8 @@ export const VIEW_CHECKS = [
   'bodeAc',
   'timePlant',
   'timePlantOnly',
+  'timeSO2',
+  'timeModes',
   'loopL',
   'loopS',
   'loopT',

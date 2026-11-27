@@ -80,7 +80,13 @@ async function render(file: string, c: Case) {
   await page.waitForTimeout(300); // the Routh table and the steady-state errors are rendered after 120 ms
   // the text and tables of the panels and of the analysis cards (the tuning and compensator cards render only
   // while they are shown)
-  const html = (ids: string[]) => ids.map(id => document.getElementById(id)?.innerHTML ?? '');
+  // (MathJax numbers its formulas and their glyphs in the order typeset: the numbers say nothing about what is shown)
+  const html = (ids: string[]) =>
+    ids.map(id =>
+      (document.getElementById(id)?.innerHTML ?? '')
+        .replace(/ ctxtmenu_counter="\d+"/g, '')
+        .replace(/MJX-\d+-/g, 'MJX-'),
+    );
   const text = await page.evaluate(html, [
     ...['metrics', 'margins', 'pzTable', 'pzRange', 'pzBanner', 'sw-table', 'specSum', 'ctrl-info'],
     ...['routhBox', 'sseBox', 'bodeAsym', 'bodeNote', 'nyqCrit', 'pzRulesBox', 'diagBox'],
@@ -129,7 +135,13 @@ for (const c of cases) {
   a.text.forEach((t, i) => {
     if (t !== b.text[i]) {
       bad++;
-      console.log(`DIFF ${c.name}: text #${i}\n  old: ${t.slice(0, 300)}\n  new: ${b.text[i].slice(0, 300)}`);
+      // shown from a little before the first character that differs
+      let k = 0;
+      while (k < t.length && t[k] === b.text[i][k]) k++;
+      const from = Math.max(0, k - 80);
+      console.log(
+        `DIFF ${c.name}: text #${i} at ${k}\n  old: ${t.slice(from, from + 300)}\n  new: ${b.text[i].slice(from, from + 300)}`,
+      );
     }
   });
   console.log(

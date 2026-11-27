@@ -37,6 +37,10 @@ export function scheduleRedraw() {
       redraw();
     });
 }
+/** What the files after this one add: AFTER_UPDATE, called by update() after the computation (the panels rendered a
+ *  moment after a change); DRAW_HOOKS, called by redraw() before and after drawing a panel */
+export const AFTER_UPDATE: (() => void)[] = [];
+export const DRAW_HOOKS: Partial<Record<PanelKey, { before: (() => void)[]; after: (() => void)[] }>> = {};
 // Compute everything for the current settings and draw it
 export function update() {
   syncControls();
@@ -48,6 +52,7 @@ export function update() {
   renderPoles();
   scheduleRouth();
   scheduleSSE();
+  AFTER_UPDATE.forEach(f => f());
   renderSpecs();
   renderTune();
   renderComp();
@@ -75,8 +80,10 @@ const PANEL_DRAW: Record<PanelKey, (() => void) | null> = {
   },
   nyq: () => {
     if (!lastFr) return;
+    DRAW_HOOKS.nyq?.before.forEach(f => f());
     drawNyq(lastFr);
     renderNyqCrit();
+    DRAW_HOOKS.nyq?.after.forEach(f => f());
   },
   nich: () => lastFr && drawNich(lastFr),
   pz: () => {

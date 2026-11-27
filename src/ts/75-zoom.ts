@@ -11,9 +11,11 @@ import { drawTime } from './46-time-plot.ts';
 import { bodeDescDefault, drawBode } from './47-bode-plot.ts';
 import { drawNyq } from './48-nyquist-plot.ts';
 import { PZM, drawPZ, pzCurrentView, resetPZView } from './50-pole-zero-map.ts';
-import { pzHover, pzZoomAt } from './52-pole-zero-view.ts';
+import { movePlantRoot, snapPoint } from './29-plant-roots.ts';
+import { pzHover, pzPlantAt, pzWorldAt, pzZoomAt } from './52-pole-zero-view.ts';
 import { syncBlockDiagram } from './53-block-diagram.ts';
 import { scheduleRedraw, update } from './62-update.ts';
+import { setPlantTF } from './70-controls.ts';
 import { applyLoopGain } from './73-design-controls.ts';
 
 // Help text of a zoomable plot and its buttons: [data-z, tooltip, text (translated when it is a word)]
@@ -121,6 +123,30 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     zoomPlot(cv, b.dataset.z === 'in' ? 1.4 : 1 / 1.4, t.m.l + t.pw / 2, t.m.t + t.ph / 2, { x: true, y: true });
   }),
 );
+// A pole or zero of the plant being dragged on the pole-zero map (its kind and where it is now), or null
+let plantDrag: { kind: 'p' | 'z'; at: Complex } | null = null;
+// Pointer down on the map: start dragging the plant's pole or zero under it (true), or nothing (false)
+function plantDragStart(cv: HTMLCanvasElement, e: PointerEvent): boolean {
+  const r = cv.getBoundingClientRect(),
+    hit = pzPlantAt(e.clientX - r.left, e.clientY - r.top);
+  if (!hit) return false;
+  pzCurrentView(); // the view stays as it is while the pole or zero is moved
+  plantDrag = { kind: hit.k === 'pp' ? 'p' : 'z', at: hit.z };
+  cv.style.cursor = 'grabbing';
+  return true;
+}
+// Pointer moved or released while dragging a pole or zero of the plant: move it, or end (true when dragging)
+function plantDragMove(cv: HTMLCanvasElement, e: PointerEvent, end: boolean): boolean {
+  if (!plantDrag) return false;
+  if (end) {
+    plantDrag = null;
+    cv.style.cursor = '';
+    return true;
+  }
+  const r = cv.getBoundingClientRect();
+  plantDrag.at = movePlantPoint(plantDrag.kind, plantDrag.at, e.clientX - r.left, e.clientY - r.top);
+  return true;
+}
 // Interaction with the map: wheel to zoom, drag to pan, double-click or Fit to reset the view, tooltip on hover,
 // click on the root locus to apply its gain; buttons to zoom and save as PNG; check boxes of what is shown
 (() => {
@@ -147,6 +173,7 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
   cv.addEventListener('pointerdown', e => {
     if (e.button !== 0) return;
     cv.setPointerCapture(e.pointerId);
+    if (plantDragStart(cv, e)) return;
     const v = pzCurrentView();
     drag = { x: e.clientX, y: e.clientY, cx: v.cx, cy: v.cy };
     moved = 0;
@@ -154,6 +181,7 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     hideTip();
   });
   cv.addEventListener('pointermove', e => {
+    if (plantDragMove(cv, e, false)) return;
     if (drag) {
       moved = Math.max(moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
       if (moved < 4) return;
@@ -167,6 +195,7 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     hoverK = pzHover(e.clientX - r.left, e.clientY - r.top);
   });
   const end = (e: PointerEvent) => {
+    if (plantDragMove(cv, e, true)) return;
     const click = drag && moved < 4;
     drag = null;
     cv.classList.remove('panning');
@@ -191,6 +220,20 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     id => ($(id).onchange = () => drawPZ(lastPZ)),
   );
 })();
+// Move the plant's pole or zero at `at` to the point under (mx, my) on the pole-zero map: snapped to a step of a few
+// pixels and to the real axis (a real root stays on it). The plant becomes the new transfer function. Returns the
+// new place of the dragged root, and shows its value in the tooltip
+function movePlantPoint(kind: 'p' | 'z', at: Complex, mx: number, my: number): Complex {
+  const k = pzCurrentView().k,
+    w = pzWorldAt(mx, my),
+    to = snapPoint(at[1] === 0 ? [w[0], 0] : w, Math.pow(10, Math.ceil(Math.log10(3 / k))), 6 / k);
+  if (to[0] === at[0] && to[1] === at[1]) return at;
+  const m = movePlantRoot(kind, at, to);
+  if (!m) return at;
+  setPlantTF(m.numStr, m.denStr);
+  pzHover(mx, my);
+  return to;
+}
 // Options of the Bode and Nyquist plots: redraw when a check box changes; the description line of the Bode
 // curve buttons shows the hovered or focused one, otherwise the curves that are shown
 (() => {
@@ -237,6 +280,12 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     resetBodeViews();
     update();
   };
+  (['timeSO2', 'timeModes'] as const).forEach(
+    id =>
+      ($(id).onchange = () => {
+        if (shownPanels.has('time') && lastSim) drawTime(lastSim);
+      }),
+  );
   (['timePlant', 'timePlantOnly'] as const).forEach(
     id =>
       ($(id).onchange = () => {

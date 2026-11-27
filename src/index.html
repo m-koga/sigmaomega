@@ -235,6 +235,12 @@ window.MathJax = {
       <div class="tsec" data-sec="tdisp">
       <div class="pz-opts zoomable" id="timeOpts"><label class="chk"><input type="checkbox" id="timePlantOnly"><span data-i18n>Only the plant alone: no reference and no feedback loop; the input set as the reference drives P(s) directly (the metrics are those of the plant)</span></label><label class="chk"><input type="checkbox" id="timePlant"><span data-i18n>Response of the plant alone to r(t) (open loop: P(s) driven by the reference, without the controller and the feedback)</span></label></div>
       </div>
+      <div class="tsec tall" data-sec="so2">
+      <div class="zoomable so2-box" id="so2Wrap"><label class="chk"><input type="checkbox" id="timeSO2"><span data-i18n>Draw the step response of the approximation (dashed, with the same final value)</span></label><div id="so2Box"></div></div>
+      </div>
+      <div class="tsec tall" data-sec="modes">
+      <div class="zoomable modes-box" id="modesWrap"><label class="chk"><input type="checkbox" id="timeModes"><span data-i18n>Draw the term of each pole on the plot (thin lines; the forced response dashed)</span></label><div id="modesBox"></div></div>
+      </div>
       <div class="tsec" data-sec="tsim">
       <div class="row tsim-row" id="tsimRow"><div class="top"><span data-i18n>Simulation time (log scale: 0.01–10000 s)</span>
           <span class="tsim-num"><input type="number" id="TsimNum" min="0.01" max="10000" step="any"> s</span></div>
@@ -367,6 +373,13 @@ window.MathJax = {
       <div class="tsec tall" data-sec="nyqcrit">
       <div class="zoomable" id="nyqCrit"></div>
       </div>
+      <div class="tsec tall" data-sec="nyqmap">
+      <div class="zoomable nyqmap" id="nyqMapWrap">
+        <div class="nyqmap-row"><button class="tool" id="nyqMapPlay" data-i18n>▶ Play</button><input type="range" id="nyqMapPos" min="0" max="1000" step="1" value="0" title="Position on the Nyquist contour" data-i18n-title></div>
+        <div class="nyqmap-body"><canvas id="cvNS" class="cv-ns"></canvas><div class="nyqmap-read" id="nyqMapRead"></div></div>
+        <div class="note" data-i18n>Left: the Nyquist contour in the s-plane, followed clockwise: up the imaginary axis (to the right of its poles by small half circles), then back along a half circle at infinity. Its point (magenta) and its image L(s) on the plot above move together; the arrow from −1 to L(s) turns N times clockwise along the whole contour, and Z = N + P.</div>
+      </div>
+      </div>
       <div class="tsec" data-sec="nyqnote">
       <div class="note zoomable" id="nyqNote" data-i18n>Solid: ω &gt; 0, dashed: ω &lt; 0 (conjugate). The red × marks (−1, 0). Parts with large |L| fall outside the view so that the region near the origin stays readable.</div>
       </div>
@@ -405,7 +418,7 @@ window.MathJax = {
       </div>
       </div>
       <div class="tsec" data-sec="pzhelp">
-      <div class="note zoomable" id="pzHelp" data-i18n>Scroll to zoom, drag to pan, double-click to fit. Hover over a point to see its value. The light red area is the right half-plane (unstable region). The root locus shows how the closed-loop poles move when the loop gain is multiplied by k (k = 1 is the current setting); click a point on it to apply that gain to the controller.</div>
+      <div class="note zoomable" id="pzHelp" data-i18n>Scroll to zoom, drag to pan, double-click to fit. Hover over a point to see its value; drag a pole or zero of the plant to move it (the plant becomes a transfer function you can edit). The light red area is the right half-plane (unstable region). The root locus shows how the closed-loop poles move when the loop gain is multiplied by k (k = 1 is the current setting); click a point on it to apply that gain to the controller.</div>
       </div>
       <div class="tsec" data-sec="pzbanner">
       <div class="banner zoomable" id="pzBanner"></div>

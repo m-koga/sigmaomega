@@ -76,3 +76,41 @@ test("lead-lag design: Ogata's 20/(s(s + 1)(s + 2)) with a target of 50°", () =
   // a crossover so low that its phase already leaves the margin: a lag compensator is enough
   assert.equal(a.compDesign({ method: 'leadlag', pm: 50, kc: 20, theta: 5, wc: 0.2 }).err, 'lead-not-needed');
 });
+
+test('lead design on the root locus: 4/(s(s + 2)), ζ = 0.5, ωn = 4 (s_d = −2 ± j2√3): φ = 30°, z ≈ −2.93, p ≈ −5.46', () => {
+  // the textbook example (Ogata): the bisector method gives the zero −2.928 and the pole −2(1 + √3) = −5.464
+  const a = fresh();
+  Object.assign(a.S, { plant: 'integ', K: 2, T: 0.5, mode: 'P' }); // 2/(s(0.5s + 1)) = 4/(s(s + 2))
+  const d = a.compDesign({ method: 'rlead', pm: 50, kc: 1, theta: 5, wc: null, zeta: 0.5, wn: 4 });
+  assert.equal(d.err, undefined);
+  assert.ok(near(d.angP!, -210, 1e-9), `∠P(s_d) = ${d.angP}`); // −∠s_d − ∠(s_d + 2) = −120° − 90°
+  assert.ok(near(d.phi!, 30, 1e-9) && near(d.gamma!, 120, 1e-9));
+  assert.ok(near(d.z!, -2.9282, 1e-4) && near(d.p!, -2 * (1 + Math.sqrt(3)), 1e-9), `z = ${d.z}, p = ${d.p}`);
+  assert.ok(near(d.K!, 4.7321, 1e-4), `K = ${d.K}`);
+  assert.ok(near(d.alpha!, d.z! / d.p!, 1e-12) && near(d.T1!, -1 / d.z!, 1e-12) && near(d.Kc!, d.K! * d.alpha!, 1e-12));
+  // the closed loop has the poles s_d (exactly placed) and one more
+  assert.ok(
+    d.cl!.some(z => near(z[0], -2, 1e-9) && near(z[1], 2 * Math.sqrt(3), 1e-9)),
+    JSON.stringify(d.cl),
+  );
+  // applied: the lead controller with these values, and the closed loop of the page has the same poles
+  a.S.comp = { method: 'rlead', pm: 50, kc: 1, theta: 5, wc: null, zeta: 0.5, wn: 4 };
+  Object.assign(a.S, { mode: 'lead', Kc: d.Kc!, T1: d.T1!, alpha: d.alpha! });
+  assert.ok(a.computePZ().cl.some(z => near(z[0], -2, 1e-6) && near(Math.abs(z[1]), 2 * Math.sqrt(3), 1e-6)));
+});
+
+test('lead design on the root locus: the cases with no design', () => {
+  const a = fresh();
+  // 1/(s + 1)³ already passes through −0.5 ± j0.866 (ζ = 0.5, ωn = 1): only the gain, K = 1
+  Object.assign(a.S, { plant: 'third', K: 1, T: 1, mode: 'P' });
+  const on = a.compDesign({ method: 'rlead', pm: 50, kc: 1, theta: 5, wc: null, zeta: 0.5, wn: 1 });
+  assert.equal(on.err, 'on-locus');
+  assert.ok(near(on.K!, 1, 1e-9));
+  // a first-order lag: −90° at s_d, a lead would have to take phase away
+  Object.assign(a.S, { plant: 'first' });
+  assert.equal(a.compDesign({ method: 'rlead', pm: 50, kc: 1, theta: 5, wc: null, zeta: 0.5, wn: 2 }).err, 'needs-lag');
+  // more phase than one stage can add, and a target that is not a complex pair
+  Object.assign(a.S, { plant: 'third' });
+  assert.equal(a.compDesign({ method: 'rlead', pm: 50, kc: 1, theta: 5, wc: null, zeta: 0.3, wn: 5 }).err, 'too-much');
+  assert.equal(a.compDesign({ method: 'rlead', pm: 50, kc: 1, theta: 5, wc: null, zeta: 1, wn: 2 }).err, 'bad-target');
+});

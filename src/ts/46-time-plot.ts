@@ -2,12 +2,15 @@
 // Copyright 2026 Masanobu Koga
 /* ================= Time response plot and its metrics ================= */
 import { T } from './02-i18n.ts';
-import { S, ghosts, lastSweep, refValue } from './11-state.ts';
+import { numStr } from './03-math.ts';
+import { S, ghosts, lastPZ, lastSweep, refValue } from './11-state.ts';
 import { distMetrics, twoDof } from './15-frequency.ts';
 import { impulseMetrics, metricWindow, simulatePlant, sineMetrics, stepMetrics } from './16-simulation.ts';
 import { loopTFs } from './17-loop.ts';
 import { evalSpecs, specIcon, specOn } from './27-specs.ts';
-import { sweepSeries } from './28-sweep.ts';
+import { SWEEP_COLORS, sweepSeries } from './28-sweep.ts';
+import { approxStep, dominantApprox, stepFinal } from './30-second-order.ts';
+import { modeValue, responseModes, sortedModes } from './31-modes.ts';
 import { $ } from './40-dom.ts';
 import { COLORS } from './41-view.ts';
 import { GHOST_COLORS, fmtNum, metricCols, metricsHTML, plot, stretch } from './45-plot.ts';
@@ -19,6 +22,31 @@ export function plantAlone(): PlotSeries[] {
   if (plantRun?.key !== key) plantRun = { key, run: simulatePlant() };
   const r = plantRun.run;
   return [{ x: r.T, y: r.Y, color: COLORS.plant, width: 1.8, dash: [7, 4], name: T('Plant alone (open loop)') }];
+}
+// The step response of the second-order approximation by the dominant poles, when chosen (dashed)
+export function so2Series(sim: SimResult): PlotSeries[] {
+  if (!$('timeSO2').checked || !lastPZ) return [];
+  const a = dominantApprox(lastPZ),
+    yf = stepFinal();
+  if (!a || yf === null) return [];
+  const y = approxStep(a, sim.T, yf, S.rT0);
+  return [{ x: sim.T, y, color: COLORS.approx, width: 1.8, dash: [3, 3], name: T('Second-order approximation') }];
+}
+// The term of each pole of the response (its modes) as thin curves, when chosen: at most 8, the forced response dashed
+export function modeSeries(sim: SimResult): PlotSeries[] {
+  const r = $('timeModes').checked ? responseModes() : null;
+  if (!r) return [];
+  const pole = (z: Complex) => (z[1] === 0 ? numStr(z[0]) : `${numStr(z[0])} ± ${numStr(z[1])}j`);
+  return sortedModes(r)
+    .slice(0, 8)
+    .map((m, i) => ({
+      x: sim.T,
+      y: sim.T.map(t => modeValue(m, t - r.t0)),
+      color: SWEEP_COLORS[i % SWEEP_COLORS.length],
+      width: 1.3,
+      dash: m.kind === 'input' ? [6, 3] : undefined,
+      name: m.kind === 'input' ? T('Forced response ({p})', { p: pole(m.p) }) : T('Term of {p}', { p: pole(m.p) }),
+    }));
 }
 // Time response: output y(t) and control input u(t) with their metrics
 export function drawTime(sim: SimResult) {
@@ -33,6 +61,7 @@ export function drawTime(sim: SimResult) {
   const tmax = S.Tsim;
   const vl: PlotLine[] = S.dOn && S.td < tmax ? [{ v: S.td, color: COLORS.alert, label: T('Disturbance') }] : [];
   if (S.refType === 'impulse' && S.rT0 < tmax) vl.push({ v: S.rT0, color: COLORS.reference, label: T('Impulse') });
+  const approx = [...so2Series(sim), ...modeSeries(sim)];
   plot($('cvY'), {
     series: [
       ...ghosts.map((gh, i) => ({
@@ -46,10 +75,14 @@ export function drawTime(sim: SimResult) {
       ...sweepSeries(r => ({ x: r.sim.T, y: r.sim.Y })),
       ...plantAlone(),
       { x: sim.T, y: sim.Y, color: COLORS.output, width: 2.4, name: T('Output y') },
+      ...approx,
     ],
     xmin: 0,
     xmax: tmax,
-    ...outputRange(sim),
+    ...outputRange(
+      sim,
+      approx.map(a => a.y),
+    ),
     xlabel: T('Time t [s]'),
     ylabel: 'y',
     vlines: vl,
@@ -156,7 +189,7 @@ export function plantMetrics(run: ReturnType<typeof simulatePlant>): Metric[] {
 // Vertical range of y(t): the reference, held responses, sweep runs, the output and the specification lines that
 // are shown, leaving out values far beyond the reference (automatic range when the response diverges or the
 // reference is zero)
-export function outputRange(sim: SimResult): { ymin?: number; ymax?: number } {
+export function outputRange(sim: SimResult, extra: number[][] = []): { ymin?: number; ymax?: number } {
   const rmax = Math.max(0, ...sim.R.map(Math.abs));
   if (sim.diverged || !(rmax > 0)) return {};
   const r = { lo: 0, hi: 0 };
@@ -166,6 +199,7 @@ export function outputRange(sim: SimResult): { ymin?: number; ymax?: number } {
     ...(lastSweep || []).filter(w => !w.sim.diverged).map(w => w.sim.Y),
     ...plantAlone().map(s => s.y), // a diverging plant leaves the plot (only values near r count)
     sim.Y,
+    ...extra, // the curves of the approximation and of the modes
   ];
   ys.forEach(a => stretch(r, a, v => isFinite(v) && Math.abs(v) < 10 * rmax + 5));
   // the specification lines that are shown (overshoot limit, settling band, error limits) stay inside the plot
