@@ -33,6 +33,8 @@ export const COLORS = {
   locusRules: '#00838f', // asymptotes, breakaway points, imaginary-axis crossings, departure and arrival angles
   nyqCrossing: '#00838f', // crossings of the Nyquist plot with the real axis to the left of −1
   asymptote: '#0d47a1', // straight-line approximation of the gain of L(jω) and its break frequencies
+  mContour: 'rgba(110,110,120,.45)', // M contours of the Nichols chart
+  mLabel: 'rgba(90,90,100,.9)', // their labels
   dampingGrid: 'rgba(123,79,163,.35)', // ζ–ωn grid lines
   dampingLabel: 'rgba(123,79,163,.8)', // ζ–ωn grid labels
   // limits and specifications
@@ -44,8 +46,8 @@ export const COLORS = {
 };
 // Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s), loop: the
 // transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (these two show formulas), poles: the poles of
-// P(s), C(s) and of the transfer functions of the loop (a table), routh: the Routh–Hurwitz stability test, sse: the system type and the steady-state errors
-export const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'pz'] as const;
+// P(s), C(s) and of the transfer functions of the loop (a table), routh: the Routh–Hurwitz stability test, sse: the system type and the steady-state errors, nich: the Nichols chart
+export const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'nich', 'pz'] as const;
 // Panels shown when nothing is stored
 export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
 // Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels

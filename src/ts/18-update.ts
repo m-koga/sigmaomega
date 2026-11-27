@@ -7,7 +7,7 @@ import { simulate } from './08-simulation.ts';
 import { computePZ, resetLoopCache } from './09-loop.ts';
 import { sweepRuns } from './12-sweep.ts';
 import { shownPanels } from './14-view.ts';
-import { drawBode, drawNyq, drawTime } from './15-drawing.ts';
+import { drawBode, drawNich, drawNyq, drawTime } from './15-drawing.ts';
 import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
   renderBodeAsym,
@@ -66,6 +66,7 @@ export function redraw() {
     drawNyq(lastFr);
     renderNyqCrit();
   }
+  if (shownPanels.has('nich') && lastFr) drawNich(lastFr);
   if (shownPanels.has('pz') && lastPZ) {
     drawPZ(lastPZ);
     pzInfo(lastPZ);

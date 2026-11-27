@@ -420,6 +420,7 @@ export const PLOTS: Record<string, PlotDef> = {
   cvG: { label: 'Gain plot', file: 'bode_gain', zoom: true, linkX: 'cvPh' },
   cvPh: { label: 'Phase plot', file: 'bode_phase', zoom: true, linkX: 'cvG' },
   cvN: { label: 'Nyquist plot', file: 'nyquist', zoom: true, keepAspect: true },
+  cvNi: { label: 'Nichols chart', file: 'nichols', zoom: true },
   cvPZ: { label: 'Pole-zero map plot', file: 'pole_zero_map', zoom: false },
 };
 export const EXAMPLES: { label: string; n: string; d: string }[] = [

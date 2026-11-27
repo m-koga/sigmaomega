@@ -45,6 +45,7 @@ window.MathJax = {
       <button class="tab" type="button" data-tab="sse" aria-pressed="false" data-i18n>Steady-state error</button>
       <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
       <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
+      <button class="tab" type="button" data-tab="nich" aria-pressed="false" data-i18n>Nichols chart</button>
       <button class="tab" type="button" data-tab="pz" aria-pressed="false" data-i18n>Pole-zero map</button>
       <div class="vb-ddsep"></div>
       <button class="tool" type="button" id="panelsAll" data-i18n>All</button>
@@ -353,6 +354,14 @@ window.MathJax = {
       </div>
       </div>
       <div class="hgrip" data-scale="ninfo"></div>
+    </div>
+
+    <!-- Nichols chart: the gain of L(jω) against its phase, over the M contours of the closed loop -->
+    <div class="card tabpanel" id="panel-nich">
+      <div class="h2row"><h2 data-i18n>Nichols chart of the open-loop L(jω)</h2><button class="tool" data-csv="nich" title="Save the data of this plot as a CSV file" data-i18n-title data-i18n>Save data (CSV)</button></div>
+      <div class="plot-wrap"><canvas id="cvNi" class="cv-nyq"></canvas></div>
+      <div class="hgrip" data-target="cvNi" data-min="200" data-max="1400"></div>
+      <div class="note" id="nichNote" data-i18n>Horizontal: phase of L(jω), vertical: its gain. Gray: M contours, where the closed loop |T(jω)| is constant (labels in dB); the largest M the curve touches is the resonance peak Mt. The red × marks the critical point (−180°, 0 dB): for a stable minimum-phase loop the curve passes below it; its gain at −180° is minus the gain margin, and its phase at 0 dB is −180° plus the phase margin.</div>
     </div>
 
     <div class="card tabpanel" id="panel-pz">

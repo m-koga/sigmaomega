@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.85.0',
+    d: '2026-11-27',
+    en: [
+      'New panel "Nichols chart" (in "Plots to show", hidden at first): the gain of L(jω) [dB] against its phase [deg], over the M contours of the closed loop |T| (12 … −20 dB, labelled) and the critical point (−180°, 0 dB). The largest M the curve touches is the resonance peak Mt; the margins are read where it crosses −180° and 0 dB. It zooms like the other plots, and its data can be saved as CSV',
+    ],
+    ja: [
+      '新しい区画「ニコルス線図」（「表示する図」の中。最初は非表示）：L(jω) の位相 [deg] に対するゲイン [dB] を、閉ループの |T| の M 軌跡（12 〜 −20 dB、ラベル付き）と臨界点（−180°, 0 dB）に重ねて描く。曲線が接する最大の M が共振ピーク Mt で、−180° と 0 dB を横切るところから安定余裕を読み取れる。ほかのグラフと同じく拡大縮小でき、データを CSV で保存できる',
+    ],
+  },
+  {
     v: '1.84.0',
     d: '2026-11-27',
     en: [

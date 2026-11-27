@@ -40,6 +40,7 @@ interface ElementById {
   "ctrl-tune": HTMLDivElement;
   "cvG": HTMLCanvasElement;
   "cvN": HTMLCanvasElement;
+  "cvNi": HTMLCanvasElement;
   "cvPh": HTMLCanvasElement;
   "cvPZ": HTMLCanvasElement;
   "cvU": HTMLCanvasElement;
@@ -79,6 +80,7 @@ interface ElementById {
   "mviewBtn": HTMLButtonElement;
   "mviewList": HTMLDivElement;
   "mviewMenu": HTMLDivElement;
+  "nichNote": HTMLDivElement;
   "ninfo": HTMLDivElement;
   "nyqCount": HTMLInputElement;
   "nyqCrit": HTMLDivElement;
@@ -88,6 +90,7 @@ interface ElementById {
   "panel-bode": HTMLDivElement;
   "panel-diag": HTMLDivElement;
   "panel-loop": HTMLDivElement;
+  "panel-nich": HTMLDivElement;
   "panel-nyq": HTMLDivElement;
   "panel-poles": HTMLDivElement;
   "panel-pz": HTMLDivElement;

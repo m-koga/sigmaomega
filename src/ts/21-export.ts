@@ -50,6 +50,12 @@ export function nyqCSV(fr: FreqResult): string {
   for (let i = 0; i < fr.W.length; i++) rows.push([fr.W[i], fr.Lc[i][0], fr.Lc[i][1]]);
   return csvText(rows);
 }
+// Nichols chart: frequency, phase and gain of L
+export function nichCSV(fr: FreqResult): string {
+  const rows: CsvCell[][] = [['omega [rad/s]', 'phase L [deg]', 'gain L [dB]']];
+  for (let i = 0; i < fr.W.length; i++) rows.push([fr.W[i], fr.ph[i], fr.mag[i]]);
+  return csvText(rows);
+}
 // Poles and zeros: kind, real part, imaginary part, damping ratio, natural frequency
 export function pzCSV(pz: PZResult): string {
   const rows: CsvCell[][] = [['kind', 'Re', 'Im', 'zeta', 'omega_n [rad/s]']];
@@ -84,6 +90,10 @@ export async function exportCSV(kind: string) {
     if (!lastFr) return;
     text = nyqCSV(lastFr);
     name = 'nyquist.csv';
+  } else if (kind === 'nich') {
+    if (!lastFr) return;
+    text = nichCSV(lastFr);
+    name = 'nichols.csv';
   } else {
     if (!lastPZ) return;
     text = pzCSV(lastPZ);

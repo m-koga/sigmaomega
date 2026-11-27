@@ -31,7 +31,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Menu | Items | Choosing an item |
 | --- | --- | --- |
 | File | Save and load, Compare & reset | Shows that one card in the settings panel |
-| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Routh–Hurwitz test, Steady-state error, Bode plot, Nyquist plot, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
+| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Routh–Hurwitz test, Steady-state error, Bode plot, Nyquist plot, Nichols chart, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
 | System setup | Plant P(s), Controller C(s), Reference/disturbance/noise, Actuator saturation | Shows that card in the settings panel |
 | Analysis & design | Design specifications, Auto-tuning (tuning rules), Parameter sweep | Shows that card in the settings panel |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
@@ -47,7 +47,7 @@ A drop-down opens and closes with its button, and closes on a click outside the 
 
 ### 2.3 Plot panels
 
-There are ten panels: block diagram, time response, transfer functions, loop transfer functions, poles and zeros, Routh–Hurwitz test, steady-state error, Bode plot, Nyquist plot and pole-zero map. At first the block diagram (full width at the top) and the time response and transfer functions (side by side below it) are shown. The ⠿ handle in each panel's title moves the panel, and its bottom edge changes its height (section 7). The plot buttons (+, −, Fit, PNG) appear only while the mouse is over the plot, while it has keyboard focus, or while it is zoomed. The × at the right end of each panel's title hides the panel, like its item in "Plots to show" (which shows it again); it is not available for the last panel shown.
+There are eleven panels: block diagram, time response, transfer functions, loop transfer functions, poles and zeros, Routh–Hurwitz test, steady-state error, Bode plot, Nyquist plot, Nichols chart and pole-zero map. At first the block diagram (full width at the top) and the time response and transfer functions (side by side below it) are shown. The ⠿ handle in each panel's title moves the panel, and its bottom edge changes its height (section 7). The plot buttons (+, −, Fit, PNG) appear only while the mouse is over the plot, while it has keyboard focus, or while it is zoomed. The × at the right end of each panel's title hides the panel, like its item in "Plots to show" (which shows it again); it is not available for the last panel shown.
 
 ### 2.4 Narrow screens and smartphones
 
@@ -114,6 +114,7 @@ Every change of a setting recomputes all shown plots and metrics. In every plot 
 | Time response | r, y, u and the held responses for comparison (gray, up to 4) | Rise time (10% → 90%), overshoot, settling time (±2%), steady-state error, peak deviation and recovery time after a disturbance; for a sine reference, amplitude ratio and phase difference; for an impulse, the peak of y and its time, the area ∫y dt beside its theory A·T(0) (A·Gyr(0) with set-point weights), y at the end and the largest |u| without the impulse |
 | Bode plot | L, P, C, S, T, G_yd = P/(1+L) and G_yr = C_r P/(1+L), switched with buttons; the legend is shown even for one curve; the frequency range can be set by hand (section 9); the button “L asymptotes” (off at first) adds the straight-line approximation of the gain of L — K/ω^q at low frequencies, a change of slope of ±20 dB/dec per real pole or zero and ±40 per complex pair at |s|, the dead time left out — with its break frequencies (○) | Gain margin, phase margin, peak sensitivity Ms, Mt, closed-loop bandwidth, peak disturbance gain; break frequencies (tab: the low-frequency line, each break frequency with its poles and zeros, the change of slope, the slope after, and the true gain minus the asymptote there; this tab makes the area taller only while shown) |
 | Nyquist plot | L(jω), the point −1, a circle of radius 1/Ms, the crossings of the real axis to the left of −1 (option, off at first: ▲ from below to above = clockwise +1, ▼ = −1, with the count of the crossings at that point, ω > 0 and ω < 0 together) | The Nyquist criterion (tab: P open-loop poles in the right half-plane, N clockwise encirclements of −1 along the Nyquist contour — passing poles on the imaginary axis by small half circles on their right, with the exact dead time — Z = N + P with the verdict, the crossings one by one with ω or on a half circle, their sum; when L(jω) passes through −1, marginally stable and N not defined; this tab makes the area taller only while shown), note |
+| Nichols chart | The gain of L(jω) [dB] against its phase [deg] (ω > 0, with the sweep), over the M contours of the closed loop |T| = |L/(1+L)| for M = 12, 6, 3, 1, 0.5, 0, −1, −3, −6, −12, −20 dB (repeating every 360°, labels at the critical point for M ≥ 0 and to its right for M < 0), the critical points (−180° − 360°k, 0 dB) and a line at −180°; zoomed like the other plots | Note (how to read Mt and the margins) |
 | Pole-zero map | Closed-loop poles, zeros, root locus (loop gain scaled by k), construction rules of the root locus (option, off at first: real-axis segments as a band, asymptotes dashed from their centroid, breakaway and break-in points □, imaginary-axis crossings ◇, departure and arrival angles as arrows with their values), ζ and ωn grid, design region | Stability, range of k for stability, the construction rules (tab “Locus rules”: n and m, real-axis segments, asymptote angles and centroid, breakaway and break-in points with k, imaginary-axis crossings with k, departure and arrival angles; for the 0° locus when the leading coefficients of N and D have opposite signs; with a dead time from the Padé approximation; this tab makes the area taller only while shown), list of poles (ζ, ωn) |
 
 ### 4.1 Using the root locus
@@ -194,6 +195,7 @@ Three exercise scenarios are included (for example: PID control of a third-order
 | Time response | t, r, y, u, and y and u for each swept value | Yes |
 | Bode plot | ω and the gain [dB] and phase [deg] of L, P, C, S, T, G_yd and G_yr | Yes |
 | Nyquist plot | ω, Re L, Im L | Yes |
+| Nichols chart | ω, phase of L [deg], gain of L [dB] | Yes |
 | Pole-zero map | Kind, Re, Im, ζ, ωn | Yes |
 
 Where files cannot be saved (for example in the artifact viewer), the content is copied to the clipboard instead; if that also fails, the text is shown selected so it can be copied by hand.

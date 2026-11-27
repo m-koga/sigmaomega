@@ -340,3 +340,34 @@ export function sensMetrics(W: number[], sm: number[], tm: number[], L?: (w: num
   }
   return { ms: msv, wms, mt: mtv, wmt, wbw };
 }
+
+/** M contour of the Nichols chart: the points (phase of L [deg], gain of L [dB]) where the closed loop
+ *  |T| = |L/(1 + L)| equals M (given in dB), for the phases phs [deg]. Writing L = r e^{jφ},
+ *  (1 − m²) r² − 2 m² cos φ · r − m² = 0; its positive roots give up to two branches (NaN where there is none) */
+export function mContour(mDb: number, phs: number[]): { lo: number[]; hi: number[] } {
+  const m2 = Math.pow(10, mDb / 10),
+    a = 1 - m2,
+    lo: number[] = [],
+    hi: number[] = [];
+  phs.forEach(p => {
+    const c = Math.cos((p * Math.PI) / 180);
+    let r1 = NaN,
+      r2 = NaN;
+    if (Math.abs(a) < 1e-12) {
+      if (c < 0) r1 = -1 / (2 * c); // M = 0 dB: r = −1/(2 cos φ)
+    } else {
+      const d = m2 * m2 * c * c + a * m2;
+      if (d >= 0) {
+        const sq = Math.sqrt(d);
+        r1 = (m2 * c + sq) / a;
+        r2 = (m2 * c - sq) / a;
+      }
+    }
+    const db = (r: number) => (r > 0 && isFinite(r) ? 20 * Math.log10(r) : NaN);
+    const [x, y] = [db(r1), db(r2)];
+    // the larger gain on the upper branch
+    lo.push(isNaN(x) ? y : isNaN(y) ? x : Math.min(x, y));
+    hi.push(isNaN(x) || isNaN(y) ? NaN : Math.max(x, y));
+  });
+  return { lo, hi };
+}

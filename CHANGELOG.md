@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.85.0 (2026-11-27)
+- New panel "Nichols chart" (in "Plots to show", hidden at first): the gain of L(jω) [dB] against its phase [deg], over the M contours of the closed loop |T| (12 … −20 dB, labelled) and the critical point (−180°, 0 dB). The largest M the curve touches is the resonance peak Mt; the margins are read where it crosses −180° and 0 dB. It zooms like the other plots, and its data can be saved as CSV
+
 ## v1.84.0 (2026-11-27)
 - Bode plot: straight-line (asymptotic) approximation of the gain of L(jω). The new button "L asymptotes" (off at first) draws it with its break frequencies (○): K/ω^q at low frequencies and a change of slope of ±20 dB/dec per real pole or zero (±40 per complex pair) at |s|. The new tab "Break frequencies" lists each one with its poles and zeros, the change of slope, the slope after it and the gap to the true gain (3 dB at a real break, −20 log10(2ζ) at a complex pair), for checking a Bode plot drawn by hand
 
