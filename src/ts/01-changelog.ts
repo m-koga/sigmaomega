@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.87.1',
+    d: '2026-11-27',
+    en: [
+      'Fix: the Bode gain asymptotes (button "L asymptotes") were drawn in a blue close to that of L(jω) and hidden under its curve away from the break frequencies, so that they looked missing; they are now drawn in magenta, thicker, with larger circles at the break frequencies',
+    ],
+    ja: [
+      '修正：ボード線図の折れ線近似（ボタン「L の折れ線近似」）を L(jω) に近い青で描いていたため、折れ点から離れたところでは L の曲線に隠れ、描かれていないように見えた。マゼンタで太く描き、折れ点周波数の ○ も大きくした',
+    ],
+  },
+  {
     v: '1.87.0',
     d: '2026-11-27',
     en: [

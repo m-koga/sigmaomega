@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.87.1 (2026-11-27)
+- Fix: the Bode gain asymptotes (button "L asymptotes") were drawn in a blue close to that of L(jω) and hidden under its curve away from the break frequencies, so that they looked missing; they are now drawn in magenta, thicker, with larger circles at the break frequencies
+
 ## v1.87.0 (2026-11-27)
 - New card "Estimation exercise" (Analysis & design): the unit step response of a hidden plant K e^(−Ls)/(Ts + 1), with t and y read under the mouse; enter estimates of K, T and L and "Check" draws their response over it and marks each one within 10 %; "Show the answer" gives the true values and "Use this plant" sets them as the plant. The same exercise number always gives the same plant (kept with the scenario), so a class can work on the same exercise
 

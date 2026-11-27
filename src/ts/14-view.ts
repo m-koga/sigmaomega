@@ -32,7 +32,8 @@ export const COLORS = {
   locusAxis: 'rgba(123,79,163,.25)', // real-axis segments of the root locus
   locusRules: '#00838f', // asymptotes, breakaway points, imaginary-axis crossings, departure and arrival angles
   nyqCrossing: '#00838f', // crossings of the Nyquist plot with the real axis to the left of −1
-  asymptote: '#0d47a1', // straight-line approximation of the gain of L(jω) and its break frequencies
+  asymptote: '#d81b60', // straight-line approximation of the gain of L(jω) and its break frequencies (a color apart
+  // from the blue of L, which it covers away from the breaks)
   mContour: 'rgba(110,110,120,.45)', // M contours of the Nichols chart
   mLabel: 'rgba(90,90,100,.9)', // their labels
   dampingGrid: 'rgba(123,79,163,.35)', // ζ–ωn grid lines

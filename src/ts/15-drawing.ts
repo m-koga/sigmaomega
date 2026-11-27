@@ -291,7 +291,7 @@ export function drawPoints(f: PlotFrame, points: NonNullable<PlotOptions['points
     g.lineWidth = 2;
     g.beginPath();
     if (p.shape === 'o') {
-      g.arc(px, py, 4, 0, 2 * Math.PI);
+      g.arc(px, py, 5, 0, 2 * Math.PI);
       g.fillStyle = COLORS.white;
       g.fill();
       g.stroke();
@@ -585,8 +585,8 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
             x: frB.W,
             y: frB.W.map(asym.gain),
             color: COLORS.asymptote,
-            width: 1.6,
-            dash: [5, 4],
+            width: 2,
+            dash: [6, 4],
             name: T('L asymptotes'),
           },
         ]
