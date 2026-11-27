@@ -2,7 +2,9 @@
 // Copyright 2026 Masanobu Koga
 /* ===== Menu bar =====
    The drop-down lists of the menu bar under the header (src/index.html, nav#menubar), in this order:
-   - File, System setup, Analysis & design: the card shown in the settings panel (one at a time, setSideCard)
+   - File, System setup, Analysis & design: the card shown in the settings panel (one at a time, setSideCard); below
+     the cards, Analysis & design also shows or hides the panels of the Routh–Hurwitz test and the steady-state error
+     (.tab buttons like those of "Plots to show", placed in its list in src/index.html)
    - Plots to show: several panels at a time; the list stays open while they are chosen (its items, the .tab buttons,
      are handled with the panels in 24-layout.ts)
    - Plot arrangement, Metrics display: one choice each, kept in the hidden selects #pcols and #mview
@@ -85,7 +87,9 @@ CARD_GROUPS.forEach(g => {
   const btn = byId(`smenuBtn-${g}`),
     list = byId(`smenuList-${g}`),
     items: HTMLButtonElement[] = [];
-  const setOpen = dropdown(byId(`smenu-${g}`), btn, () => items, {
+  // the cards, then the panel buttons below the separator (Analysis & design)
+  const all = () => [...items, ...list.querySelectorAll<HTMLElement>('.tab')];
+  const setOpen = dropdown(byId(`smenu-${g}`), btn, all, {
     onOpen: () => check(items, b => b.dataset.card === layout.scard),
     focus: () => items.find(b => b.dataset.card === layout.scard),
   });
@@ -98,7 +102,7 @@ CARD_GROUPS.forEach(g => {
       btn.focus();
     });
     items.push(b);
-    list.append(b);
+    list.insertBefore(b, list.querySelector('.vb-ddsep'));
   });
 });
 

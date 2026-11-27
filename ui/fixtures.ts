@@ -79,16 +79,21 @@ async function pickView(page: Page, selector: string, value: string) {
 }
 
 // Show or hide panel k from the drop-down list of the plot selection bar (opened first, closed after with Escape)
+// (the Routh–Hurwitz test and the steady-state error are in "Analysis & design", the other panels in "Plots to show")
 async function togglePanel(page: Page, k: string) {
-  if (!(await page.locator('#panelList').isVisible())) await page.click('#panelBtn');
-  await page.click(`#panelList .tab[data-tab=${k}]`);
+  const ana = k === 'routh' || k === 'sse',
+    list = ana ? '#smenuList-ana' : '#panelList';
+  if (!(await page.locator(list).isVisible())) await page.click(ana ? '#smenuBtn-ana' : '#panelBtn');
+  await page.click(`${list} .tab[data-tab=${k}]`);
   await page.keyboard.press('Escape');
 }
-// Show all panels ("All" in the drop-down list)
+// Show all panels ("All" in "Plots to show", then the two panels of "Analysis & design")
 async function showAllPanels(page: Page) {
   if (!(await page.locator('#panelList').isVisible())) await page.click('#panelBtn');
   await page.click('#panelsAll');
   await page.keyboard.press('Escape');
+  for (const k of ['routh', 'sse'])
+    if (!(await page.evaluate(key => shownPanels.has(key), k))) await togglePanel(page, k);
 }
 
 // Shows card k of the settings panel: its drop-down list (System setup, Analysis & design, File) opened, the card chosen

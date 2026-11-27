@@ -44,6 +44,7 @@ export function uiStrings(api: ReturnType<typeof load>['api'], html: string): st
     api.TXT_COLLAPSED,
     api.TXT_TIP,
     api.TXT_PCLOSE,
+    api.TXT_PCLOSE_ANA,
     api.TXT_BODE_UNSTABLE,
     api.TXT_BODE_RANGE,
     api.TXT_PZ1,

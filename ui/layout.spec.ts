@@ -386,6 +386,42 @@ test('smartphone: bottom bar switches between plots and settings; one-row plot b
   expect(await page.evaluate(() => S.Kp)).toBe(4);
 });
 
+test('the Routh–Hurwitz test and the steady-state error are shown from "Analysis & design", below its cards', async ({
+  page,
+}) => {
+  await page.click('#smenuBtn-ana');
+  const list = page.locator('#smenuList-ana');
+  // the five cards, a separator, then the two panels
+  expect(
+    await list
+      .locator('> *')
+      .evaluateAll(es => es.map(e => (e as HTMLElement).dataset.card || (e as HTMLElement).dataset.tab || e.className)),
+  ).toEqual(['spec', 'tune', 'comp', 'sweep', 'ex', 'vb-ddsep', 'routh', 'sse']);
+  await expect(page.locator('#panelList .tab[data-tab=routh]')).toHaveCount(0);
+  // the arrow keys go on from the last card to the panels; Enter shows a panel and the list stays open
+  await page.focus('#smenuList-ana .vb-opt[data-card=ex]');
+  await page.keyboard.press('ArrowDown');
+  await expect(list.locator('.tab[data-tab=routh]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#panel-routh')).toBeVisible();
+  await expect(list.locator('.tab[data-tab=routh]')).toHaveAttribute('aria-pressed', 'true');
+  await list.locator('.tab[data-tab=sse]').click();
+  await expect(page.locator('#panel-sse')).toBeVisible();
+  await expect(list).toBeVisible();
+  const card = await page.evaluate(() => layout.scard);
+  await page.keyboard.press('Escape');
+  expect(await page.evaluate(() => layout.scard)).toBe(card); // the card of the settings panel is not changed
+  // the × of the panel names the menu where it is shown again, and hides it
+  await expect(page.locator('#panel-sse .pclose')).toHaveAttribute(
+    'title',
+    await page.evaluate(() => T(TXT_PCLOSE_ANA)),
+  );
+  await page.click('#panel-sse .pclose');
+  await expect(page.locator('#panel-sse')).toBeHidden();
+  await page.click('#smenuBtn-ana');
+  await expect(list.locator('.tab[data-tab=sse]')).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('the plots to show are chosen in a drop-down list that stays open while choosing', async ({ page }) => {
   const list = page.locator('#panelList'),
     sum = page.locator('#panelSum');
@@ -415,15 +451,17 @@ test('the plots to show are chosen in a drop-down list that stays open while cho
   await page.keyboard.press('Escape');
   await expect(list).toBeHidden();
   await expect(page.locator('#panelBtn')).toBeFocused();
-  // a click outside closes it; "All" shows every panel
+  // a click outside closes it; "All" shows every plot of the list (not the two panels of "Analysis & design")
+  await expect(page.locator('#panelList .tab')).toHaveCount(9);
   await page.click('#panelBtn');
   await page.click('#panelsAll');
-  await expect(page.locator('#panels > .tabpanel:visible')).toHaveCount(11);
+  await expect(page.locator('#panels > .tabpanel:visible')).toHaveCount(9);
+  await expect(page.locator('#panel-routh')).toBeHidden();
   await page.click('#cvY');
   await expect(list).toBeHidden();
   // the last panel shown cannot be hidden
   await page.click('#panelBtn');
-  for (const k of ['diag', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'nich', 'pz'])
+  for (const k of ['diag', 'tf', 'loop', 'poles', 'bode', 'nyq', 'nich', 'pz'])
     await page.click(`#panelList .tab[data-tab=${k}]`);
   await page.click('#panelList .tab[data-tab=time]');
   await expect(page.locator('#panel-time')).toBeVisible();

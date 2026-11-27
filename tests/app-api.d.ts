@@ -89,6 +89,7 @@ interface AppApi {
   TXT_BODE_UNSTABLE: typeof import('../src/ts/02-i18n.ts').TXT_BODE_UNSTABLE;
   TXT_COLLAPSED: typeof import('../src/ts/02-i18n.ts').TXT_COLLAPSED;
   TXT_PCLOSE: typeof import('../src/ts/24-layout.ts').TXT_PCLOSE;
+  TXT_PCLOSE_ANA: typeof import('../src/ts/24-layout.ts').TXT_PCLOSE_ANA;
   TXT_PZ1: typeof import('../src/ts/02-i18n.ts').TXT_PZ1;
   TXT_PZ2: typeof import('../src/ts/02-i18n.ts').TXT_PZ2;
   TXT_PZ3: typeof import('../src/ts/02-i18n.ts').TXT_PZ3;
@@ -584,6 +585,7 @@ declare var TXT_BODE_RANGE: AppApi['TXT_BODE_RANGE'];
 declare var TXT_BODE_UNSTABLE: AppApi['TXT_BODE_UNSTABLE'];
 declare var TXT_COLLAPSED: AppApi['TXT_COLLAPSED'];
 declare var TXT_PCLOSE: AppApi['TXT_PCLOSE'];
+declare var TXT_PCLOSE_ANA: AppApi['TXT_PCLOSE_ANA'];
 declare var TXT_PZ1: AppApi['TXT_PZ1'];
 declare var TXT_PZ2: AppApi['TXT_PZ2'];
 declare var TXT_PZ3: AppApi['TXT_PZ3'];

@@ -31,9 +31,9 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Menu | Items | Choosing an item |
 | --- | --- | --- |
 | File | Save and load, Compare & reset | Shows that one card in the settings panel |
-| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Routh–Hurwitz test, Steady-state error, Bode plot, Nyquist plot, Nichols chart, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden) |
+| Plots to show | Block diagram, Time response, Transfer functions, Loop transfer functions, Poles and zeros, Bode plot, Nyquist plot, Nichols chart, Pole-zero map, All | Shows or hides plot panels (several at once; the list stays open; the last panel cannot be hidden); All shows these nine |
 | System setup | Plant P(s), Controller C(s), Reference/disturbance/noise, Actuator saturation | Shows that card in the settings panel |
-| Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep, Estimation exercise | Shows that card in the settings panel |
+| Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep, Estimation exercise; below a separator, Routh–Hurwitz test, Steady-state error | A card: shows it in the settings panel. The last two show or hide their panels like the items of Plots to show (checked when shown; the list stays open) |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
 | Metrics display | Cards, Table | Changes how the response metrics are shown |
 | Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean and Thai); × , Esc or a click beside it closes it. On phones the button shows only its icon |

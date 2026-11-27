@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="version" content="1.93.0">
+<meta name="version" content="1.94.0">
 <title>SigmaOmega — Feedback Control Simulator</title>
 <meta name="author" content="Masanobu Koga">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id%3D%22so-bg%22 x1%3D%220%22 y1%3D%220%22 x2%3D%220%22 y2%3D%221%22%3E%3Cstop offset%3D%220%22 stop-color%3D%22%232a3142%22%2F%3E%3Cstop offset%3D%221%22 stop-color%3D%22%23171b25%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect width%3D%2264%22 height%3D%2264%22 rx%3D%2214%22 fill%3D%22url(%23so-bg)%22%2F%3E%3Cpath d%3D%22M8 47H56M32.5 11V51%22 stroke%3D%22%2359627a%22 stroke-width%3D%221.8%22 stroke-linecap%3D%22round%22%2F%3E%3Cg fill%3D%22none%22 stroke-width%3D%224.2%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2217%22 cy%3D%2234.5%22 r%3D%226.8%22 stroke%3D%22%23fff%22%2F%3E%3Cpath d%3D%22M17 27.7H28.6%22 stroke%3D%22%23fff%22%2F%3E%3Cpath d%3D%22M37 26.5Q37 41 41.5 41Q46 41 46 32.59Q46 41 50.5 41Q55 41 55 26.5%22 stroke%3D%22%23e53935%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
@@ -533,8 +533,6 @@ table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"Jet
       <button class="tab" type="button" data-tab="tf" aria-pressed="false" data-i18n>Transfer functions</button>
       <button class="tab" type="button" data-tab="loop" aria-pressed="false" data-i18n>Loop transfer functions</button>
       <button class="tab" type="button" data-tab="poles" aria-pressed="false" data-i18n>Poles and zeros</button>
-      <button class="tab" type="button" data-tab="routh" aria-pressed="false" data-i18n>Routh–Hurwitz test</button>
-      <button class="tab" type="button" data-tab="sse" aria-pressed="false" data-i18n>Steady-state error</button>
       <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
       <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
       <button class="tab" type="button" data-tab="nich" aria-pressed="false" data-i18n>Nichols chart</button>
@@ -544,7 +542,7 @@ table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"Jet
     </div>
   </div>
   <div class="vb-dd smenu" id="smenu-sys"><button class="vb-ddbtn smenu-btn" id="smenuBtn-sys" type="button" data-group="sys" aria-haspopup="true" aria-expanded="false" aria-controls="smenuList-sys"><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="5.5" cy="4" r="1.6" class="mb-dot"/><circle cx="10.5" cy="8" r="1.6" class="mb-dot"/><circle cx="6.5" cy="12" r="1.6" class="mb-dot"/></svg><span class="mb-full" data-i18n>System setup</span><span class="mb-short" data-i18n>System</span><span class="vb-caret" aria-hidden="true">▾</span></button><div class="vb-ddlist" id="smenuList-sys" role="menu"></div></div>
-  <div class="vb-dd smenu" id="smenu-ana"><button class="vb-ddbtn smenu-btn" id="smenuBtn-ana" type="button" data-group="ana" aria-haspopup="true" aria-expanded="false" aria-controls="smenuList-ana"><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><circle cx="8" cy="8" r="2.25"/><path d="M8 .75v2.5M8 12.75v2.5M.75 8h2.5M12.75 8h2.5"/></svg><span class="mb-full" data-i18n>Analysis & design</span><span class="mb-short" data-i18n>Design</span><span class="vb-caret" aria-hidden="true">▾</span></button><div class="vb-ddlist" id="smenuList-ana" role="menu"></div></div>
+  <div class="vb-dd smenu" id="smenu-ana"><button class="vb-ddbtn smenu-btn" id="smenuBtn-ana" type="button" data-group="ana" aria-haspopup="true" aria-expanded="false" aria-controls="smenuList-ana"><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><circle cx="8" cy="8" r="2.25"/><path d="M8 .75v2.5M8 12.75v2.5M.75 8h2.5M12.75 8h2.5"/></svg><span class="mb-full" data-i18n>Analysis & design</span><span class="mb-short" data-i18n>Design</span><span class="vb-caret" aria-hidden="true">▾</span></button><div class="vb-ddlist" id="smenuList-ana" role="menu"><div class="vb-ddsep"></div><button class="tab" type="button" data-tab="routh" aria-pressed="false" data-i18n>Routh–Hurwitz test</button><button class="tab" type="button" data-tab="sse" aria-pressed="false" data-i18n>Steady-state error</button></div></div>
   <div class="vb-dd" id="pcolsMenu">
     <button class="vb-ddbtn" id="pcolsBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pcolsList" title="Choose how the plots are arranged" data-i18n-title><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span class="mb-full" data-i18n>Plot arrangement</span><span class="mb-short" data-i18n>Layout</span><span class="vb-caret" aria-hidden="true">▾</span></button>
     <div class="vb-ddlist" id="pcolsList" role="menu"></div>
@@ -959,6 +957,16 @@ table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"Jet
    CHANGELOG.md (English) and CHANGELOG.ja.md (Japanese) are generated by npm run docs. */
 const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
+  {
+    v: '1.94.0',
+    d: '2026-11-27',
+    en: [
+      'Menus: "Routh–Hurwitz test" and "Steady-state error" moved from "Plots to show" to "Analysis & design", below its cards. They still show or hide their panels among the plots (checked when shown), and "All" in "Plots to show" now shows the nine plots of its list.',
+    ],
+    ja: [
+      'メニュー：「ラウス・フルビッツの安定判別」と「定常偏差」を「表示する図」から「解析・設計」のカードの下へ移した。区画の表示・非表示を切り替える働きは同じ（表示中はチェック）。「表示する図」の「すべて」は、一覧の 9 つの図を表示する。',
+    ],
+  },
   {
     v: '1.93.0',
     d: '2026-11-27',
@@ -6522,7 +6530,8 @@ const I18N = {
 "Answer: K = {a}, ωn = {b} rad/s, ζ = {c}": {"ja": "答え：K = {a}、ωn = {b} rad/s、ζ = {c}", "zh": "答案：K = {a}，ωn = {b} rad/s，ζ = {c}", "ko": "답: K = {a}, ωn = {b} rad/s, ζ = {c}", "th": "คำตอบ: K = {a}, ωn = {b} rad/s, ζ = {c}"},
 "Estimate the gain K and the time constants T1 and T2 of a hidden plant P(s) = K/((T1 s + 1)(T2 s + 1)) from its Bode plot (T1 and T2 in either order). Move the mouse over the plots to read ω, the gain and the phase.": {"ja": "隠された制御対象 P(s) = K/((T1 s + 1)(T2 s + 1)) のゲイン K と時定数 T1、T2 を、そのボード線図から推定する（T1 と T2 の順は問わない）。図の上でマウスを動かすと、ω とゲイン、位相を読み取れる。", "zh": "根据伯德图估计隐藏被控对象 P(s) = K/((T1 s + 1)(T2 s + 1)) 的增益 K 和时间常数 T1、T2（T1 与 T2 顺序不限）。在图上移动鼠标可读取 ω、增益和相位。", "ko": "숨겨진 제어 대상 P(s) = K/((T1 s + 1)(T2 s + 1))의 이득 K와 시정수 T1, T2를 보드 선도에서 추정합니다(T1과 T2의 순서는 상관없음). 그림 위에서 마우스를 움직이면 ω, 이득, 위상을 읽을 수 있습니다.", "th": "ประมาณอัตราขยาย K และค่าคงตัวเวลา T1, T2 ของระบบที่ซ่อนไว้ P(s) = K/((T1 s + 1)(T2 s + 1)) จากแผนภาพโบด (ลำดับของ T1 และ T2 ใดก็ได้) เลื่อนเมาส์บนกราฟเพื่ออ่าน ω อัตราขยาย และเฟส"},
 "Estimate the gain K, the time constant T and the dead time L of a hidden plant P(s) = K e^(−Ls)/(Ts + 1) from its Bode plot. Move the mouse over the plots to read ω, the gain and the phase.": {"ja": "隠された制御対象 P(s) = K e^(−Ls)/(Ts + 1) のゲイン K、時定数 T、むだ時間 L を、そのボード線図から推定する。図の上でマウスを動かすと、ω とゲイン、位相を読み取れる。", "zh": "根据伯德图估计隐藏被控对象 P(s) = K e^(−Ls)/(Ts + 1) 的增益 K、时间常数 T 和纯滞后 L。在图上移动鼠标可读取 ω、增益和相位。", "ko": "숨겨진 제어 대상 P(s) = K e^(−Ls)/(Ts + 1)의 이득 K, 시정수 T, 데드타임 L을 보드 선도에서 추정합니다. 그림 위에서 마우스를 움직이면 ω, 이득, 위상을 읽을 수 있습니다.", "th": "ประมาณอัตราขยาย K ค่าคงตัวเวลา T และเวลาตาย L ของระบบที่ซ่อนไว้ P(s) = K e^(−Ls)/(Ts + 1) จากแผนภาพโบด เลื่อนเมาส์บนกราฟเพื่ออ่าน ω อัตราขยาย และเฟส"},
-"Estimate the gain K, the natural frequency ωn and the damping ratio ζ of a hidden plant P(s) = K ωn²/(s² + 2ζωn s + ωn²) from its Bode plot. Move the mouse over the plots to read ω, the gain and the phase.": {"ja": "隠された制御対象 P(s) = K ωn²/(s² + 2ζωn s + ωn²) のゲイン K、固有角周波数 ωn、減衰係数 ζ を、そのボード線図から推定する。図の上でマウスを動かすと、ω とゲイン、位相を読み取れる。", "zh": "根据伯德图估计隐藏被控对象 P(s) = K ωn²/(s² + 2ζωn s + ωn²) 的增益 K、自然角频率 ωn 和阻尼比 ζ。在图上移动鼠标可读取 ω、增益和相位。", "ko": "숨겨진 제어 대상 P(s) = K ωn²/(s² + 2ζωn s + ωn²)의 이득 K, 고유 각주파수 ωn, 감쇠비 ζ를 보드 선도에서 추정합니다. 그림 위에서 마우스를 움직이면 ω, 이득, 위상을 읽을 수 있습니다.", "th": "ประมาณอัตราขยาย K ความถี่ธรรมชาติ ωn และอัตราส่วนการหน่วง ζ ของระบบที่ซ่อนไว้ P(s) = K ωn²/(s² + 2ζωn s + ωn²) จากแผนภาพโบด เลื่อนเมาส์บนกราฟเพื่ออ่าน ω อัตราขยาย และเฟส"}
+"Estimate the gain K, the natural frequency ωn and the damping ratio ζ of a hidden plant P(s) = K ωn²/(s² + 2ζωn s + ωn²) from its Bode plot. Move the mouse over the plots to read ω, the gain and the phase.": {"ja": "隠された制御対象 P(s) = K ωn²/(s² + 2ζωn s + ωn²) のゲイン K、固有角周波数 ωn、減衰係数 ζ を、そのボード線図から推定する。図の上でマウスを動かすと、ω とゲイン、位相を読み取れる。", "zh": "根据伯德图估计隐藏被控对象 P(s) = K ωn²/(s² + 2ζωn s + ωn²) 的增益 K、自然角频率 ωn 和阻尼比 ζ。在图上移动鼠标可读取 ω、增益和相位。", "ko": "숨겨진 제어 대상 P(s) = K ωn²/(s² + 2ζωn s + ωn²)의 이득 K, 고유 각주파수 ωn, 감쇠비 ζ를 보드 선도에서 추정합니다. 그림 위에서 마우스를 움직이면 ω, 이득, 위상을 읽을 수 있습니다.", "th": "ประมาณอัตราขยาย K ความถี่ธรรมชาติ ωn และอัตราส่วนการหน่วง ζ ของระบบที่ซ่อนไว้ P(s) = K ωn²/(s² + 2ζωn s + ωn²) จากแผนภาพโบด เลื่อนเมาส์บนกราฟเพื่ออ่าน ω อัตราขยาย และเฟส"},
+"Hide this panel (show it again from \"Analysis & design\")": {"ja": "この区画を隠す（「解析・設計」からもう一度表示できます）", "zh": "隐藏此区域（可从“分析与设计”再次显示）", "ko": "이 영역 숨기기 (\"해석·설계\"에서 다시 표시할 수 있음)", "th": "ซ่อนส่วนนี้ (แสดงอีกครั้งได้จาก \"วิเคราะห์และออกแบบ\")"}
 }; // the build puts the dictionary (src/i18n.json) here
 /** The display languages, in the order of the language menu. To add a language: an entry here, its translations in
  * src/i18n.json (the key of the entry; tests/i18n.test.ts asks for every string), its type in I18nDict
@@ -15937,16 +15946,17 @@ document.querySelectorAll('.tab[data-tab]').forEach(
       showPlotsOnPhone();
     }),
 );
-// The × at the right end of the title of each panel hides the panel, as its item in "Plots to show" does (that list
-// shows it again); not for the last panel shown
-const TXT_PCLOSE = 'Hide this plot (show it again from "Plots to show")';
+// The × at the right end of the title of each panel hides the panel, as its item in "Plots to show" (or "Analysis &
+// design") does, where it is shown again; not for the last panel shown
+const TXT_PCLOSE = 'Hide this plot (show it again from "Plots to show")',
+  TXT_PCLOSE_ANA = 'Hide this panel (show it again from "Analysis & design")';
 PANELS.forEach(k => {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'pclose';
   b.dataset.close = k;
   b.textContent = '×';
-  i18nTitle(b, TXT_PCLOSE);
+  i18nTitle(b, $('panelList').querySelector(`.tab[data-tab="${k}"]`) ? TXT_PCLOSE : TXT_PCLOSE_ANA);
   b.disabled = shownPanels.size === 1;
   b.onclick = () => {
     if (!shownPanels.has(k) || shownPanels.size === 1) return;
@@ -15955,8 +15965,11 @@ PANELS.forEach(k => {
   };
   qs('.h2row', $(`panel-${k}`)).append(b);
 });
+// "All" shows the plots of its list ("Plots to show"), not the panels shown from "Analysis & design"
 $('panelsAll').onclick = () => {
-  PANELS.forEach(k => shownPanels.add(k));
+  $('panelList')
+    .querySelectorAll('.tab[data-tab]')
+    .forEach(t => shownPanels.add(t.dataset.tab));
   panelsChanged();
   showPlotsOnPhone();
 };
@@ -16763,7 +16776,9 @@ $('reset').onclick = () => {
 // Copyright 2026 Masanobu Koga
 /* ===== Menu bar =====
    The drop-down lists of the menu bar under the header (src/index.html, nav#menubar), in this order:
-   - File, System setup, Analysis & design: the card shown in the settings panel (one at a time, setSideCard)
+   - File, System setup, Analysis & design: the card shown in the settings panel (one at a time, setSideCard); below
+     the cards, Analysis & design also shows or hides the panels of the Routh–Hurwitz test and the steady-state error
+     (.tab buttons like those of "Plots to show", placed in its list in src/index.html)
    - Plots to show: several panels at a time; the list stays open while they are chosen (its items, the .tab buttons,
      are handled with the panels in 24-layout.ts)
    - Plot arrangement, Metrics display: one choice each, kept in the hidden selects #pcols and #mview
@@ -16846,7 +16861,9 @@ CARD_GROUPS.forEach(g => {
   const btn = byId(`smenuBtn-${g}`),
     list = byId(`smenuList-${g}`),
     items = [];
-  const setOpen = dropdown(byId(`smenu-${g}`), btn, () => items, {
+  // the cards, then the panel buttons below the separator (Analysis & design)
+  const all = () => [...items, ...list.querySelectorAll('.tab')];
+  const setOpen = dropdown(byId(`smenu-${g}`), btn, all, {
     onOpen: () => check(items, b => b.dataset.card === layout.scard),
     focus: () => items.find(b => b.dataset.card === layout.scard),
   });
@@ -16859,7 +16876,7 @@ CARD_GROUPS.forEach(g => {
       btn.focus();
     });
     items.push(b);
-    list.append(b);
+    list.insertBefore(b, list.querySelector('.vb-ddsep'));
   });
 });
 
@@ -17111,9 +17128,9 @@ const HELP = [
 <table data-id="menus"><caption>The menus of the menu bar</caption>
 <tr><th>Menu</th><th>What it does</th></tr>
 <tr><td>File</td><td>Cards <b>Save and load</b> and <b>Compare &amp; reset</b></td></tr>
-<tr><td>Plots to show</td><td>Shows or hides the panels (several at once; <b>All</b> shows every panel)</td></tr>
+<tr><td>Plots to show</td><td>Shows or hides the panels (several at once; <b>All</b> shows every panel of the list)</td></tr>
 <tr><td>System setup</td><td>Cards for the plant, the controller, the reference, disturbance and noise, and the actuator saturation</td></tr>
-<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b>, <b>Parameter sweep</b> and <b>Estimation exercise</b></td></tr>
+<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b>, <b>Parameter sweep</b> and <b>Estimation exercise</b>; below them, the panels <b>Routh–Hurwitz test</b> and <b>Steady-state error</b> are shown or hidden</td></tr>
 <tr><td>Plot arrangement</td><td>How the panels are arranged (section 5)</td></tr>
 <tr><td>Metrics display</td><td>Metrics as cards or as a table</td></tr>
 <tr><td>Help</td><td>This manual</td></tr>
@@ -17127,9 +17144,9 @@ const HELP = [
 <table data-id="menus"><caption>メニューバーのメニュー</caption>
 <tr><th>メニュー</th><th>内容</th></tr>
 <tr><td>ファイル</td><td><b>保存と読み込み</b>、<b>比較・リセット</b> のカード</td></tr>
-<tr><td>表示する図</td><td>区画の表示・非表示（続けて複数選べる。<b>すべて</b> で全部表示）</td></tr>
+<tr><td>表示する図</td><td>区画の表示・非表示（続けて複数選べる。<b>すべて</b> で一覧の区画を全部表示）</td></tr>
 <tr><td>系の設定</td><td>制御対象、制御器、目標値・外乱・ノイズ、操作量の飽和のカード</td></tr>
-<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b>、<b>推定の演習</b> のカード</td></tr>
+<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b>、<b>推定の演習</b> のカード。その下で <b>ラウス・フルビッツの安定判別</b> と <b>定常偏差</b> の区画を表示・非表示</td></tr>
 <tr><td>図の並び方</td><td>区画の並べ方（5 章）</td></tr>
 <tr><td>指標の表示</td><td>指標をカードで表示するか表で表示するか</td></tr>
 <tr><td>使い方</td><td>このマニュアル</td></tr>

@@ -279,16 +279,17 @@ document.querySelectorAll<HTMLElement>('.tab[data-tab]').forEach(
       showPlotsOnPhone();
     }),
 );
-// The × at the right end of the title of each panel hides the panel, as its item in "Plots to show" does (that list
-// shows it again); not for the last panel shown
-export const TXT_PCLOSE = 'Hide this plot (show it again from "Plots to show")';
+// The × at the right end of the title of each panel hides the panel, as its item in "Plots to show" (or "Analysis &
+// design") does, where it is shown again; not for the last panel shown
+export const TXT_PCLOSE = 'Hide this plot (show it again from "Plots to show")',
+  TXT_PCLOSE_ANA = 'Hide this panel (show it again from "Analysis & design")';
 PANELS.forEach(k => {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'pclose';
   b.dataset.close = k;
   b.textContent = '×';
-  i18nTitle(b, TXT_PCLOSE);
+  i18nTitle(b, $('panelList').querySelector(`.tab[data-tab="${k}"]`) ? TXT_PCLOSE : TXT_PCLOSE_ANA);
   b.disabled = shownPanels.size === 1;
   b.onclick = () => {
     if (!shownPanels.has(k) || shownPanels.size === 1) return;
@@ -297,8 +298,11 @@ PANELS.forEach(k => {
   };
   qs('.h2row', $(`panel-${k}`)).append(b);
 });
+// "All" shows the plots of its list ("Plots to show"), not the panels shown from "Analysis & design"
 $('panelsAll').onclick = () => {
-  PANELS.forEach(k => shownPanels.add(k));
+  $('panelList')
+    .querySelectorAll<HTMLElement>('.tab[data-tab]')
+    .forEach(t => shownPanels.add(t.dataset.tab!));
   panelsChanged();
   showPlotsOnPhone();
 };

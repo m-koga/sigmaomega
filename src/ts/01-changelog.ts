@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.94.0',
+    d: '2026-11-27',
+    en: [
+      'Menus: "Routh–Hurwitz test" and "Steady-state error" moved from "Plots to show" to "Analysis & design", below its cards. They still show or hide their panels among the plots (checked when shown), and "All" in "Plots to show" now shows the nine plots of its list.',
+    ],
+    ja: [
+      'メニュー：「ラウス・フルビッツの安定判別」と「定常偏差」を「表示する図」から「解析・設計」のカードの下へ移した。区画の表示・非表示を切り替える働きは同じ（表示中はチェック）。「表示する図」の「すべて」は、一覧の 9 つの図を表示する。',
+    ],
+  },
+  {
     v: '1.93.0',
     d: '2026-11-27',
     en: [

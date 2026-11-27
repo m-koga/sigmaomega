@@ -53,9 +53,9 @@ export const HELP: HelpSection[] = [
 <table data-id="menus"><caption>The menus of the menu bar</caption>
 <tr><th>Menu</th><th>What it does</th></tr>
 <tr><td>File</td><td>Cards <b>Save and load</b> and <b>Compare &amp; reset</b></td></tr>
-<tr><td>Plots to show</td><td>Shows or hides the panels (several at once; <b>All</b> shows every panel)</td></tr>
+<tr><td>Plots to show</td><td>Shows or hides the panels (several at once; <b>All</b> shows every panel of the list)</td></tr>
 <tr><td>System setup</td><td>Cards for the plant, the controller, the reference, disturbance and noise, and the actuator saturation</td></tr>
-<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b>, <b>Parameter sweep</b> and <b>Estimation exercise</b></td></tr>
+<tr><td>Analysis &amp; design</td><td>Cards <b>Design specifications</b>, <b>Auto-tuning</b>, <b>Lead and lag compensator design</b>, <b>Parameter sweep</b> and <b>Estimation exercise</b>; below them, the panels <b>Routh–Hurwitz test</b> and <b>Steady-state error</b> are shown or hidden</td></tr>
 <tr><td>Plot arrangement</td><td>How the panels are arranged (section 5)</td></tr>
 <tr><td>Metrics display</td><td>Metrics as cards or as a table</td></tr>
 <tr><td>Help</td><td>This manual</td></tr>
@@ -69,9 +69,9 @@ export const HELP: HelpSection[] = [
 <table data-id="menus"><caption>メニューバーのメニュー</caption>
 <tr><th>メニュー</th><th>内容</th></tr>
 <tr><td>ファイル</td><td><b>保存と読み込み</b>、<b>比較・リセット</b> のカード</td></tr>
-<tr><td>表示する図</td><td>区画の表示・非表示（続けて複数選べる。<b>すべて</b> で全部表示）</td></tr>
+<tr><td>表示する図</td><td>区画の表示・非表示（続けて複数選べる。<b>すべて</b> で一覧の区画を全部表示）</td></tr>
 <tr><td>系の設定</td><td>制御対象、制御器、目標値・外乱・ノイズ、操作量の飽和のカード</td></tr>
-<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b>、<b>推定の演習</b> のカード</td></tr>
+<tr><td>解析・設計</td><td><b>設計仕様</b>、<b>自動調整</b>、<b>位相進み・遅れ補償器の設計</b>、<b>パラメータの掃引</b>、<b>推定の演習</b> のカード。その下で <b>ラウス・フルビッツの安定判別</b> と <b>定常偏差</b> の区画を表示・非表示</td></tr>
 <tr><td>図の並び方</td><td>区画の並べ方（5 章）</td></tr>
 <tr><td>指標の表示</td><td>指標をカードで表示するか表で表示するか</td></tr>
 <tr><td>使い方</td><td>このマニュアル</td></tr>

@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.94.0 (2026-11-27)
+- Menus: "Routh–Hurwitz test" and "Steady-state error" moved from "Plots to show" to "Analysis & design", below its cards. They still show or hide their panels among the plots (checked when shown), and "All" in "Plots to show" now shows the nine plots of its list.
+
 ## v1.93.0 (2026-11-27)
 - Estimation exercise: "Read from" adds the Bode plot. The exercise number gives one of three hidden plants, K/((T1 s + 1)(T2 s + 1)), K e^(−Ls)/(Ts + 1) or K ωn²/(s² + 2ζωn s + ωn²); its gain and phase are drawn, the mouse reads ω, the gain and the phase, and the three estimates are checked within 10 % (T1 and T2 in either order). "Use this plant" sets that plant.
 - Development: the legend of a plot can be placed at the bottom left.
