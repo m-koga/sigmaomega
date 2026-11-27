@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.91.0 (2026-11-27)
+- Time response: the option "Only the plant alone" (tab "Display") shows the plant by itself, with no reference and no feedback loop: the input set as the reference drives P(s) directly, the upper plot shows only the plant's output and the lower one its input, the metrics are the plant's own (final value, rise time, overshoot and settling time relative to the final value, steady-state gain y/u), an unstable plant gets its own banner, and the CSV holds t, u and y of the plant
+
 ## v1.90.0 (2026-11-27)
 - Time response: the new tab "Display" under the plot can add the response of the plant alone to r(t) (open loop: P(s) with its dead time driven by the reference itself, without the controller and the feedback), drawn as a green dashed line beside the closed-loop output y for comparison, and saved as a column of the CSV
 

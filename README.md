@@ -13,7 +13,7 @@ SigmaOmega is a browser-based simulator for feedback control systems. Its name c
 
 - Plant: six presets, or enter any transfer function (including dead time)
 - Controller: P / PI / PD / PID, lead, lag, and lead-lag compensators, or enter any transfer function
-- Response of the plant alone to the reference (open loop) overlaid on the time response
+- Response of the plant alone to the reference (open loop) overlaid on the time response, or shown by itself (no reference and no feedback loop) with its own metrics
 - Reference: step, ramp, parabola, trapezoid, pulse, square wave, sine wave, impulse (with its peak, the area ∫y dt and its theory A·T(0))
 - Disturbance, measurement noise, and actuator saturation (with anti-windup)
 - Time response with response metrics, Bode plot (gain and phase margins; frequency range automatic or set by hand, back to automatic when the poles, zeros, dead time or simulation time change), Nyquist plot (with the Nyquist criterion: P, N counted from the crossings of the real axis to the left of −1, and Z = N + P), and pole-zero map (closed-loop pole list)
@@ -82,7 +82,7 @@ They check the following (`tests/` folder).
 
 | File | What it checks |
 |---|---|
-| `simulation.test.ts` | Step responses against analytical solutions (first- and second-order closed loops, rise and settling time, overshoot), first-order convergence in the step size, every reference type, dead time, ramp and sine references, saturation and anti-windup, measurement noise, divergence; impulse response equal to the derivative of the step response, with the area A·T(0); the plant alone (open loop) against its analytical step and impulse responses, with dead time, and its divergence |
+| `simulation.test.ts` | Step responses against analytical solutions (first- and second-order closed loops, rise and settling time, overshoot), first-order convergence in the step size, every reference type, dead time, ramp and sine references, saturation and anti-windup, measurement noise, divergence; impulse response equal to the derivative of the step response, with the area A·T(0); the plant alone (open loop) against its analytical step and impulse responses, with dead time, and its divergence; the metrics of the plant alone relative to its own final value |
 | `frequency.test.ts` | Bode plot (L = P + C), phase margin, lead and lag compensators, every controller's frequency response against its transfer function, simulated sine responses of every controller against the closed-loop frequency response, sensitivity peaks and bandwidth, disturbance and reference transfer functions, a Bode range set by hand (kept for a gain, dropped when a pole, zero or the simulation time changes) |
 | `pole-zero.test.ts` | Closed-loop poles, stability verdict, root locus against analytical roots and the stable gain range, design regions |
 | `design.test.ts` | Design specifications, every tuning rule against the published tables, parameter sweep, 2-DOF PID, disturbance metrics against analytical values |

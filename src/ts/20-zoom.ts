@@ -232,9 +232,12 @@ document.querySelectorAll<HTMLElement>('.plot-tools').forEach(tb =>
     resetBodeViews();
     update();
   };
-  $('timePlant').onchange = () => {
-    if (shownPanels.has('time') && lastSim) drawTime(lastSim);
-  };
+  (['timePlant', 'timePlantOnly'] as const).forEach(
+    id =>
+      ($(id).onchange = () => {
+        if (shownPanels.has('time') && lastSim) drawTime(lastSim);
+      }),
+  );
   $('nyqMs').onchange = () => {
     if (shownPanels.has('nyq') && lastFr) drawNyq(lastFr);
   };

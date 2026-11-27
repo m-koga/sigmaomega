@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.91.0',
+    d: '2026-11-27',
+    en: [
+      'Time response: the option "Only the plant alone" (tab "Display") shows the plant by itself, with no reference and no feedback loop: the input set as the reference drives P(s) directly, the upper plot shows only the plant\'s output and the lower one its input, the metrics are the plant\'s own (final value, rise time, overshoot and settling time relative to the final value, steady-state gain y/u), an unstable plant gets its own banner, and the CSV holds t, u and y of the plant',
+    ],
+    ja: [
+      '時間応答：タブ「表示」の「制御対象単体のみ」で、目標値もフィードバック系もない制御対象だけの応答を表示できるようにした。目標値として設定した入力を P(s) に直接加え、上の図は制御対象の出力だけ、下の図はその入力を示す。応答指標も制御対象の応答のもの（最終値、最終値に対する立ち上がり時間・オーバーシュート・整定時間、定常ゲイン y/u）。不安定な制御対象では専用の警告を表示し、CSV は制御対象の t・u・y を保存する',
+    ],
+  },
+  {
     v: '1.90.0',
     d: '2026-11-27',
     en: [

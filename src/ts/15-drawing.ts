@@ -4,7 +4,7 @@
 import { T, TXT_BODE_RANGE, TXT_BODE_UNSTABLE, UIFONT } from './02-i18n.ts';
 import { numStr } from './03-math.ts';
 import { PLOTS } from './05-definitions.ts';
-import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
+import { S, ghosts, lastPZ, lastSweep, refValue } from './06-state.ts';
 import { distMetrics, mContour, twoDof } from './07-frequency.ts';
 import { impulseMetrics, metricWindow, simulatePlant, sineMetrics, stepMetrics } from './08-simulation.ts';
 import { bodeAsymptote, loopTFs, nyqCount } from './09-loop.ts';
@@ -357,7 +357,7 @@ export function stretch(r: { lo: number; hi: number }, a: readonly number[], kee
 // The response of the plant alone to r(t) (open loop), when chosen; computed again only when the settings change
 let plantRun: { key: string; run: ReturnType<typeof simulatePlant> } | null = null;
 export function plantAlone(): PlotSeries[] {
-  if (!$('timePlant').checked) return [];
+  if (!$('timePlant').checked && !$('timePlantOnly').checked) return [];
   const key = JSON.stringify(S);
   if (plantRun?.key !== key) plantRun = { key, run: simulatePlant() };
   const r = plantRun.run;
@@ -365,6 +365,14 @@ export function plantAlone(): PlotSeries[] {
 }
 // Time response: output y(t) and control input u(t) with their metrics
 export function drawTime(sim: SimResult) {
+  const only = $('timePlantOnly').checked;
+  (['tTitleCL', 'uTitleCL'] as const).forEach(id => ($(id).hidden = only));
+  (['tTitleP', 'uTitleP'] as const).forEach(id => ($(id).hidden = !only));
+  if (only) {
+    drawPlantOnly();
+    return;
+  }
+  $('plantBanner').style.display = 'none';
   const tmax = S.Tsim;
   const vl: PlotLine[] = S.dOn && S.td < tmax ? [{ v: S.td, color: COLORS.alert, label: T('Disturbance') }] : [];
   if (S.refType === 'impulse' && S.rT0 < tmax) vl.push({ v: S.rT0, color: COLORS.reference, label: T('Impulse') });
@@ -414,6 +422,80 @@ export function drawTime(sim: SimResult) {
   $('metrics').style.setProperty('--mcols', String(metricCols(items.length)));
 }
 
+// Only the plant alone: its output, and its input (the signal set as the reference) in the lower plot, with the
+// metrics of its own response
+export function drawPlantOnly() {
+  plantAlone();
+  const run = plantRun!.run,
+    tmax = S.Tsim,
+    vl: PlotLine[] =
+      S.refType === 'impulse' && S.rT0 < tmax ? [{ v: S.rT0, color: COLORS.reference, label: T('Impulse') }] : [],
+    U = run.T.map(t => refValue(t));
+  const r = { lo: 0, hi: 0 };
+  stretch(r, run.Y);
+  const pad = (r.hi - r.lo) * 0.1 || 0.5;
+  plot($('cvY'), {
+    series: [{ x: run.T, y: run.Y, color: COLORS.plant, width: 2.4, name: T('Output y of the plant') }],
+    xmin: 0,
+    xmax: tmax,
+    ymin: r.lo - pad,
+    ymax: r.hi + pad,
+    xlabel: T('Time t [s]'),
+    ylabel: 'y',
+    vlines: vl,
+  });
+  const ur = { lo: 0, hi: 0 }; // the range of u from 0
+  stretch(ur, U);
+  const upad = (ur.hi - ur.lo) * 0.1 || 0.5;
+  plot($('cvU'), {
+    series: [{ x: run.T, y: U, color: COLORS.input, width: 2, name: T('Input u to the plant') }],
+    xmin: 0,
+    xmax: tmax,
+    ymin: ur.lo - upad,
+    ymax: ur.hi + upad,
+    xlabel: T('Time t [s]'),
+    ylabel: 'u',
+    vlines: vl,
+  });
+  $('divBanner').style.display = 'none';
+  $('plantBanner').style.display = run.diverged ? 'block' : 'none';
+  const items = plantMetrics(run);
+  $('metrics').innerHTML = metricsHTML(items);
+  $('metrics').style.setProperty('--mcols', String(metricCols(items.length)));
+}
+// Metrics of the plant alone: for a step (or trapezoid) input, relative to its own final value (the value at the end):
+// rise time, overshoot, settling time and the final value; for an impulse, its peak, time and area; otherwise the
+// largest |y| and y at the end
+export function plantMetrics(run: ReturnType<typeof simulatePlant>): Metric[] {
+  const f = fmtNum,
+    n = run.Y.length,
+    yEnd = n ? run.Y[n - 1] : NaN,
+    st = { ...S, dOn: false },
+    sim = { T: run.T, Y: run.Y, R: run.T.map(() => yEnd), U: [], iae: 0, diverged: run.diverged, substeps: 1 };
+  if (run.diverged) return [[T('Final value'), '—']];
+  const ymax: Metric = [T('Max |y|'), f(Math.max(...run.Y.map(Math.abs)), 4)];
+  if (S.refType === 'step' || S.refType === 'trap') {
+    const mt = stepMetrics(sim, { ...st, R: yEnd });
+    return [
+      [T('Final value'), f(yEnd, 4)],
+      [T('Rise time (10–90%)'), mt ? f(mt.rise, 2, ' s') : '—'],
+      [T('Max overshoot'), mt ? f(mt.os, 1, ' %') : '—'],
+      [T('Settling time (±2%, from t₀)'), mt ? (mt.ts === null ? T('Not settled') : f(mt.ts, 2, ' s')) : '—'],
+      [T('Steady-state gain y/u'), Math.abs(S.R) > 0 ? f(yEnd / S.R, 4) : '—'],
+      ymax,
+    ];
+  }
+  if (S.refType === 'impulse') {
+    const im = impulseMetrics(sim, st);
+    return [
+      [T('Peak of y'), im ? f(im.peak, 4) : '—'],
+      [T('Time of the peak (from t₀)'), im ? f(im.tPeak, 2, ' s') : '—'],
+      [T('Area ∫ y dt'), im ? f(im.area, 4) : '—'],
+      [T('y at the end'), f(yEnd, 4)],
+    ];
+  }
+  return [[T('y at the end'), f(yEnd, 4)], ymax];
+}
 // Vertical range of y(t): the reference, held responses, sweep runs, the output and the specification lines that
 // are shown, leaving out values far beyond the reference (automatic range when the response diverges or the
 // reference is zero)

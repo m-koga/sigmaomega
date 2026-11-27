@@ -4,8 +4,8 @@
 import { T } from './02-i18n.ts';
 import { numStr } from './03-math.ts';
 import { paramSym } from './05-definitions.ts';
-import { S, lastFr, lastFrB, lastPZ, lastSim, lastSweep } from './06-state.ts';
-import { copyText, saveFile, toast } from './13-dom.ts';
+import { S, lastFr, lastFrB, lastPZ, lastSim, lastSweep, refValue } from './06-state.ts';
+import { $, copyText, saveFile, toast } from './13-dom.ts';
 import { plantAlone } from './15-drawing.ts';
 
 /** A cell of a CSV file */
@@ -45,6 +45,12 @@ export function timeCSV(sim: SimResult, sweep: SweepRun[] | null, plant: number[
       ...sw.map(r => r.sim.U[i]),
       ...(plant ? [i < plant.length ? plant[i] : ''] : []),
     ]);
+  return csvText(rows);
+}
+// The plant alone (shown alone): time, its input (the signal set as the reference) and its output
+export function plantCSV(t: number[], y: number[]): string {
+  const rows: CsvCell[][] = [['t', 'u', 'y']];
+  t.forEach((v, i) => rows.push([v, refValue(v), y[i]]));
   return csvText(rows);
 }
 // Frequency response: gains [dB] and phases [deg] of L, P, C, S, T, Gyd, Gyr
@@ -98,8 +104,14 @@ export async function exportCSV(kind: string) {
   let text: string, name: string;
   if (kind === 'time') {
     if (!lastSim) return;
-    text = timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null);
-    name = 'time_response.csv';
+    if ($('timePlantOnly').checked) {
+      const s = plantAlone()[0];
+      text = plantCSV(s.x, s.y);
+      name = 'plant_response.csv';
+    } else {
+      text = timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null);
+      name = 'time_response.csv';
+    }
   } else if (kind === 'bode') {
     if (!lastFr) return;
     text = freqCSV(lastFrB || lastFr);

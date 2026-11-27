@@ -227,6 +227,20 @@ test('the plant alone (open loop): the analytical step and impulse responses, de
   assert.ok(y2.every((v: number, i: number) => Math.abs(v - y1[i]) < 1e-4));
 });
 
+test('metrics of the plant alone: relative to its own final value', () => {
+  const a = fresh();
+  // K ωn²/(s² + 2ζωn s + ωn²) with K = 2, ζ = 0.3: overshoot e^(−πζ/√(1 − ζ²)) = 37.2 %, final value 2
+  Object.assign(a.S, { plant: 'second', K: 2, zeta: 0.3, wn: 1, refType: 'step', R: 1, rT0: 0, Tsim: 60 });
+  const m = Object.fromEntries(a.plantMetrics(a.simulatePlant())) as Record<string, string>;
+  const v = (k: string) => parseFloat(m[a.T(k)]);
+  assert.ok(Math.abs(v('Final value') - 2) < 1e-3);
+  assert.ok(Math.abs(v('Steady-state gain y/u') - 2) < 1e-3);
+  assert.ok(Math.abs(v('Max overshoot') - 100 * Math.exp((-Math.PI * 0.3) / Math.sqrt(1 - 0.09))) < 0.2);
+  // an unstable plant: no metrics
+  Object.assign(a.S, { plant: 'unstable' });
+  assert.deepEqual([...a.plantMetrics(a.simulatePlant())[0]], [a.T('Final value'), '—']);
+});
+
 test('measurement noise: none gives identical runs, noise changes the output only around its mean', () => {
   const a = fresh();
   Object.assign(a.S, { plant: 'first', mode: 'PI', Kp: 2, Ki: 1, Tsim: 20 });

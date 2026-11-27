@@ -106,6 +106,39 @@ test('time response: the response of the plant alone is drawn when chosen, and s
   expect(await page.evaluate(() => viewOptions().timePlant)).toBe(true);
 });
 
+test('time response: only the plant alone (no reference, no feedback loop), with its metrics and CSV', async ({
+  page,
+}) => {
+  await page.click('#tinfo [data-itab=tdisp]');
+  await page.check('#timePlantOnly');
+  await expect(page.locator('#tTitleP')).toBeVisible();
+  await expect(page.locator('#tTitleCL')).toBeHidden();
+  await expect(page.locator('#uTitleP')).toBeVisible();
+  // the metrics are those of the plant; the CSV has its time, input and output only
+  await expect(page.locator('#metrics .m .k').first()).toHaveText(await page.evaluate(() => T('Final value')));
+  expect(
+    await page.evaluate(() =>
+      plantCSV([0, 1], [0, 0.5])
+        .replace(/^\uFEFF/, '')
+        .split('\n')[0]
+        .trim(),
+    ),
+  ).toBe('t,u,y');
+  // an unstable plant: its own banner, not the closed-loop one
+  await page.evaluate(() => {
+    Object.assign(S, { plant: 'unstable', mode: 'P', Kp: 2 });
+    buildPlant();
+    update();
+  });
+  await expect(page.locator('#plantBanner')).toBeVisible();
+  await expect(page.locator('#divBanner')).toBeHidden();
+  // back to the closed loop
+  await page.uncheck('#timePlantOnly');
+  await expect(page.locator('#tTitleCL')).toBeVisible();
+  await expect(page.locator('#plantBanner')).toBeHidden();
+  expect(await page.evaluate(() => viewOptions().timePlantOnly)).toBe(false);
+});
+
 test('a parameter sweep is drawn in the Bode, Nyquist and pole-zero plots', async ({ page }) => {
   await openCard(page, 'sweep');
   await page.check('#sw-on');

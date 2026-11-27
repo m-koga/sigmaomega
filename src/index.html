@@ -227,13 +227,14 @@ window.MathJax = {
     </div>
 
     <div class="card tabpanel" id="panel-time">
-      <div class="h2row"><h2 data-i18n>Output y(t) and reference r(t)</h2><button class="tool" data-csv="time" title="Save the data of this plot as a CSV file" data-i18n-title data-i18n>Save data (CSV)</button></div>
+      <div class="h2row"><h2 id="tTitleCL" data-i18n>Output y(t) and reference r(t)</h2><h2 id="tTitleP" hidden data-i18n>Output y(t) of the plant alone</h2><button class="tool" data-csv="time" title="Save the data of this plot as a CSV file" data-i18n-title data-i18n>Save data (CSV)</button></div>
       <div class="plot-wrap"><canvas id="cvY" class="cv-main"></canvas></div>
       <div class="hgrip" data-target="cvY" data-min="120" data-max="1200"></div>
-      <h2 style="margin-top:12px" data-i18n>Control input u(t)</h2>
+      <h2 style="margin-top:12px" id="uTitleCL" data-i18n>Control input u(t)</h2><h2 style="margin-top:12px" id="uTitleP" hidden data-i18n>Input u(t) to the plant</h2>
       <div class="plot-wrap"><canvas id="cvU" class="cv-u"></canvas></div>
       <div class="hgrip" data-target="cvU" data-min="80" data-max="900"></div>
       <div class="banner" id="divBanner" data-i18n>The closed-loop system is unstable (the response diverged, so the simulation was stopped).</div>
+      <div class="banner" id="plantBanner" data-i18n>The plant alone is unstable (its response diverged, so the simulation was stopped).</div>
       <div class="tinfo" id="tinfo" data-area="tinfo">
       <div class="stabs ptabs" role="tablist"></div>
       <div class="tsecs">
@@ -241,7 +242,7 @@ window.MathJax = {
       <div class="metrics" id="metrics"></div>
       </div>
       <div class="tsec" data-sec="tdisp">
-      <div class="pz-opts zoomable" id="timeOpts"><label class="chk"><input type="checkbox" id="timePlant"><span data-i18n>Response of the plant alone to r(t) (open loop: P(s) driven by the reference, without the controller and the feedback)</span></label></div>
+      <div class="pz-opts zoomable" id="timeOpts"><label class="chk"><input type="checkbox" id="timePlant"><span data-i18n>Response of the plant alone to r(t) (open loop: P(s) driven by the reference, without the controller and the feedback)</span></label><label class="chk"><input type="checkbox" id="timePlantOnly"><span data-i18n>Only the plant alone: no reference and no feedback loop; the input set as the reference drives P(s) directly (the metrics are those of the plant)</span></label></div>
       </div>
       <div class="tsec" data-sec="tsim">
       <div class="row tsim-row" id="tsimRow"><div class="top"><span data-i18n>Simulation time (log scale: 0.01–10000 s)</span>
