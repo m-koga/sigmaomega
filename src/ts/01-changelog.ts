@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.94.2',
+    d: '2026-11-27',
+    en: [
+      'Development: the panels are one table (PANEL_DEFS: their item in the menu, the menu, a panel without a plot), from which the items of "Plots to show" and "Analysis & design" are made; what redraw() draws in each panel is a table checked by the type checker (PANEL_DRAW), and so are the CSV files of the plots (CSV_EXPORTS). Adding a panel is one entry in each, plus its card in the page',
+      'Development: the kinds of compensator design are one table (COMP_METHODS: item in the menu, design function, the parameters set in the controller of the same name, whether ωc can be given), with the steps each shows in COMP_STEPS; their menu, the ωc input, applying the result and checking a loaded scenario follow from it (they were written out in five files). Tests check the new tables; the page, its menus and the plots are unchanged (pixel comparison identical)',
+    ],
+    ja: [
+      '開発：パネルを 1 つの表（PANEL_DEFS：メニューの項目名、どのメニューか、図のないパネルか）にし、「表示する図」と「解析・設計」の項目をそこから作るようにした。redraw() が各パネルに描く内容（PANEL_DRAW）とグラフの CSV（CSV_EXPORTS）も、型チェックで漏れを見つける表にした。パネルの追加は、それぞれの表への 1 項目とページへのパネル本体で済む',
+      '開発：補償器の設計法を 1 つの表（COMP_METHODS：メニューの項目名、設計の関数、同じ名前の制御器に設定するパラメータ、ωc を指定できるか）にし、表示する手順を COMP_STEPS にまとめた。メニュー、ωc の入力欄、結果の適用、読み込んだ例題の検査はそこから決まる（5 つのファイルに書かれていた）。新しい表はテストが確かめる。画面・メニュー・図は変わらない（ピクセル比較で一致）',
+    ],
+  },
+  {
     v: '1.94.1',
     d: '2026-11-27',
     en: [

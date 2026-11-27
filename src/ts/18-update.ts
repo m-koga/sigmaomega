@@ -6,7 +6,8 @@ import { bodeRange, bodeResp, freqResp } from './07-frequency.ts';
 import { simulate } from './08-simulation.ts';
 import { computePZ, resetLoopCache } from './09-loop.ts';
 import { sweepRuns } from './12-sweep.ts';
-import { shownPanels } from './14-view.ts';
+import { PANELS, shownPanels } from './14-view.ts';
+import type { PanelKey } from './14-view.ts';
 import { drawBode, drawNich, drawNyq, drawTime } from './15-drawing.ts';
 import { drawPZ, pzInfo } from './16-pole-zero.ts';
 import {
@@ -14,13 +15,13 @@ import {
   renderComp,
   renderNyqCrit,
   renderPoles,
-  scheduleRouth,
-  scheduleSSE,
   renderSpecs,
   renderSweepTable,
   renderSweepUI,
   renderTune,
   scheduleFormulas,
+  scheduleRouth,
+  scheduleSSE,
   syncControls,
 } from './17-panels.ts';
 
@@ -57,20 +58,36 @@ export function update() {
   redraw();
   scheduleFormulas();
 }
-export function redraw() {
-  if (!lastSim) return;
-  if (shownPanels.has('time')) drawTime(lastSim);
-  if (shownPanels.has('bode') && lastFr) {
+// What redraw() draws in each panel that is shown (with the text under its plot). null: a panel whose contents
+// update() renders (the transfer functions, the poles, the Routh test, the steady-state errors) or that is drawn
+// when its parts change (the block diagram). Every panel of PANEL_DEFS needs an entry (a type error otherwise)
+const PANEL_DRAW: Record<PanelKey, (() => void) | null> = {
+  diag: null,
+  time: () => lastSim && drawTime(lastSim),
+  tf: null,
+  loop: null,
+  poles: null,
+  routh: null,
+  sse: null,
+  bode: () => {
+    if (!lastFr) return;
     drawBode(lastFr, lastFrB || lastFr);
     renderBodeAsym();
-  }
-  if (shownPanels.has('nyq') && lastFr) {
+  },
+  nyq: () => {
+    if (!lastFr) return;
     drawNyq(lastFr);
     renderNyqCrit();
-  }
-  if (shownPanels.has('nich') && lastFr) drawNich(lastFr);
-  if (shownPanels.has('pz') && lastPZ) {
+  },
+  nich: () => lastFr && drawNich(lastFr),
+  pz: () => {
+    if (!lastPZ) return;
     drawPZ(lastPZ);
     pzInfo(lastPZ);
-  }
+  },
+};
+// Draw the panels that are shown from the last results (also when only the view changes: zoom, size, panels)
+export function redraw() {
+  if (!lastSim) return;
+  for (const k of PANELS) if (shownPanels.has(k)) PANEL_DRAW[k]?.();
 }

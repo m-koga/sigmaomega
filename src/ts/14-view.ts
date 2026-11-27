@@ -47,10 +47,33 @@ export const COLORS = {
   rightHalfPlane: 'rgba(198,40,40,0.06)', // unstable half of the pole-zero map
   outsideRegion: 'rgba(60,60,60,.07)', // outside the design region of the pole specifications
 };
-// Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s), loop: the
-// transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (these two show formulas), poles: the poles of
-// P(s), C(s) and of the transfer functions of the loop (a table), routh: the Routh–Hurwitz stability test, sse: the system type and the steady-state errors, nich: the Nichols chart
-export const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'nich', 'pz'] as const;
+/* ---- Panels of the plot area ----
+   In their order. To add a panel: an entry here; its <div class="card tabpanel" id="panel-KEY"> with a
+   <div class="h2row"><h2>…</h2></div> in src/index.html (where its × is added); what redraw() draws in it in
+   PANEL_DRAW (18-update.ts); and, for a plot, its canvases in PLOTS (05-definitions.ts) and its CSV in CSV_EXPORTS
+   (21-export.ts, with a button data-csv="KEY"). Its item in the menu is made from the entry.
+     label: the item in the menu (English, translated through the dictionary); menu: 'plots' ("Plots to show")
+     or 'ana' ("Analysis & design"); text: a panel without a plot (when hidden panels are gathered in rows, the
+     plots come first, so that they come back side by side) */
+export const PANEL_DEFS = {
+  diag: { label: 'Block diagram', menu: 'plots', text: false },
+  time: { label: 'Time response', menu: 'plots', text: false },
+  // the transfer functions C(s), P(s)
+  tf: { label: 'Transfer functions', menu: 'plots', text: true },
+  // the transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s)
+  loop: { label: 'Loop transfer functions', menu: 'plots', text: true },
+  // the poles of P(s), C(s) and of the transfer functions of the loop (a table)
+  poles: { label: 'Poles and zeros', menu: 'plots', text: true },
+  routh: { label: 'Routh–Hurwitz test', menu: 'ana', text: true },
+  // the system type and the steady-state errors
+  sse: { label: 'Steady-state error', menu: 'ana', text: true },
+  bode: { label: 'Bode plot', menu: 'plots', text: false },
+  nyq: { label: 'Nyquist plot', menu: 'plots', text: false },
+  nich: { label: 'Nichols chart', menu: 'plots', text: false },
+  pz: { label: 'Pole-zero map', menu: 'plots', text: false },
+} as const satisfies Record<string, PanelDef>;
+export type PanelKey = keyof typeof PANEL_DEFS;
+export const PANELS = Object.keys(PANEL_DEFS) as PanelKey[];
 // Panels shown when nothing is stored
 export const DEFAULT_PANELS = ['diag', 'time', 'tf'];
 // Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
@@ -168,7 +191,7 @@ export function splitFullRows(t: RowTiles, shown: Set<string>): RowTiles {
 }
 // Panels without plots that go after the plots when hidden panels are gathered in rows (the plots then come back
 // side by side)
-const TEXT_PANELS = ['tf', 'loop', 'poles', 'routh', 'sse'];
+const TEXT_PANELS: string[] = PANELS.filter(k => PANEL_DEFS[k].text);
 // The arrangement in rows that looks like a preset layout: the block diagram in a row of its own on top, the other
 // shown panels n to a row (1 column: one, 2 columns: two, 1 row: all, at most MAX_COLS); the hidden panels together
 // in rows at the bottom, the plots first, so that they come back side by side

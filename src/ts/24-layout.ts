@@ -9,6 +9,7 @@ import {
   DEFAULT_PANELS,
   INFO_AREAS,
   PANELS,
+  PANEL_DEFS,
   defaultLayout,
   isHidden,
   layout,
@@ -267,6 +268,23 @@ export function panelsChanged() {
   applyPanels();
   requestAnimationFrame(redraw);
 }
+// The items of the panels in their menus, from PANEL_DEFS: "Plots to show" before its "All", "Analysis & design"
+// after its cards
+function buildPanelTabs() {
+  const sep = qs('.vb-ddsep', $('panelList'));
+  for (const k of PANELS) {
+    const d = PANEL_DEFS[k],
+      b = document.createElement('button');
+    b.className = 'tab';
+    b.type = 'button';
+    b.dataset.tab = k;
+    b.setAttribute('aria-pressed', 'false');
+    i18nText(b, d.label);
+    if (d.menu === 'plots') $('panelList').insertBefore(b, sep);
+    else $('smenuList-ana').append(b);
+  }
+}
+buildPanelTabs();
 document.querySelectorAll<HTMLElement>('.tab[data-tab]').forEach(
   t =>
     (t.onclick = () => {

@@ -22,20 +22,20 @@ import { metricWindow } from './08-simulation.ts';
 import {
   bodeAsymptote,
   charPolyK,
-  evalLoopTF,
   errorConstants,
+  evalLoopTF,
   hurwitzK,
-  nyqCount,
   loopPoles,
   loopTFs,
+  nyqCount,
   positiveKRanges,
   routhArray,
   stableKRanges,
   steadyErrors,
 } from './09-loop.ts';
-import type { LoopTF, LoopTFKey, PoleKey } from './09-loop.ts';
-import { compDesign, tuneErr, tuneGains, tuneRule } from './10-tuning.ts';
-import type { CompDesign, TuneResult } from './10-tuning.ts';
+import type { ErrorConstants, LoopTF, LoopTFKey, PoleKey } from './09-loop.ts';
+import { compDesign, isCompMethod, tuneErr, tuneGains, tuneRule } from './10-tuning.ts';
+import type { CompDesign, CompMethod, CompSettings, TuneResult } from './10-tuning.ts';
 import { evalSpecs, specIcon } from './11-specs.ts';
 import { SWEEP_COLORS, plainLabel, sweepDefaults, sweepParams } from './12-sweep.ts';
 import { $, byId, i18nText, must } from './13-dom.ts';
@@ -859,7 +859,6 @@ export function scheduleSSE() {
 // The panel: the system type and the error constants of L(s), the steady-state errors to a step, ramp and parabola
 // of the reference and to a step disturbance (from the series of 1 − G_yr(s) and G_yd(s) at s = 0), beside the
 // error at the end of the simulation
-type ErrorConstants = ReturnType<typeof errorConstants>;
 type SteadyErrors = ReturnType<typeof steadyErrors>;
 // The system type of L(s), its approximation near s = 0 and the table of the error constants
 function sseConstantsHTML(k: ErrorConstants): string {
@@ -1096,7 +1095,6 @@ export let lastComp: CompDesign | null = null;
 export function compVisible() {
   return layout.scard === 'comp'; // the card shown in the settings panel
 }
-type CompSettings = State['comp'];
 // The steps of a lead-lag design: the new crossover ωc, the phase to add there, then the lead (α, T₁) and the lag
 // (β, T₂)
 function compStepsLeadLag(c: CompSettings, d: CompDesign): string[] {
@@ -1184,6 +1182,12 @@ function compStepsLag(d: CompDesign): string[] {
     steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
   return steps;
 }
+// The steps shown for each kind of compensator design (every kind of COMP_METHODS needs an entry)
+const COMP_STEPS: Record<CompMethod, (c: CompSettings, d: CompDesign) => string[]> = {
+  lead: compStepsLead,
+  lag: (_c, d) => compStepsLag(d),
+  leadlag: compStepsLeadLag,
+};
 // Why no compensator was designed, or the phase margin it gives
 function compOutcomeHTML(c: CompSettings, d: CompDesign): string {
   const n = numStr;
@@ -1232,9 +1236,7 @@ export function renderComp() {
           },
         ),
   );
-  if (c.method === 'leadlag') steps.push(...compStepsLeadLag(c, d));
-  if (c.method === 'lead') steps.push(...compStepsLead(c, d));
-  if (c.method === 'lag') steps.push(...compStepsLag(d));
+  if (isCompMethod(c.method)) steps.push(...COMP_STEPS[c.method](c, d));
   box.innerHTML = `<ol class="comp-steps">${steps.map(s => `<li>${s.replace(/K_c/g, 'K<sub>c</sub>')}</li>`).join('')}</ol>${compOutcomeHTML(c, d)}`;
   $('compApply').disabled = d.err !== undefined;
 }

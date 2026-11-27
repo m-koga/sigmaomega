@@ -33,6 +33,8 @@ export function uiStrings(api: ReturnType<typeof load>['api'], html: string): st
   });
   Object.values(api.AREA_LABELS).forEach(v => keys.add(v));
   Object.values(api.SPECS).forEach(v => keys.add(v.label));
+  Object.values(api.PANEL_DEFS).forEach(v => keys.add(v.label));
+  Object.values(api.COMP_METHODS).forEach(v => keys.add(v.label));
   keys.add('Not settled');
   api.SC_EXAMPLES.forEach(e => {
     keys.add(e.name);

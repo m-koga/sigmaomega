@@ -100,35 +100,28 @@ export function pzCSV(pz: PZResult): string {
   if (pz.pade) rows.push(['note: dead time is approximated by a 3rd-order Pade approximation', '', '', '', '']);
   return csvText(rows);
 }
-export async function exportCSV(kind: string) {
-  let text: string, name: string;
-  if (kind === 'time') {
-    if (!lastSim) return;
+/** The CSV file of a panel: its text and file name, or null when there is nothing to save yet */
+type CsvFile = { text: string; name: string } | null;
+// The CSV file behind each button data-csv="KEY" in the title of a panel (a new plot with data to save gets an entry
+// here and such a button; tests/kinds.test.ts checks that they match)
+export const CSV_EXPORTS: Record<string, () => CsvFile> = {
+  time: () => {
+    if (!lastSim) return null;
     if ($('timePlantOnly').checked) {
       const s = plantAlone()[0];
-      text = plantCSV(s.x, s.y);
-      name = 'plant_response.csv';
-    } else {
-      text = timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null);
-      name = 'time_response.csv';
+      return { text: plantCSV(s.x, s.y), name: 'plant_response.csv' };
     }
-  } else if (kind === 'bode') {
-    if (!lastFr) return;
-    text = freqCSV(lastFrB || lastFr);
-    name = 'frequency_response.csv';
-  } else if (kind === 'nyq') {
-    if (!lastFr) return;
-    text = nyqCSV(lastFr);
-    name = 'nyquist.csv';
-  } else if (kind === 'nich') {
-    if (!lastFr) return;
-    text = nichCSV(lastFr);
-    name = 'nichols.csv';
-  } else {
-    if (!lastPZ) return;
-    text = pzCSV(lastPZ);
-    name = 'poles_zeros.csv';
-  }
+    return { text: timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null), name: 'time_response.csv' };
+  },
+  bode: () => lastFr && { text: freqCSV(lastFrB || lastFr), name: 'frequency_response.csv' },
+  nyq: () => lastFr && { text: nyqCSV(lastFr), name: 'nyquist.csv' },
+  nich: () => lastFr && { text: nichCSV(lastFr), name: 'nichols.csv' },
+  pz: () => lastPZ && { text: pzCSV(lastPZ), name: 'poles_zeros.csv' },
+};
+export async function exportCSV(kind: string) {
+  const f = CSV_EXPORTS[kind]?.();
+  if (!f) return;
+  const { text, name } = f;
   const r = await saveFile(name, text, 'text/csv');
   if (r === 'saved') toast(T('Saved as "{f}" (usually in the Downloads folder)', { f: name }));
   else if (r === 'unavailable') {

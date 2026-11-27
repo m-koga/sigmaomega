@@ -5,6 +5,8 @@
 // design specifications and languages
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { fresh, near } from './harness.ts';
 
 const a = fresh();
@@ -193,5 +195,43 @@ test('languages: the menu lists every language of the table; each has its font a
     assert.equal(b.UIFONT(), d.font);
     assert.equal(b.docsLang(), d.docs);
     assert.equal(b.docsTranslated(), d.docs === l);
+  }
+});
+
+const pageHTML = fs.readFileSync(path.join(import.meta.dirname, '..', 'src', 'index.html'), 'utf8');
+
+test('panels: each has its card with a title row in the page, and the CSV buttons match the CSV exports', () => {
+  for (const k of a.PANELS) {
+    const at = pageHTML.indexOf(`id="panel-${k}"`);
+    assert.ok(at > 0, `${k}: <div id="panel-${k}"> in src/index.html`);
+    const next = pageHTML.indexOf('id="panel-', at + 1);
+    assert.ok(pageHTML.slice(at, next < 0 ? undefined : next).includes('class="h2row"'), `${k}: its title row`);
+    assert.ok(['plots', 'ana'].includes(a.PANEL_DEFS[k].menu), `${k}: its menu`);
+  }
+  const buttons = [...pageHTML.matchAll(/data-csv="(\w+)"/g)].map(m => m[1]).sort();
+  assert.deepEqual(buttons, Object.keys(a.CSV_EXPORTS).sort());
+  for (const k of buttons) assert.ok((a.PANELS as string[]).includes(k), `CSV ${k} belongs to a panel`);
+  // the items of the menus are made from the table, not written in the page
+  assert.ok(!/data-tab=/.test(pageHTML));
+});
+
+test('compensator designs: each sets the controller of its name, with parameters it has', () => {
+  for (const [m, d] of Object.entries(a.COMP_METHODS)) {
+    const c = a.CONTROLLERS[m];
+    assert.ok(c, `${m}: a kind of controller`);
+    for (const p of [...d.params, 'Kc']) assert.ok(c.p.includes(p as NumKey), `${m}: ${p} is a parameter of it`);
+  }
+  // each kind designs a compensator for a third-order lag with K_c = 4 (phase margin short of 50°), and the phase
+  // margin grows (a single lead may stay short of the target for this plant: that is the method, not an error)
+  const b = fresh();
+  Object.assign(b.S, { plant: 'third', mode: 'P' });
+  for (const m of Object.keys(b.COMP_METHODS)) {
+    const d = b.compDesign({ method: m, pm: 50, kc: 4, theta: 5, wc: null });
+    assert.equal(d.err, undefined, `${m}: ${d.err}`);
+    for (const p of b.COMP_METHODS[m as 'lead'].params) {
+      const v = d[p as 'T1'];
+      assert.ok(v !== undefined && isFinite(v) && v > 0, `${m}: ${p} = ${v}`);
+    }
+    assert.ok(d.pm !== null && d.pm0 !== null && d.pm > d.pm0, `${m}: phase margin ${d.pm0} → ${d.pm}`);
   }
 });

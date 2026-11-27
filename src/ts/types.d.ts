@@ -338,6 +338,15 @@ interface PlotOptions {
   /** marks: × (default) or a small circle */
   points?: PlotPoint[];
 }
+/** A panel of the plot area (PANEL_DEFS in 14-view.ts) */
+interface PanelDef {
+  /** its item in the menu, in English */
+  label: string;
+  /** the menu with its item: "Plots to show" or "Analysis & design" */
+  menu: 'plots' | 'ana';
+  /** a panel without a plot */
+  text: boolean;
+}
 /** A point marked on a plot */
 interface PlotPoint {
   x: number;

@@ -39,6 +39,8 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
   - 言語 `LANGUAGES`：`02-i18n.ts`
   - `TUNE_RULES`：`10-tuning.ts`
   - `INFO_AREAS`：`14-view.ts`（図の下のタブ付き区画）
+  - パネル `PANEL_DEFS`：`14-view.ts`（メニューの項目はここから作る。HTML にタブを書かない）。描画は `18-update.ts` の `PANEL_DRAW`、CSV は `21-export.ts` の `CSV_EXPORTS`
+  - 補償器の設計法 `COMP_METHODS`：`10-tuning.ts`（手順の表示は `17-panels.ts` の `COMP_STEPS`）
   - `tests/kinds.test.ts` が全項目を確かめる。
 - 関数は 80 行以内（`tests/modules.test.ts`）。長くなったら、何をするかをコメントに書いた名前付きの部分に分ける。数行を超えるイベント処理も名前付きの関数にして `build…()` で割り当てる。
 - 計算関数は設定を最後の引数 `st: State = S` で受け取る（グローバルを暗黙に読まない）。

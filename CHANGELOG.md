@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.94.2 (2026-11-27)
+- Development: the panels are one table (PANEL_DEFS: their item in the menu, the menu, a panel without a plot), from which the items of "Plots to show" and "Analysis & design" are made; what redraw() draws in each panel is a table checked by the type checker (PANEL_DRAW), and so are the CSV files of the plots (CSV_EXPORTS). Adding a panel is one entry in each, plus its card in the page
+- Development: the kinds of compensator design are one table (COMP_METHODS: item in the menu, design function, the parameters set in the controller of the same name, whether ωc can be given), with the steps each shows in COMP_STEPS; their menu, the ωc input, applying the result and checking a loaded scenario follow from it (they were written out in five files). Tests check the new tables; the page, its menus and the plots are unchanged (pixel comparison identical)
+
 ## v1.94.1 (2026-11-27)
 - Development: the ten functions of more than 80 lines (the Bode plot, the root-locus rules, the Nyquist criterion, the block diagram, the steady-state error and compensator panels, the exercise and scenario cards, the frequency response and the root-locus rules panel) are split into named parts, each with a comment saying what it does; the block diagram and the scenario buttons lose their repeated code; tests/modules.test.ts now keeps every function at 80 lines or fewer
 - Development: npm run pixcmp also compares the analysis panels (Routh table, steady-state errors, Bode asymptotes, Nyquist criterion, root-locus rules, tuning and the compensator card for each method) and the block diagram for every combination of its parts, so that a refactoring of them is checked too; with it, this version shows exactly what 1.94.0 showed. A test of the Nichols CSV export was added (it was the one export no test ran)

@@ -26,22 +26,25 @@ import {
 import { S, ghosts, isTFMode, lastSim, lastSweep, switchDefaults } from './06-state.ts';
 import { resetLocus } from './09-loop.ts';
 import {
+  COMP_METHODS,
   TUNE_METHODS,
   TUNE_TYPES,
   exerciseCheck,
   exercisePlant,
+  fopdtStep,
   freqExCheck,
-  freqExercisePlant,
   freqExRange,
   freqExResponse,
-  fopdtStep,
+  freqExercisePlant,
+  isCompMethod,
   tuneGains,
   tuneLabel,
 } from './10-tuning.ts';
-import { plot } from './15-drawing.ts';
+import type { CompDesign, CompMethod } from './10-tuning.ts';
 import { parseSweep, sweepDefaults } from './12-sweep.ts';
 import { $, byId, errMessage, fmtVal, i18nText, must } from './13-dom.ts';
 import { COLORS, PLOT_VIEWS, layout, saveLayout, subFolded } from './14-view.ts';
+import { plot } from './15-drawing.ts';
 import {
   lastComp,
   lastTune,
@@ -818,13 +821,9 @@ export function buildComp() {
   const c = S.comp;
   byId('comp-card').innerHTML = `<div class="tune-grid">
       <label for="compMethod">${T('Compensator')}</label><select id="compMethod">${(
-        [
-          ['lead', 'Lead compensator'],
-          ['lag', 'Lag compensator'],
-          ['leadlag', 'Lead-lag compensator'],
-        ] as const
+        Object.keys(COMP_METHODS) as CompMethod[]
       )
-        .map(([m, l]) => `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(l)}</option>`)
+        .map(m => `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(COMP_METHODS[m].label)}</option>`)
         .join('')}</select>
       <label for="compPm">${T('Target phase margin PM* [°]')}</label><input type="number" id="compPm" step="any" min="1" value="${c.pm}">
       <label for="compKc">${T('Gain K_c (for the steady-state error)').replace('K_c', 'K<sub>c</sub>')}</label><input type="number" id="compKc" step="any" min="0" value="${c.kc}">
@@ -834,9 +833,11 @@ export function buildComp() {
     <div class="poles" id="compOut"></div>
     <button class="chip" id="compApply">${T('Apply to the controller')}</button>
     <div class="hint">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); lead-lag: the product of the two; all keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>`;
-  // the new crossover is asked only for the lead-lag design
+  // the new crossover is asked only for the kinds that take it (the lead-lag design)
   const showWc = () =>
-    (['compWc', 'compWcL'] as const).forEach(id => ($(id).style.display = c.method === 'leadlag' ? '' : 'none'));
+    (['compWc', 'compWcL'] as const).forEach(
+      id => ($(id).style.display = isCompMethod(c.method) && COMP_METHODS[c.method].askWc ? '' : 'none'),
+    );
   showWc();
   byId<HTMLSelectElement>('compMethod').onchange = e => {
     c.method = (e.target as HTMLSelectElement).value;
@@ -878,20 +879,12 @@ export function applyComp() {
   if (!d || d.err !== undefined) return;
   const prev = S.mode;
   if (prev !== 'custom' && !isTFMode(S)) S.lastPid = prev;
+  const m = S.comp.method;
+  if (!isCompMethod(m)) return;
+  // the controller of the same name, with the parameters the design gives
   S.Kc = +S.comp.kc.toPrecision(4);
-  if (S.comp.method !== 'lag') {
-    S.mode = S.comp.method;
-    S.T1 = +d.T1!.toPrecision(4);
-    S.alpha = +d.alpha!.toPrecision(4);
-  }
-  if (S.comp.method === 'leadlag') {
-    S.T2 = +d.T2!.toPrecision(4);
-    S.beta = +d.beta!.toPrecision(4);
-  } else if (S.comp.method === 'lag') {
-    S.mode = 'lag';
-    S.T2 = +d.T2!.toPrecision(4);
-    S.beta = +d.beta!.toPrecision(4);
-  }
+  S.mode = m;
+  for (const p of COMP_METHODS[m].params) S[p] = +(d[p as keyof CompDesign] as number).toPrecision(4);
   (['Kc', 'T1', 'alpha', 'T2', 'beta'] as NumKey[]).forEach(showCtrlParam);
   buildCtrlCustom();
   renderTeX();

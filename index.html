@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="version" content="1.94.1">
+<meta name="version" content="1.94.2">
 <title>SigmaOmega — Feedback Control Simulator</title>
 <meta name="author" content="Masanobu Koga">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 viewBox%3D%220 0 64 64%22%3E%3Cdefs%3E%3ClinearGradient id%3D%22so-bg%22 x1%3D%220%22 y1%3D%220%22 x2%3D%220%22 y2%3D%221%22%3E%3Cstop offset%3D%220%22 stop-color%3D%22%232a3142%22%2F%3E%3Cstop offset%3D%221%22 stop-color%3D%22%23171b25%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect width%3D%2264%22 height%3D%2264%22 rx%3D%2214%22 fill%3D%22url(%23so-bg)%22%2F%3E%3Cpath d%3D%22M8 47H56M32.5 11V51%22 stroke%3D%22%2359627a%22 stroke-width%3D%221.8%22 stroke-linecap%3D%22round%22%2F%3E%3Cg fill%3D%22none%22 stroke-width%3D%224.2%22 stroke-linecap%3D%22round%22 stroke-linejoin%3D%22round%22%3E%3Ccircle cx%3D%2217%22 cy%3D%2234.5%22 r%3D%226.8%22 stroke%3D%22%23fff%22%2F%3E%3Cpath d%3D%22M17 27.7H28.6%22 stroke%3D%22%23fff%22%2F%3E%3Cpath d%3D%22M37 26.5Q37 41 41.5 41Q46 41 46 32.59Q46 41 50.5 41Q55 41 55 26.5%22 stroke%3D%22%23e53935%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
@@ -528,21 +528,12 @@ table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"Jet
   <div class="vb-dd" id="panelMenu">
     <button class="vb-ddbtn" id="panelBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="panelList" title="Choose the plots to show" data-i18n-title><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 13.5h12"/><path d="M3.25 11 6.5 6.75l2.75 2.75L13 4.5"/></svg><span class="mb-full" id="panelSum" data-i18n>Plots to show</span><span class="mb-short" data-i18n>Plots</span><span class="vb-caret" aria-hidden="true">▾</span></button>
     <div class="vb-ddlist" id="panelList" role="group">
-      <button class="tab" type="button" data-tab="diag" aria-pressed="false" data-i18n>Block diagram</button>
-      <button class="tab on" type="button" data-tab="time" aria-pressed="true" data-i18n>Time response</button>
-      <button class="tab" type="button" data-tab="tf" aria-pressed="false" data-i18n>Transfer functions</button>
-      <button class="tab" type="button" data-tab="loop" aria-pressed="false" data-i18n>Loop transfer functions</button>
-      <button class="tab" type="button" data-tab="poles" aria-pressed="false" data-i18n>Poles and zeros</button>
-      <button class="tab" type="button" data-tab="bode" aria-pressed="false" data-i18n>Bode plot</button>
-      <button class="tab" type="button" data-tab="nyq" aria-pressed="false" data-i18n>Nyquist plot</button>
-      <button class="tab" type="button" data-tab="nich" aria-pressed="false" data-i18n>Nichols chart</button>
-      <button class="tab" type="button" data-tab="pz" aria-pressed="false" data-i18n>Pole-zero map</button>
       <div class="vb-ddsep"></div>
       <button class="tool" type="button" id="panelsAll" data-i18n>All</button>
     </div>
   </div>
   <div class="vb-dd smenu" id="smenu-sys"><button class="vb-ddbtn smenu-btn" id="smenuBtn-sys" type="button" data-group="sys" aria-haspopup="true" aria-expanded="false" aria-controls="smenuList-sys"><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/><circle cx="5.5" cy="4" r="1.6" class="mb-dot"/><circle cx="10.5" cy="8" r="1.6" class="mb-dot"/><circle cx="6.5" cy="12" r="1.6" class="mb-dot"/></svg><span class="mb-full" data-i18n>System setup</span><span class="mb-short" data-i18n>System</span><span class="vb-caret" aria-hidden="true">▾</span></button><div class="vb-ddlist" id="smenuList-sys" role="menu"></div></div>
-  <div class="vb-dd smenu" id="smenu-ana"><button class="vb-ddbtn smenu-btn" id="smenuBtn-ana" type="button" data-group="ana" aria-haspopup="true" aria-expanded="false" aria-controls="smenuList-ana"><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><circle cx="8" cy="8" r="2.25"/><path d="M8 .75v2.5M8 12.75v2.5M.75 8h2.5M12.75 8h2.5"/></svg><span class="mb-full" data-i18n>Analysis & design</span><span class="mb-short" data-i18n>Design</span><span class="vb-caret" aria-hidden="true">▾</span></button><div class="vb-ddlist" id="smenuList-ana" role="menu"><div class="vb-ddsep"></div><button class="tab" type="button" data-tab="routh" aria-pressed="false" data-i18n>Routh–Hurwitz test</button><button class="tab" type="button" data-tab="sse" aria-pressed="false" data-i18n>Steady-state error</button></div></div>
+  <div class="vb-dd smenu" id="smenu-ana"><button class="vb-ddbtn smenu-btn" id="smenuBtn-ana" type="button" data-group="ana" aria-haspopup="true" aria-expanded="false" aria-controls="smenuList-ana"><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.75"/><circle cx="8" cy="8" r="2.25"/><path d="M8 .75v2.5M8 12.75v2.5M.75 8h2.5M12.75 8h2.5"/></svg><span class="mb-full" data-i18n>Analysis & design</span><span class="mb-short" data-i18n>Design</span><span class="vb-caret" aria-hidden="true">▾</span></button><div class="vb-ddlist" id="smenuList-ana" role="menu"><div class="vb-ddsep"></div></div></div>
   <div class="vb-dd" id="pcolsMenu">
     <button class="vb-ddbtn" id="pcolsBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pcolsList" title="Choose how the plots are arranged" data-i18n-title><svg class="mb-ic" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span class="mb-full" data-i18n>Plot arrangement</span><span class="mb-short" data-i18n>Layout</span><span class="vb-caret" aria-hidden="true">▾</span></button>
     <div class="vb-ddlist" id="pcolsList" role="menu"></div>
@@ -957,6 +948,18 @@ table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"Jet
    CHANGELOG.md (English) and CHANGELOG.ja.md (Japanese) are generated by npm run docs. */
 const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
+  {
+    v: '1.94.2',
+    d: '2026-11-27',
+    en: [
+      'Development: the panels are one table (PANEL_DEFS: their item in the menu, the menu, a panel without a plot), from which the items of "Plots to show" and "Analysis & design" are made; what redraw() draws in each panel is a table checked by the type checker (PANEL_DRAW), and so are the CSV files of the plots (CSV_EXPORTS). Adding a panel is one entry in each, plus its card in the page',
+      'Development: the kinds of compensator design are one table (COMP_METHODS: item in the menu, design function, the parameters set in the controller of the same name, whether ωc can be given), with the steps each shows in COMP_STEPS; their menu, the ωc input, applying the result and checking a loaded scenario follow from it (they were written out in five files). Tests check the new tables; the page, its menus and the plots are unchanged (pixel comparison identical)',
+    ],
+    ja: [
+      '開発：パネルを 1 つの表（PANEL_DEFS：メニューの項目名、どのメニューか、図のないパネルか）にし、「表示する図」と「解析・設計」の項目をそこから作るようにした。redraw() が各パネルに描く内容（PANEL_DRAW）とグラフの CSV（CSV_EXPORTS）も、型チェックで漏れを見つける表にした。パネルの追加は、それぞれの表への 1 項目とページへのパネル本体で済む',
+      '開発：補償器の設計法を 1 つの表（COMP_METHODS：メニューの項目名、設計の関数、同じ名前の制御器に設定するパラメータ、ωc を指定できるか）にし、表示する手順を COMP_STEPS にまとめた。メニュー、ωc の入力欄、結果の適用、読み込んだ例題の検査はそこから決まる（5 つのファイルに書かれていた）。新しい表はテストが確かめる。画面・メニュー・図は変わらない（ピクセル比較で一致）',
+    ],
+  },
   {
     v: '1.94.1',
     d: '2026-11-27',
@@ -9478,6 +9481,100 @@ function crossover(st, g) {
   if (!c) return { wgc: null, pm: null };
   return { wgc: c.w, pm: 180 + c.o - 360 * Math.round((180 + c.o) / 360) };
 }
+/** What the design of each kind starts from: the settings, Kc P(jω) and its response on a grid, the result so far,
+ *  and verify(C), which puts the crossover and phase margin of C(s) P(s) into the result */
+
+
+
+
+
+
+
+
+// C(s) of a lead (T₁s + 1)/(αT₁s + 1) or lag (T₂s + 1)/(βT₂s + 1) stage at jω
+const stage = (w, T, r) => cdiv([1, w * T], [1, w * r * T]);
+// α of a lead stage that adds the phase φm [deg] at its centre
+const leadAlpha = (phiM) => {
+  const s = Math.sin((phiM * Math.PI) / 180);
+  return (1 - s) / (1 + s);
+};
+// Lead: the phase to add φm = PM* − PM + θ, α, the new crossover ωm where |Kc P| = √α, T₁ = 1/(ωm √α)
+function designLead({ cs, g0, pm0, out, verify }) {
+  const phiM = cs.pm - pm0 + cs.theta;
+  out.phiM = phiM;
+  if (phiM <= 0) return { ...out, err: 'not-needed' };
+  if (phiM > 80) return { ...out, err: 'too-much' };
+  const alpha = leadAlpha(phiM),
+    m = crossDown(g0.W, g0.db, 10 * Math.log10(alpha), g0.ph);
+  out.alpha = alpha;
+  if (!m) return { ...out, err: 'no-frequency' };
+  out.wm = m.w;
+  const T1 = (out.T1 = 1 / (m.w * Math.sqrt(alpha)));
+  verify(w => cmul([cs.kc, 0], stage(w, T1, alpha)));
+  return out;
+}
+// Lag: the new crossover where the phase of Kc P is −180° + PM* + θ, β = |Kc P| there, T₂ = 10/ω
+function designLag({ cs, g0, out, verify }) {
+  const phiT = (out.phiT = -180 + cs.pm + cs.theta),
+    c = crossDown(g0.W, g0.ph, phiT, g0.db);
+  if (!c) return { ...out, err: 'no-frequency' };
+  out.wg = c.w;
+  const beta = (out.beta = Math.pow(10, c.o / 20));
+  if (beta <= 1) return { ...out, err: 'not-needed' };
+  const T2 = (out.T2 = 10 / c.w);
+  verify(w => cmul([cs.kc, 0], stage(w, T2, beta)));
+  return out;
+}
+// Lead-lag: the new crossover ωc (given, or the phase crossover of Kc P), the lead centred there adding the phase
+// missing at ωc, and the lag lowering the gain there by β = |Kc P(jωc)|/√α
+function designLeadLag({ cs, G, g0, out, verify }) {
+  let wc = cs.wc && cs.wc > 0 ? cs.wc : null;
+  out.wcAuto = wc === null;
+  if (wc === null) {
+    const c = crossDown(g0.W, g0.ph, -180, g0.db);
+    if (!c) return { ...out, err: 'no-frequency' };
+    wc = c.w;
+  }
+  out.wc = wc;
+  const z = G(wc),
+    unwrap = crossDown(
+      g0.W,
+      g0.W.map(w => -w),
+      -wc,
+      g0.ph,
+    ), // the plotted (unwrapped) phase at ωc
+    // the phase there: exactly −180° at the phase crossover, otherwise on the branch of the plotted phase
+    phc = out.wcAuto ? -180 : unwrap ? unwrap.o : (Math.atan2(z[1], z[0]) * 180) / Math.PI,
+    gc = Math.hypot(z[0], z[1]);
+  out.gcDb = 20 * Math.log10(gc);
+  out.phc = phc;
+  const phiM = (out.phiM = cs.pm + cs.theta - (180 + phc));
+  if (phiM <= 0) return { ...out, err: 'lead-not-needed' };
+  if (phiM > 80) return { ...out, err: 'too-much' };
+  const alpha = (out.alpha = leadAlpha(phiM)),
+    T1 = (out.T1 = 1 / (wc * Math.sqrt(alpha))),
+    beta = (out.beta = gc / Math.sqrt(alpha));
+  if (beta <= 1) return { ...out, err: 'lag-not-needed' };
+  const T2 = (out.T2 = 10 / wc);
+  verify(w => cmul(cmul([cs.kc, 0], stage(w, T1, alpha)), stage(w, T2, beta)));
+  return out;
+}
+/* The kinds of compensator design, in the order of their menu. To add one: an entry here (its design function, and
+   the controller it sets: a kind of CONTROLLERS with its parameters), and its steps in COMP_STEPS (17-panels.ts).
+     label: its item in the menu (English); design: the classical steps; params: the parameters of the controller
+     taken from the result; askWc: the new crossover ωc can be given */
+const COMP_METHODS = {
+  lead: { label: 'Lead compensator', design: designLead, params: ['T1', 'alpha'], askWc: false },
+  lag: { label: 'Lag compensator', design: designLag, params: ['T2', 'beta'], askWc: false },
+  leadlag: { label: 'Lead-lag compensator', design: designLeadLag, params: ['T1', 'alpha', 'T2', 'beta'], askWc: true },
+} 
+
+
+;
+
+const isCompMethod = (m) =>
+  typeof m === 'string' && Object.prototype.hasOwnProperty.call(COMP_METHODS, m);
+// The design for the settings cs: the crossover and phase margin of Kc P(s), then the steps of its kind
 function compDesign(cs, st = S) {
   const tf = PLANTS[st.plant].tf(st),
     P = (w) => cmul(evalPr(w, tf), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]),
@@ -9490,69 +9587,16 @@ function compDesign(cs, st = S) {
     wgc0 = c0 ? c0.w : null,
     pm0 = c0 ? 180 + c0.o - 360 * Math.round((180 + c0.o) / 360) : null,
     out = { wgc0, pm0, wgc: null, pm: null };
-  const verify = (C) =>
+  const verify = (C) => {
     Object.assign(
       out,
       crossover(st, w => cmul(C(w), P(w))),
     );
+  };
   if (pm0 === null) return { ...out, err: 'no-crossover' };
   if (pm0 >= cs.pm) return { ...out, err: 'not-needed' };
-  if (cs.method === 'lead') {
-    const phiM = cs.pm - pm0 + cs.theta;
-    out.phiM = phiM;
-    if (phiM <= 0) return { ...out, err: 'not-needed' };
-    if (phiM > 80) return { ...out, err: 'too-much' };
-    const s = Math.sin((phiM * Math.PI) / 180),
-      alpha = (1 - s) / (1 + s),
-      m = crossDown(g0.W, g0.db, 10 * Math.log10(alpha), g0.ph);
-    out.alpha = alpha;
-    if (!m) return { ...out, err: 'no-frequency' };
-    out.wm = m.w;
-    const T1 = (out.T1 = 1 / (m.w * Math.sqrt(alpha)));
-    verify(w => cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])));
-  } else if (cs.method === 'leadlag') {
-    // the new crossover: given, or the phase crossover of Kc P (where its phase is −180°)
-    let wc = cs.wc && cs.wc > 0 ? cs.wc : null;
-    out.wcAuto = wc === null;
-    if (wc === null) {
-      const c = crossDown(g0.W, g0.ph, -180, g0.db);
-      if (!c) return { ...out, err: 'no-frequency' };
-      wc = c.w;
-    }
-    out.wc = wc;
-    const z = G(wc),
-      unwrap = crossDown(
-        g0.W,
-        g0.W.map(w => -w),
-        -wc,
-        g0.ph,
-      ), // the plotted (unwrapped) phase at ωc
-      // the phase there: exactly −180° at the phase crossover, otherwise on the branch of the plotted phase
-      phc = out.wcAuto ? -180 : unwrap ? unwrap.o : (Math.atan2(z[1], z[0]) * 180) / Math.PI,
-      gc = Math.hypot(z[0], z[1]);
-    out.gcDb = 20 * Math.log10(gc);
-    out.phc = phc;
-    const phiM = (out.phiM = cs.pm + cs.theta - (180 + phc));
-    if (phiM <= 0) return { ...out, err: 'lead-not-needed' };
-    if (phiM > 80) return { ...out, err: 'too-much' };
-    const s = Math.sin((phiM * Math.PI) / 180),
-      alpha = (out.alpha = (1 - s) / (1 + s)),
-      T1 = (out.T1 = 1 / (wc * Math.sqrt(alpha))),
-      beta = (out.beta = gc / Math.sqrt(alpha));
-    if (beta <= 1) return { ...out, err: 'lag-not-needed' };
-    const T2 = (out.T2 = 10 / wc);
-    verify(w => cmul(cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])), cdiv([1, w * T2], [1, w * beta * T2])));
-  } else {
-    const phiT = (out.phiT = -180 + cs.pm + cs.theta),
-      c = crossDown(g0.W, g0.ph, phiT, g0.db);
-    if (!c) return { ...out, err: 'no-frequency' };
-    out.wg = c.w;
-    const beta = (out.beta = Math.pow(10, c.o / 20));
-    if (beta <= 1) return { ...out, err: 'not-needed' };
-    const T2 = (out.T2 = 10 / c.w);
-    verify(w => cmul([cs.kc, 0], cdiv([1, w * T2], [1, w * beta * T2])));
-  }
-  return out;
+  const m = isCompMethod(cs.method) ? cs.method : 'lag'; // (an unknown kind was designed as a lag)
+  return COMP_METHODS[m].design({ cs, G, g0, pm0, out, verify });
 }
 
 /* ---- Estimation exercise: a hidden first-order lag + dead time plant ---- */
@@ -10099,10 +10143,33 @@ const COLORS = {
   rightHalfPlane: 'rgba(198,40,40,0.06)', // unstable half of the pole-zero map
   outsideRegion: 'rgba(60,60,60,.07)', // outside the design region of the pole specifications
 };
-// Panels of the plot area in their order; diag: the block diagram, tf: the transfer functions C(s), P(s), loop: the
-// transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s) (these two show formulas), poles: the poles of
-// P(s), C(s) and of the transfer functions of the loop (a table), routh: the Routh–Hurwitz stability test, sse: the system type and the steady-state errors, nich: the Nichols chart
-const PANELS = ['diag', 'time', 'tf', 'loop', 'poles', 'routh', 'sse', 'bode', 'nyq', 'nich', 'pz'];
+/* ---- Panels of the plot area ----
+   In their order. To add a panel: an entry here; its <div class="card tabpanel" id="panel-KEY"> with a
+   <div class="h2row"><h2>…</h2></div> in src/index.html (where its × is added); what redraw() draws in it in
+   PANEL_DRAW (18-update.ts); and, for a plot, its canvases in PLOTS (05-definitions.ts) and its CSV in CSV_EXPORTS
+   (21-export.ts, with a button data-csv="KEY"). Its item in the menu is made from the entry.
+     label: the item in the menu (English, translated through the dictionary); menu: 'plots' ("Plots to show")
+     or 'ana' ("Analysis & design"); text: a panel without a plot (when hidden panels are gathered in rows, the
+     plots come first, so that they come back side by side) */
+const PANEL_DEFS = {
+  diag: { label: 'Block diagram', menu: 'plots', text: false },
+  time: { label: 'Time response', menu: 'plots', text: false },
+  // the transfer functions C(s), P(s)
+  tf: { label: 'Transfer functions', menu: 'plots', text: true },
+  // the transfer functions of the loop L(s), S(s), T(s), Gyr(s), Gyd(s)
+  loop: { label: 'Loop transfer functions', menu: 'plots', text: true },
+  // the poles of P(s), C(s) and of the transfer functions of the loop (a table)
+  poles: { label: 'Poles and zeros', menu: 'plots', text: true },
+  routh: { label: 'Routh–Hurwitz test', menu: 'ana', text: true },
+  // the system type and the steady-state errors
+  sse: { label: 'Steady-state error', menu: 'ana', text: true },
+  bode: { label: 'Bode plot', menu: 'plots', text: false },
+  nyq: { label: 'Nyquist plot', menu: 'plots', text: false },
+  nich: { label: 'Nichols chart', menu: 'plots', text: false },
+  pz: { label: 'Pole-zero map', menu: 'plots', text: false },
+};
+
+const PANELS = Object.keys(PANEL_DEFS);
 // Panels shown when nothing is stored
 const DEFAULT_PANELS = ['diag', 'time', 'tf'];
 // Version of the stored panel list: before 2 the transfer functions and before 3 the block diagram were not panels
@@ -10220,7 +10287,7 @@ function splitFullRows(t, shown) {
 }
 // Panels without plots that go after the plots when hidden panels are gathered in rows (the plots then come back
 // side by side)
-const TEXT_PANELS = ['tf', 'loop', 'poles', 'routh', 'sse'];
+const TEXT_PANELS = PANELS.filter(k => PANEL_DEFS[k].text);
 // The arrangement in rows that looks like a preset layout: the block diagram in a row of its own on top, the other
 // shown panels n to a row (1 column: one, 2 columns: two, 1 row: all, at most MAX_COLS); the hidden panels together
 // in rows at the bottom, the plots first, so that they come back side by side
@@ -13192,7 +13259,6 @@ function scheduleSSE() {
 // of the reference and to a step disturbance (from the series of 1 − G_yr(s) and G_yd(s) at s = 0), beside the
 // error at the end of the simulation
 
-
 // The system type of L(s), its approximation near s = 0 and the table of the error constants
 function sseConstantsHTML(k) {
   const near = k.zeroAtOrigin
@@ -13428,7 +13494,6 @@ let lastComp = null;
 function compVisible() {
   return layout.scard === 'comp'; // the card shown in the settings panel
 }
-
 // The steps of a lead-lag design: the new crossover ωc, the phase to add there, then the lead (α, T₁) and the lag
 // (β, T₂)
 function compStepsLeadLag(c, d) {
@@ -13516,6 +13581,12 @@ function compStepsLag(d) {
     steps.push(T('T₂ = 10/ω = {t} s (the zero a decade below the new crossover)', { t: n(d.T2) }));
   return steps;
 }
+// The steps shown for each kind of compensator design (every kind of COMP_METHODS needs an entry)
+const COMP_STEPS = {
+  lead: compStepsLead,
+  lag: (_c, d) => compStepsLag(d),
+  leadlag: compStepsLeadLag,
+};
 // Why no compensator was designed, or the phase margin it gives
 function compOutcomeHTML(c, d) {
   const n = numStr;
@@ -13564,9 +13635,7 @@ function renderComp() {
           },
         ),
   );
-  if (c.method === 'leadlag') steps.push(...compStepsLeadLag(c, d));
-  if (c.method === 'lead') steps.push(...compStepsLead(c, d));
-  if (c.method === 'lag') steps.push(...compStepsLag(d));
+  if (isCompMethod(c.method)) steps.push(...COMP_STEPS[c.method](c, d));
   box.innerHTML = `<ol class="comp-steps">${steps.map(s => `<li>${s.replace(/K_c/g, 'K<sub>c</sub>')}</li>`).join('')}</ol>${compOutcomeHTML(c, d)}`;
   $('compApply').disabled = d.err !== undefined;
 }
@@ -13646,6 +13715,7 @@ function renderSweepTable() {
 
 
 
+
 let rt;
 window.addEventListener('resize', () => {
   clearTimeout(rt);
@@ -13679,26 +13749,45 @@ function update() {
   redraw();
   scheduleFormulas();
 }
-function redraw() {
-  if (!lastSim) return;
-  if (shownPanels.has('time')) drawTime(lastSim);
-  if (shownPanels.has('bode') && lastFr) {
+// What redraw() draws in each panel that is shown (with the text under its plot). null: a panel whose contents
+// update() renders (the transfer functions, the poles, the Routh test, the steady-state errors) or that is drawn
+// when its parts change (the block diagram). Every panel of PANEL_DEFS needs an entry (a type error otherwise)
+const PANEL_DRAW = {
+  diag: null,
+  time: () => lastSim && drawTime(lastSim),
+  tf: null,
+  loop: null,
+  poles: null,
+  routh: null,
+  sse: null,
+  bode: () => {
+    if (!lastFr) return;
     drawBode(lastFr, lastFrB || lastFr);
     renderBodeAsym();
-  }
-  if (shownPanels.has('nyq') && lastFr) {
+  },
+  nyq: () => {
+    if (!lastFr) return;
     drawNyq(lastFr);
     renderNyqCrit();
-  }
-  if (shownPanels.has('nich') && lastFr) drawNich(lastFr);
-  if (shownPanels.has('pz') && lastPZ) {
+  },
+  nich: () => lastFr && drawNich(lastFr),
+  pz: () => {
+    if (!lastPZ) return;
     drawPZ(lastPZ);
     pzInfo(lastPZ);
-  }
+  },
+};
+// Draw the panels that are shown from the last results (also when only the view changes: zoom, size, panels)
+function redraw() {
+  if (!lastSim) return;
+  for (const k of PANELS) if (shownPanels.has(k)) PANEL_DRAW[k]?.();
 }
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Building the settings panel and its events ================= */
+
+
+
 
 
 
@@ -14516,13 +14605,9 @@ function buildComp() {
   const c = S.comp;
   byId('comp-card').innerHTML = `<div class="tune-grid">
       <label for="compMethod">${T('Compensator')}</label><select id="compMethod">${(
-        [
-          ['lead', 'Lead compensator'],
-          ['lag', 'Lag compensator'],
-          ['leadlag', 'Lead-lag compensator'],
-        ] 
+        Object.keys(COMP_METHODS) 
       )
-        .map(([m, l]) => `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(l)}</option>`)
+        .map(m => `<option value="${m}"${m === c.method ? ' selected' : ''}>${T(COMP_METHODS[m].label)}</option>`)
         .join('')}</select>
       <label for="compPm">${T('Target phase margin PM* [°]')}</label><input type="number" id="compPm" step="any" min="1" value="${c.pm}">
       <label for="compKc">${T('Gain K_c (for the steady-state error)').replace('K_c', 'K<sub>c</sub>')}</label><input type="number" id="compKc" step="any" min="0" value="${c.kc}">
@@ -14532,9 +14617,11 @@ function buildComp() {
     <div class="poles" id="compOut"></div>
     <button class="chip" id="compApply">${T('Apply to the controller')}</button>
     <div class="hint">${T('Designed from the frequency response of K_c P(s) by the classical steps. Lead: C(s) = K_c (T₁s + 1)/(αT₁s + 1); lag: C(s) = K_c (T₂s + 1)/(βT₂s + 1); lead-lag: the product of the two; all keep the DC gain K_c. θ makes up for what the steps leave out (the shift of the crossover for a lead, the phase lag of the lag at the new crossover).').replace(/K_c/g, 'K<sub>c</sub>')}</div>`;
-  // the new crossover is asked only for the lead-lag design
+  // the new crossover is asked only for the kinds that take it (the lead-lag design)
   const showWc = () =>
-    (['compWc', 'compWcL']).forEach(id => ($(id).style.display = c.method === 'leadlag' ? '' : 'none'));
+    (['compWc', 'compWcL']).forEach(
+      id => ($(id).style.display = isCompMethod(c.method) && COMP_METHODS[c.method].askWc ? '' : 'none'),
+    );
   showWc();
   byId('compMethod').onchange = e => {
     c.method = (e.target).value;
@@ -14576,20 +14663,12 @@ function applyComp() {
   if (!d || d.err !== undefined) return;
   const prev = S.mode;
   if (prev !== 'custom' && !isTFMode(S)) S.lastPid = prev;
+  const m = S.comp.method;
+  if (!isCompMethod(m)) return;
+  // the controller of the same name, with the parameters the design gives
   S.Kc = +S.comp.kc.toPrecision(4);
-  if (S.comp.method !== 'lag') {
-    S.mode = S.comp.method;
-    S.T1 = +d.T1.toPrecision(4);
-    S.alpha = +d.alpha.toPrecision(4);
-  }
-  if (S.comp.method === 'leadlag') {
-    S.T2 = +d.T2.toPrecision(4);
-    S.beta = +d.beta.toPrecision(4);
-  } else if (S.comp.method === 'lag') {
-    S.mode = 'lag';
-    S.T2 = +d.T2.toPrecision(4);
-    S.beta = +d.beta.toPrecision(4);
-  }
+  S.mode = m;
+  for (const p of COMP_METHODS[m].params) S[p] = +(d[p]).toPrecision(4);
   (['Kc', 'T1', 'alpha', 'T2', 'beta']).forEach(showCtrlParam);
   buildCtrlCustom();
   renderTeX();
@@ -15050,35 +15129,28 @@ function pzCSV(pz) {
   if (pz.pade) rows.push(['note: dead time is approximated by a 3rd-order Pade approximation', '', '', '', '']);
   return csvText(rows);
 }
-async function exportCSV(kind) {
-  let text, name;
-  if (kind === 'time') {
-    if (!lastSim) return;
+/** The CSV file of a panel: its text and file name, or null when there is nothing to save yet */
+
+// The CSV file behind each button data-csv="KEY" in the title of a panel (a new plot with data to save gets an entry
+// here and such a button; tests/kinds.test.ts checks that they match)
+const CSV_EXPORTS = {
+  time: () => {
+    if (!lastSim) return null;
     if ($('timePlantOnly').checked) {
       const s = plantAlone()[0];
-      text = plantCSV(s.x, s.y);
-      name = 'plant_response.csv';
-    } else {
-      text = timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null);
-      name = 'time_response.csv';
+      return { text: plantCSV(s.x, s.y), name: 'plant_response.csv' };
     }
-  } else if (kind === 'bode') {
-    if (!lastFr) return;
-    text = freqCSV(lastFrB || lastFr);
-    name = 'frequency_response.csv';
-  } else if (kind === 'nyq') {
-    if (!lastFr) return;
-    text = nyqCSV(lastFr);
-    name = 'nyquist.csv';
-  } else if (kind === 'nich') {
-    if (!lastFr) return;
-    text = nichCSV(lastFr);
-    name = 'nichols.csv';
-  } else {
-    if (!lastPZ) return;
-    text = pzCSV(lastPZ);
-    name = 'poles_zeros.csv';
-  }
+    return { text: timeCSV(lastSim, lastSweep, plantAlone()[0]?.y ?? null), name: 'time_response.csv' };
+  },
+  bode: () => lastFr && { text: freqCSV(lastFrB || lastFr), name: 'frequency_response.csv' },
+  nyq: () => lastFr && { text: nyqCSV(lastFr), name: 'nyquist.csv' },
+  nich: () => lastFr && { text: nichCSV(lastFr), name: 'nichols.csv' },
+  pz: () => lastPZ && { text: pzCSV(lastPZ), name: 'poles_zeros.csv' },
+};
+async function exportCSV(kind) {
+  const f = CSV_EXPORTS[kind]?.();
+  if (!f) return;
+  const { text, name } = f;
   const r = await saveFile(name, text, 'text/csv');
   if (r === 'saved') toast(T('Saved as "{f}" (usually in the Downloads folder)', { f: name }));
   else if (r === 'unavailable') {
@@ -15811,6 +15883,7 @@ function applyPanels() {
 
 
 
+
 /* ===== Resizing display areas (drag) ===== */
 
 // Area key for each handle, and the elements of that area
@@ -16053,6 +16126,23 @@ function panelsChanged() {
   applyPanels();
   requestAnimationFrame(redraw);
 }
+// The items of the panels in their menus, from PANEL_DEFS: "Plots to show" before its "All", "Analysis & design"
+// after its cards
+function buildPanelTabs() {
+  const sep = qs('.vb-ddsep', $('panelList'));
+  for (const k of PANELS) {
+    const d = PANEL_DEFS[k],
+      b = document.createElement('button');
+    b.className = 'tab';
+    b.type = 'button';
+    b.dataset.tab = k;
+    b.setAttribute('aria-pressed', 'false');
+    i18nText(b, d.label);
+    if (d.menu === 'plots') $('panelList').insertBefore(b, sep);
+    else $('smenuList-ana').append(b);
+  }
+}
+buildPanelTabs();
 document.querySelectorAll('.tab[data-tab]').forEach(
   t =>
     (t.onclick = () => {
@@ -16319,6 +16409,7 @@ function renderChangelog() {
 
 
 
+
 const SC_KEY = 'ctrlsim-scenarios-v1',
   SC_MAX = 50;
 const SC_DERIVED = ['cNum', 'cDen', 'ccNum', 'ccDen', 'cUnstable', 'ccUnstable'];
@@ -16468,7 +16559,7 @@ function applyScenario(data, opts = {}) {
   if (!PLANTS[S.plant]) S.plant = 'first';
   if (!(S.mode in MODE_PARAMS)) S.mode = 'PID';
   if (!REF_TYPES[S.refType]) S.refType = 'step';
-  if (!['lead', 'lag', 'leadlag'].includes(S.comp.method)) S.comp.method = 'lead';
+  if (!isCompMethod(S.comp.method)) S.comp.method = 'lead';
   S.ex.n = Math.max(1, Math.floor(S.ex.n));
   if (S.ex.kind !== 'bode') S.ex.kind = 'step';
   try {

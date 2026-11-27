@@ -340,6 +340,100 @@ function crossover(st: State, g: (w: number) => Complex): { wgc: number | null; 
   if (!c) return { wgc: null, pm: null };
   return { wgc: c.w, pm: 180 + c.o - 360 * Math.round((180 + c.o) / 360) };
 }
+/** What the design of each kind starts from: the settings, Kc P(jω) and its response on a grid, the result so far,
+ *  and verify(C), which puts the crossover and phase margin of C(s) P(s) into the result */
+interface CompContext {
+  cs: CompSettings;
+  G: (w: number) => Complex;
+  g0: ReturnType<typeof compGrid>;
+  pm0: number;
+  out: CompDesign;
+  verify: (C: (w: number) => Complex) => void;
+}
+// C(s) of a lead (T₁s + 1)/(αT₁s + 1) or lag (T₂s + 1)/(βT₂s + 1) stage at jω
+const stage = (w: number, T: number, r: number): Complex => cdiv([1, w * T], [1, w * r * T]);
+// α of a lead stage that adds the phase φm [deg] at its centre
+const leadAlpha = (phiM: number) => {
+  const s = Math.sin((phiM * Math.PI) / 180);
+  return (1 - s) / (1 + s);
+};
+// Lead: the phase to add φm = PM* − PM + θ, α, the new crossover ωm where |Kc P| = √α, T₁ = 1/(ωm √α)
+function designLead({ cs, g0, pm0, out, verify }: CompContext): CompDesign {
+  const phiM = cs.pm - pm0 + cs.theta;
+  out.phiM = phiM;
+  if (phiM <= 0) return { ...out, err: 'not-needed' };
+  if (phiM > 80) return { ...out, err: 'too-much' };
+  const alpha = leadAlpha(phiM),
+    m = crossDown(g0.W, g0.db, 10 * Math.log10(alpha), g0.ph);
+  out.alpha = alpha;
+  if (!m) return { ...out, err: 'no-frequency' };
+  out.wm = m.w;
+  const T1 = (out.T1 = 1 / (m.w * Math.sqrt(alpha)));
+  verify(w => cmul([cs.kc, 0], stage(w, T1, alpha)));
+  return out;
+}
+// Lag: the new crossover where the phase of Kc P is −180° + PM* + θ, β = |Kc P| there, T₂ = 10/ω
+function designLag({ cs, g0, out, verify }: CompContext): CompDesign {
+  const phiT = (out.phiT = -180 + cs.pm + cs.theta),
+    c = crossDown(g0.W, g0.ph, phiT, g0.db);
+  if (!c) return { ...out, err: 'no-frequency' };
+  out.wg = c.w;
+  const beta = (out.beta = Math.pow(10, c.o / 20));
+  if (beta <= 1) return { ...out, err: 'not-needed' };
+  const T2 = (out.T2 = 10 / c.w);
+  verify(w => cmul([cs.kc, 0], stage(w, T2, beta)));
+  return out;
+}
+// Lead-lag: the new crossover ωc (given, or the phase crossover of Kc P), the lead centred there adding the phase
+// missing at ωc, and the lag lowering the gain there by β = |Kc P(jωc)|/√α
+function designLeadLag({ cs, G, g0, out, verify }: CompContext): CompDesign {
+  let wc = cs.wc && cs.wc > 0 ? cs.wc : null;
+  out.wcAuto = wc === null;
+  if (wc === null) {
+    const c = crossDown(g0.W, g0.ph, -180, g0.db);
+    if (!c) return { ...out, err: 'no-frequency' };
+    wc = c.w;
+  }
+  out.wc = wc;
+  const z = G(wc),
+    unwrap = crossDown(
+      g0.W,
+      g0.W.map(w => -w),
+      -wc,
+      g0.ph,
+    ), // the plotted (unwrapped) phase at ωc
+    // the phase there: exactly −180° at the phase crossover, otherwise on the branch of the plotted phase
+    phc = out.wcAuto ? -180 : unwrap ? unwrap.o : (Math.atan2(z[1], z[0]) * 180) / Math.PI,
+    gc = Math.hypot(z[0], z[1]);
+  out.gcDb = 20 * Math.log10(gc);
+  out.phc = phc;
+  const phiM = (out.phiM = cs.pm + cs.theta - (180 + phc));
+  if (phiM <= 0) return { ...out, err: 'lead-not-needed' };
+  if (phiM > 80) return { ...out, err: 'too-much' };
+  const alpha = (out.alpha = leadAlpha(phiM)),
+    T1 = (out.T1 = 1 / (wc * Math.sqrt(alpha))),
+    beta = (out.beta = gc / Math.sqrt(alpha));
+  if (beta <= 1) return { ...out, err: 'lag-not-needed' };
+  const T2 = (out.T2 = 10 / wc);
+  verify(w => cmul(cmul([cs.kc, 0], stage(w, T1, alpha)), stage(w, T2, beta)));
+  return out;
+}
+/* The kinds of compensator design, in the order of their menu. To add one: an entry here (its design function, and
+   the controller it sets: a kind of CONTROLLERS with its parameters), and its steps in COMP_STEPS (17-panels.ts).
+     label: its item in the menu (English); design: the classical steps; params: the parameters of the controller
+     taken from the result; askWc: the new crossover ωc can be given */
+export const COMP_METHODS = {
+  lead: { label: 'Lead compensator', design: designLead, params: ['T1', 'alpha'], askWc: false },
+  lag: { label: 'Lag compensator', design: designLag, params: ['T2', 'beta'], askWc: false },
+  leadlag: { label: 'Lead-lag compensator', design: designLeadLag, params: ['T1', 'alpha', 'T2', 'beta'], askWc: true },
+} as const satisfies Record<
+  string,
+  { label: string; design: (c: CompContext) => CompDesign; params: readonly NumKey[]; askWc: boolean }
+>;
+export type CompMethod = keyof typeof COMP_METHODS;
+export const isCompMethod = (m: unknown): m is CompMethod =>
+  typeof m === 'string' && Object.prototype.hasOwnProperty.call(COMP_METHODS, m);
+// The design for the settings cs: the crossover and phase margin of Kc P(s), then the steps of its kind
 export function compDesign(cs: CompSettings, st: State = S): CompDesign {
   const tf = PLANTS[st.plant].tf(st),
     P = (w: number) => cmul(evalPr(w, tf), [Math.cos(-w * tf.L), Math.sin(-w * tf.L)]),
@@ -352,69 +446,16 @@ export function compDesign(cs: CompSettings, st: State = S): CompDesign {
     wgc0 = c0 ? c0.w : null,
     pm0 = c0 ? 180 + c0.o - 360 * Math.round((180 + c0.o) / 360) : null,
     out: CompDesign = { wgc0, pm0, wgc: null, pm: null };
-  const verify = (C: (w: number) => Complex) =>
+  const verify = (C: (w: number) => Complex) => {
     Object.assign(
       out,
       crossover(st, w => cmul(C(w), P(w))),
     );
+  };
   if (pm0 === null) return { ...out, err: 'no-crossover' };
   if (pm0 >= cs.pm) return { ...out, err: 'not-needed' };
-  if (cs.method === 'lead') {
-    const phiM = cs.pm - pm0 + cs.theta;
-    out.phiM = phiM;
-    if (phiM <= 0) return { ...out, err: 'not-needed' };
-    if (phiM > 80) return { ...out, err: 'too-much' };
-    const s = Math.sin((phiM * Math.PI) / 180),
-      alpha = (1 - s) / (1 + s),
-      m = crossDown(g0.W, g0.db, 10 * Math.log10(alpha), g0.ph);
-    out.alpha = alpha;
-    if (!m) return { ...out, err: 'no-frequency' };
-    out.wm = m.w;
-    const T1 = (out.T1 = 1 / (m.w * Math.sqrt(alpha)));
-    verify(w => cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])));
-  } else if (cs.method === 'leadlag') {
-    // the new crossover: given, or the phase crossover of Kc P (where its phase is −180°)
-    let wc = cs.wc && cs.wc > 0 ? cs.wc : null;
-    out.wcAuto = wc === null;
-    if (wc === null) {
-      const c = crossDown(g0.W, g0.ph, -180, g0.db);
-      if (!c) return { ...out, err: 'no-frequency' };
-      wc = c.w;
-    }
-    out.wc = wc;
-    const z = G(wc),
-      unwrap = crossDown(
-        g0.W,
-        g0.W.map(w => -w),
-        -wc,
-        g0.ph,
-      ), // the plotted (unwrapped) phase at ωc
-      // the phase there: exactly −180° at the phase crossover, otherwise on the branch of the plotted phase
-      phc = out.wcAuto ? -180 : unwrap ? unwrap.o : (Math.atan2(z[1], z[0]) * 180) / Math.PI,
-      gc = Math.hypot(z[0], z[1]);
-    out.gcDb = 20 * Math.log10(gc);
-    out.phc = phc;
-    const phiM = (out.phiM = cs.pm + cs.theta - (180 + phc));
-    if (phiM <= 0) return { ...out, err: 'lead-not-needed' };
-    if (phiM > 80) return { ...out, err: 'too-much' };
-    const s = Math.sin((phiM * Math.PI) / 180),
-      alpha = (out.alpha = (1 - s) / (1 + s)),
-      T1 = (out.T1 = 1 / (wc * Math.sqrt(alpha))),
-      beta = (out.beta = gc / Math.sqrt(alpha));
-    if (beta <= 1) return { ...out, err: 'lag-not-needed' };
-    const T2 = (out.T2 = 10 / wc);
-    verify(w => cmul(cmul([cs.kc, 0], cdiv([1, w * T1], [1, w * alpha * T1])), cdiv([1, w * T2], [1, w * beta * T2])));
-  } else {
-    const phiT = (out.phiT = -180 + cs.pm + cs.theta),
-      c = crossDown(g0.W, g0.ph, phiT, g0.db);
-    if (!c) return { ...out, err: 'no-frequency' };
-    out.wg = c.w;
-    const beta = (out.beta = Math.pow(10, c.o / 20));
-    if (beta <= 1) return { ...out, err: 'not-needed' };
-    const T2 = (out.T2 = 10 / c.w);
-    verify(w => cmul([cs.kc, 0], cdiv([1, w * T2], [1, w * beta * T2])));
-  }
-  return out;
+  const m = isCompMethod(cs.method) ? cs.method : 'lag'; // (an unknown kind was designed as a lag)
+  return COMP_METHODS[m].design({ cs, G, g0, pm0, out, verify });
 }
 
 /* ---- Estimation exercise: a hidden first-order lag + dead time plant ---- */

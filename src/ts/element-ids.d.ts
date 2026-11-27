@@ -116,6 +116,7 @@ interface ElementById {
   "nyqOpts": HTMLDivElement;
   "panel-bode": HTMLDivElement;
   "panel-diag": HTMLDivElement;
+  "panel-KEY": HTMLDivElement;
   "panel-loop": HTMLDivElement;
   "panel-nich": HTMLDivElement;
   "panel-nyq": HTMLDivElement;

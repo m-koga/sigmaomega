@@ -6,6 +6,7 @@ import { T } from './02-i18n.ts';
 import { parsePoly } from './04-parser.ts';
 import { CARD_GROUP, MODE_PARAMS, PLANTS, REF_TYPES, hardRange, sideCardOf } from './05-definitions.ts';
 import { S, defaults, ghosts } from './06-state.ts';
+import { isCompMethod } from './10-tuning.ts';
 import { SWEEP_MAX } from './12-sweep.ts';
 import { $, copyText, saveFile } from './13-dom.ts';
 import {
@@ -176,7 +177,7 @@ export function applyScenario(data: Scenario, opts: { layout?: boolean } = {}) {
   if (!PLANTS[S.plant]) S.plant = 'first';
   if (!(S.mode in MODE_PARAMS)) S.mode = 'PID';
   if (!REF_TYPES[S.refType]) S.refType = 'step';
-  if (!['lead', 'lag', 'leadlag'].includes(S.comp.method)) S.comp.method = 'lead';
+  if (!isCompMethod(S.comp.method)) S.comp.method = 'lead';
   S.ex.n = Math.max(1, Math.floor(S.ex.n));
   if (S.ex.kind !== 'bode') S.ex.kind = 'step';
   try {

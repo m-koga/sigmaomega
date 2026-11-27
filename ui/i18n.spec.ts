@@ -203,3 +203,22 @@ test('the icon is drawn before the name and is the favicon', async ({ page }) =>
   expect(touch.corner[3]).toBe(255);
   expect(touch.corner[0]).toBeLessThan(60);
 });
+
+test('the items of the panels in the menus and the kinds of compensator are made from their tables', async ({
+  page,
+}) => {
+  const tabs = (list: string) =>
+    page.$$eval(`#${list} .tab[data-tab]`, ts => ts.map(t => (t as HTMLElement).dataset.tab));
+  const defs = await page.evaluate(() => Object.entries(PANEL_DEFS).map(([k, d]) => [k, d.menu]));
+  expect(await tabs('panelList')).toEqual(defs.filter(([, m]) => m === 'plots').map(([k]) => k));
+  expect(await tabs('smenuList-ana')).toEqual(defs.filter(([, m]) => m === 'ana').map(([k]) => k));
+  // the items are in the language of the page, and "All" stays last in "Plots to show"
+  await page.selectOption('#langSel', 'ja');
+  await expect(page.locator('#panelList .tab[data-tab="bode"]')).toHaveText('ボード線図');
+  expect(await page.$eval('#panelList', l => (l.lastElementChild as HTMLElement).id)).toBe('panelsAll');
+  // the compensator menu: one option for each kind
+  await page.evaluate(() => setSideCard('comp'));
+  expect(await page.$$eval('#compMethod option', os => os.map(o => (o as HTMLOptionElement).value))).toEqual(
+    await page.evaluate(() => Object.keys(COMP_METHODS)),
+  );
+});
