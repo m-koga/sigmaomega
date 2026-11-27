@@ -35,6 +35,16 @@ test('Bode asymptotes: the curve button and the table of break frequencies, foll
     }, id);
   await expect.poll(() => pixels()).toBeGreaterThan(200);
   await expect.poll(() => pixels('cvPh')).toBeGreaterThan(200); // the phase approximation too
+  // the button of the factors: a line for K/s^q and one for the pole, named in the legend
+  await page.locator('label:has(#bodeAc)').click();
+  await expect(page.locator('#bodeAc')).toBeChecked();
+  // the expected names in the language of the page
+  const [got, want] = await page.evaluate(() => [
+    bodeAsymptote()!.parts.map(p => asymPartLabel(bodeAsymptote()!, p)),
+    ['K = 2', `${T('pole')} -2`],
+  ]);
+  expect(got).toEqual(want);
+  expect(await page.evaluate(() => viewOptions().bodeAc)).toBe(true);
   expect(await page.evaluate(() => viewOptions().bodeA)).toBe(true);
   // PI control adds an integrator and a zero: two break frequencies
   await page.evaluate(() => {

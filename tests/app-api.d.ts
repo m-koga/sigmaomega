@@ -116,6 +116,7 @@ interface AppApi {
   areaEls: typeof import('../src/ts/24-layout.ts').areaEls;
   arrangePanels: typeof import('../src/ts/23-tiles.ts').arrangePanels;
   arrangeRows: typeof import('../src/ts/22-rows.ts').arrangeRows;
+  asymPartLabel: typeof import('../src/ts/15-drawing.ts').asymPartLabel;
   autoYRange: typeof import('../src/ts/15-drawing.ts').autoYRange;
   averageOut: typeof import('../src/ts/08-simulation.ts').averageOut;
   b64urlDecode: typeof import('../src/ts/25-scenarios.ts').b64urlDecode;
@@ -600,6 +601,7 @@ declare var applyTune: AppApi['applyTune'];
 declare var areaEls: AppApi['areaEls'];
 declare var arrangePanels: AppApi['arrangePanels'];
 declare var arrangeRows: AppApi['arrangeRows'];
+declare var asymPartLabel: AppApi['asymPartLabel'];
 declare var autoYRange: AppApi['autoYRange'];
 declare var averageOut: AppApi['averageOut'];
 declare var b64urlDecode: AppApi['b64urlDecode'];

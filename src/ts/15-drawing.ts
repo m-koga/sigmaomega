@@ -8,6 +8,7 @@ import { S, ghosts, lastPZ, lastSweep } from './06-state.ts';
 import { distMetrics, mContour, twoDof } from './07-frequency.ts';
 import { impulseMetrics, metricWindow, sineMetrics, stepMetrics } from './08-simulation.ts';
 import { bodeAsymptote, loopTFs, nyqCount } from './09-loop.ts';
+import type { BodeAsymptote } from './09-loop.ts';
 import { evalSpecs, specIcon, specOn } from './11-specs.ts';
 import { sweepSeries } from './12-sweep.ts';
 import { $, ctx2d, savePNG } from './13-dom.ts';
@@ -577,40 +578,56 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   const sw = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).mag })) : [],
     swp = showL ? sweepSeries(r => ({ x: (r.frB || r.fr).W, y: (r.frB || r.fr).ph })) : [],
     runs = showL ? (lastSweep || []).map(r => r.frB || r.fr) : [];
-  // the straight-line approximation of the gain of L, with its break frequencies
-  const asym = $('bodeA').checked ? bodeAsymptote() : null,
-    asymSeries: PlotSeries[] = asym
-      ? [
-          {
-            x: frB.W,
-            y: frB.W.map(asym.gain),
-            color: COLORS.asymptote,
-            width: 2,
-            dash: [6, 4],
-            name: T('L asymptotes'),
-          },
-        ]
-      : [],
-    asymPts = asym
-      ? asym.breaks
-          .filter(b => b.w >= frB.W[0] && b.w <= frB.W[frB.W.length - 1])
-          .map(b => ({ x: b.w, y: asym.gain(b.w), color: COLORS.asymptote, shape: 'o' as const }))
-      : [];
+  // the straight-line approximation of the gain of L, with its break frequencies, and the lines of its factors
+  const showParts = $('bodeAc').checked,
+    asym = $('bodeA').checked || showParts ? bodeAsymptote() : null,
+    drawSum = $('bodeA').checked,
+    asymSeries: PlotSeries[] =
+      asym && drawSum
+        ? [
+            {
+              x: frB.W,
+              y: frB.W.map(asym.gain),
+              color: COLORS.asymptote,
+              width: 2,
+              dash: [6, 4],
+              name: T('L asymptotes'),
+            },
+          ]
+        : [],
+    asymPts =
+      asym && drawSum
+        ? asym.breaks
+            .filter(b => b.w >= frB.W[0] && b.w <= frB.W[frB.W.length - 1])
+            .map(b => ({ x: b.w, y: asym.gain(b.w), color: COLORS.asymptote, shape: 'o' as const }))
+        : [];
   // the phase approximation, shifted by a multiple of 360° onto the branch of the plotted phase of L
   const phOff = asym ? 360 * Math.round((frB.ph[0] - asym.phase(frB.W[0])) / 360) : 0,
-    phAsym: PlotSeries[] = asym
-      ? [
-          {
-            x: frB.W,
-            y: frB.W.map(w => asym.phase(w) + phOff),
-            color: COLORS.asymptote,
-            width: 2,
-            dash: [6, 4],
-            name: T('L asymptotes'),
-          },
-        ]
-      : [],
+    phAsym: PlotSeries[] =
+      asym && drawSum
+        ? [
+            {
+              x: frB.W,
+              y: frB.W.map(w => asym.phase(w) + phOff),
+              color: COLORS.asymptote,
+              width: 2,
+              dash: [6, 4],
+              name: T('L asymptotes'),
+            },
+          ]
+        : [],
     phPts = asymPts.map(p => ({ ...p, y: asym!.phase(p.x) + phOff }));
+  // the factors: thin lines in their own colors, named in the legend (the shift of the phase goes with K/s^q)
+  const parts = (key: 'gain' | 'ph'): PlotSeries[] =>
+    asym && showParts
+      ? asym.parts.map((p, i) => ({
+          x: frB.W,
+          y: frB.W.map(w => (key === 'gain' ? p.gain(w) : p.phase(w) + (p.kind === 'K' ? phOff : 0))),
+          color: COLORS.asymParts[i % COLORS.asymParts.length],
+          width: 1.4,
+          name: asymPartLabel(asym, p),
+        }))
+      : [];
   const named = sets.length > 0 || sw.length > 0 || !!asym; // a legend whenever a curve is shown, also a single one
   const curves = (key: 'mag' | 'ph') =>
     sets.map(s => ({
@@ -645,7 +662,7 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   );
   plot($('cvG'), {
     ...common,
-    series: [...sw, ...curves('mag'), ...asymSeries],
+    series: [...sw, ...parts('gain'), ...curves('mag'), ...asymSeries],
     points: asymPts,
     ymin: Math.floor(Math.min(gr.lo, -20) / 20) * 20,
     ymax: Math.ceil(Math.max(gr.hi, 20) / 20) * 20,
@@ -669,7 +686,7 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   pr.hi = Math.min(pr.hi, 720);
   plot($('cvPh'), {
     ...common,
-    series: [...swp, ...curves('ph'), ...phAsym],
+    series: [...swp, ...parts('ph'), ...curves('ph'), ...phAsym],
     points: phPts,
     ymin: Math.floor(Math.min(pr.lo, -180) / 90) * 90,
     ymax: Math.ceil(Math.max(pr.hi, 0) / 90) * 90,
@@ -854,11 +871,37 @@ export function drawNyqCrossings(cv: HTMLCanvasElement) {
   });
   g.restore();
 }
+// The name of a factor of the asymptotes in the legend: K/s^q, a pole or zero (with its multiplicity), the dead time
+const SUP: Record<string, string> = {
+  '-': '⁻',
+  2: '²',
+  3: '³',
+  4: '⁴',
+  5: '⁵',
+  6: '⁶',
+  7: '⁷',
+  8: '⁸',
+  9: '⁹',
+  1: '¹',
+  0: '⁰',
+};
+const sup = (n: number) => (n === 1 ? '' : String(n).replace(/./g, c => SUP[c] ?? c));
+export function asymPartLabel(a: BodeAsymptote, p: BodeAsymptote['parts'][number]): string {
+  if (p.kind === 'delay') return `e^(−${numStr(a.L)}s)`;
+  if (p.kind === 'K')
+    return a.q === 0 ? `K = ${numStr(a.K)}` : a.q > 0 ? `${numStr(a.K)}/s${sup(a.q)}` : `${numStr(a.K)}·s${sup(-a.q)}`;
+  const [x, y] = p.z!,
+    m = p.mult > 1 ? ` ×${p.mult}` : '';
+  return y > 0
+    ? `${T(p.kind === 'pole' ? 'complex poles' : 'complex zeros')} ${numStr(x)} ± j${numStr(y)}${m}`
+    : `${T(p.kind)} ${numStr(x)}${m}`;
+}
 // The method of the straight-line approximation of the Bode plot, in the note under it
 export const ASYM_NOTES = [
   'Gain: K/ω^q at low frequencies (q: the poles minus the zeros at the origin, K: the ratio of the lowest coefficients). At the break frequency ω_b = |s| of each pole or zero the slope changes by −20 dB/dec per real pole and +20 dB/dec per real zero, by ∓40 dB/dec per complex pair at ωn. The true gain differs by 3 dB at a real break and by −20 log10(2ζ) dB at a complex pair.',
   'Phase: −90°·q at low frequencies (+180° when K < 0). A real pole changes it by −90° and a real zero by +90°, along a straight line in log ω from ω_b/10 to 10ω_b (45° per decade); a complex pair by ∓180° from ωn·10^(−ζ) to ωn·10^ζ (a step at ωn when ζ = 0). Poles and zeros in the right half-plane change it with the opposite sign. The line is shifted by a multiple of 360° onto the plotted phase.',
   'Dead time: it does not change the gain, and its phase −ωL, which has no straight-line approximation, is added exactly.',
+  'The button “Factors of the asymptotes” draws the straight line of each factor — K/s^q, each pole and zero (a complex pair as one), the dead time — in its own color: their sum, frequency by frequency, is the asymptote.',
 ];
 // M contours of the Nichols chart [dB] and the ones labelled
 export const M_CONTOURS = [12, 6, 3, 1, 0.5, 0, -1, -3, -6, -12, -20];

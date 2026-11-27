@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.89.0 (2026-11-27)
+- Bode plot: the new button "Factors of the asymptotes" (off at first) draws the gain and phase lines of each factor of L(jω) — K/s^q, each pole and zero (a complex pair as one), the dead time — in its own color, named in the legend, so that the asymptote can be seen as their sum, as when it is drawn by hand
+
 ## v1.88.1 (2026-11-27)
 - Bode plot: the tab "Note" describes the method of the straight-line approximation (button "L asymptotes") for the gain, the phase and the dead time; the tab makes the area taller only while shown
 

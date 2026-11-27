@@ -369,6 +369,17 @@ export interface BodeAsymptote {
    *  from ω_b/10 to 10 ω_b, a complex pair by ∓180° from ω_n·10^(−ζ) to ω_n·10^(ζ) (a step when ζ = 0); the dead
    *  time adds its exact −ωL */
   phase: (w: number) => number;
+  /** the factors whose straight lines add up to gain and phase: K/s^q (mult = q), each pole or zero (a complex pair
+   *  once, by its root with Im > 0), and the dead time */
+  parts: {
+    kind: 'K' | 'pole' | 'zero' | 'delay';
+    z: Complex | null;
+    mult: number;
+    gain: (w: number) => number;
+    phase: (w: number) => number;
+  }[];
+  /** the dead time (0 without) */
+  L: number;
 }
 export function bodeAsymptote(st: State = S): BodeAsymptote | null {
   const g = loopTFs(st).L;
@@ -399,36 +410,46 @@ export function bodeAsymptote(st: State = S): BodeAsymptote | null {
     slope += dSlope;
     return { w, poles, zeros, dSlope, slope };
   });
-  const gain = (w: number) => {
-    let v = 20 * Math.log10(Math.abs(K)) - 20 * q * Math.log10(w);
-    zs.forEach(r => (v += 20 * weight(r) * Math.log10(Math.max(1, w / mag(r)))));
-    ps.forEach(r => (v -= 20 * weight(r) * Math.log10(Math.max(1, w / mag(r)))));
-    return v;
-  };
-  // phase: each factor's change, its two ends in log10 ω; a left half-plane pole −90° (a pair −180°), a zero +90°;
-  // the right half-plane reverses the sign
-  const ramps: { a: number; b: number; d: number }[] = [];
-  const addRamps = (rs: { z: Complex; mult: number }[], sgn: number) =>
-    rs.forEach(r => {
-      const w0 = mag(r),
-        lhp = r.z[0] < 0 ? 1 : -1;
-      if (r.z[1] > 0) {
-        const zeta = Math.abs(r.z[0]) / w0,
-          l = Math.log10(w0);
-        ramps.push({ a: l - zeta, b: l + zeta, d: sgn * lhp * 180 * r.mult });
-      } else ramps.push({ a: Math.log10(w0) - 1, b: Math.log10(w0) + 1, d: sgn * lhp * 90 * r.mult });
+  // the factors whose straight lines add up to the asymptotes: K/s^q, each pole or zero (a complex pair once, with
+  // its multiplicity), and the dead time
+  const parts: BodeAsymptote['parts'] = [
+    {
+      kind: 'K',
+      z: null,
+      mult: q,
+      gain: w => 20 * Math.log10(Math.abs(K)) - 20 * q * Math.log10(w),
+      phase: () => -90 * q + (K < 0 ? 180 : 0),
+    },
+  ];
+  // a pole (sgn −1) or zero (+1): the slope ±20 dB/dec per order from |s| on; the phase ∓90° per order (a complex pair
+  // ∓180°) along a straight line in log ω from ω_b/10 to 10ω_b (from ωn·10^(−ζ) to ωn·10^ζ for a pair), the sign
+  // reversed in the right half-plane
+  const addPart = (r: { z: Complex; mult: number }, sgn: number) => {
+    const w0 = mag(r),
+      lhp = r.z[0] < 0 ? 1 : -1,
+      pair = r.z[1] > 0,
+      zeta = Math.abs(r.z[0]) / w0,
+      l = Math.log10(w0),
+      [a, b] = pair ? [l - zeta, l + zeta] : [l - 1, l + 1],
+      d = sgn * lhp * (pair ? 180 : 90) * r.mult;
+    parts.push({
+      kind: sgn < 0 ? 'pole' : 'zero',
+      z: r.z,
+      mult: r.mult,
+      gain: w => sgn * 20 * weight(r) * Math.log10(Math.max(1, w / w0)),
+      phase: w => {
+        const lw = Math.log10(w);
+        return d * (b <= a ? (lw >= a ? 1 : 0) : Math.min(1, Math.max(0, (lw - a) / (b - a))));
+      },
     });
-  addRamps(ps, -1);
-  addRamps(zs, 1);
-  const phase = (w: number) => {
-    const lw = Math.log10(w);
-    let v = -90 * q + (K < 0 ? 180 : 0) - (w * g.L * 180) / Math.PI;
-    ramps.forEach(
-      r => (v += r.d * (r.b <= r.a ? (lw >= r.a ? 1 : 0) : Math.min(1, Math.max(0, (lw - r.a) / (r.b - r.a))))),
-    );
-    return v;
   };
-  return { K, q, breaks, gain, phase };
+  ps.forEach(r => addPart(r, -1));
+  zs.forEach(r => addPart(r, 1));
+  if (g.delay && g.L > 0)
+    parts.push({ kind: 'delay', z: null, mult: 1, gain: () => 0, phase: w => (-w * g.L * 180) / Math.PI });
+  const gain = (w: number) => parts.reduce((v, p) => v + p.gain(w), 0),
+    phase = (w: number) => parts.reduce((v, p) => v + p.phase(w), 0);
+  return { K, q, breaks, gain, phase, parts, L: g.delay ? g.L : 0 };
 }
 /* ---- Nyquist stability criterion ---- */
 /** Counting for the Nyquist criterion along the Nyquist contour (up the imaginary axis from −jW to +jW, around the

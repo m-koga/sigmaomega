@@ -87,3 +87,35 @@ test('the phase approximation meets the true phase far from the breaks (also wit
   assert.ok(Math.abs(as.phase(0.2)) < 1e-9 && Math.abs(as.phase(2) + 45) < 1e-9 && Math.abs(as.phase(20) + 90) < 1e-9);
   assert.ok(Math.abs(ph(a, 2) + 45) < 1e-9);
 });
+
+test('the lines of the factors add up to the asymptotes of the gain and the phase', () => {
+  for (const set of [
+    { plant: 'second', zeta: 0.2, wn: 2, mode: 'PI', Kp: 1, Ki: 0.5 },
+    { plant: 'dead', L: 0.5, mode: 'PID', Kp: 1, Ki: 1, Kd: 0.2 },
+    { plant: 'third', mode: 'lead' },
+    { plant: 'unstable', mode: 'P', Kp: 2 },
+  ] as Record<string, unknown>[]) {
+    const a = fresh();
+    Object.assign(a.S, set);
+    const as = a.bodeAsymptote()!;
+    // K/s^q first, then one line per distinct pole and zero, and the dead time when there is one
+    assert.equal(as.parts[0].kind, 'K');
+    assert.equal(as.parts.filter((p: { kind: string }) => p.kind === 'delay').length, set.plant === 'dead' ? 1 : 0);
+    for (const w of [1e-3, 0.3, 1, 2, 7, 50, 1e3]) {
+      const g = as.parts.reduce((v: number, p: { gain: (w: number) => number }) => v + p.gain(w), 0),
+        ph = as.parts.reduce((v: number, p: { phase: (w: number) => number }) => v + p.phase(w), 0);
+      assert.ok(
+        Math.abs(g - as.gain(w)) < 1e-9 && Math.abs(ph - as.phase(w)) < 1e-9,
+        `${JSON.stringify(set)} ω = ${w}`,
+      );
+    }
+  }
+  // 10/(s(s + 1)): the lines 10/s (−20 dB/dec through 20 dB at ω = 1, −90°) and the pole −1 (0 dB, then −20 dB/dec)
+  const a = fresh();
+  Object.assign(a.S, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 10 });
+  const [k, p] = a.bodeAsymptote()!.parts;
+  assert.ok(Math.abs(k.gain(1) - 20) < 1e-9 && Math.abs(k.gain(10)) < 1e-9 && k.phase(5) === -90);
+  assert.ok(
+    p.gain(0.5) === 0 && Math.abs(p.gain(10) + 20) < 1e-9 && p.phase(0.1) === 0 && Math.abs(p.phase(1) + 45) < 1e-9,
+  );
+});

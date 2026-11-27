@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.89.0',
+    d: '2026-11-27',
+    en: [
+      'Bode plot: the new button "Factors of the asymptotes" (off at first) draws the gain and phase lines of each factor of L(jω) — K/s^q, each pole and zero (a complex pair as one), the dead time — in its own color, named in the legend, so that the asymptote can be seen as their sum, as when it is drawn by hand',
+    ],
+    ja: [
+      'ボード線図：新しいボタン「折れ線の成分」（最初は非表示）で、L(jω) の各因子——K/s^q、各極・零点（複素の対は 1 組で 1 つ）、むだ時間——のゲインと位相の直線を色を分けて描き、凡例に名前を示す。手で描くときと同じく、折れ線近似がそれらの和であることがわかる',
+    ],
+  },
+  {
     v: '1.88.1',
     d: '2026-11-27',
     en: [

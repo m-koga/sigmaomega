@@ -9,6 +9,7 @@ interface ElementById {
   "aw": HTMLInputElement;
   "binfo": HTMLDivElement;
   "bodeA": HTMLInputElement;
+  "bodeAc": HTMLInputElement;
   "bodeAsym": HTMLDivElement;
   "bodeC": HTMLInputElement;
   "bodeD": HTMLInputElement;
