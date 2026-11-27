@@ -466,6 +466,9 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.7;font-size:13px}
 .poles-box tr.grp td:first-child{font-weight:700}
 /* Routh–Hurwitz stability test: the table of the current setting (first column emphasized) and the analysis in k */
 .routh-box{height:420px;overflow:auto}
+#bodeNote p{margin:4px 0}
+#bodeNote ul{margin:2px 0;padding-left:1.3em}
+#bodeNote li{margin:3px 0}
 #nyqCrit h4{margin:10px 0 4px;font-size:13px}
 #nyqCrit p{margin:6px 0}
 #nyqCrit .verdict{font-weight:600}

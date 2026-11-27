@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.88.1',
+    d: '2026-11-27',
+    en: [
+      'Bode plot: the tab "Note" describes the method of the straight-line approximation (button "L asymptotes") for the gain, the phase and the dead time; the tab makes the area taller only while shown',
+    ],
+    ja: [
+      'ボード線図：タブ「注記」に、折れ線近似（ボタン「L の折れ線近似」）の方法をゲイン・位相・むだ時間に分けて記載した。このタブは表示中だけ区画を高くする',
+    ],
+  },
+  {
     v: '1.88.0',
     d: '2026-11-27',
     en: [

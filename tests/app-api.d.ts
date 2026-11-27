@@ -8,6 +8,7 @@ interface AppApi {
   ALL_PARAMS: typeof import('../src/ts/05-definitions.ts').ALL_PARAMS;
   APP_VERSION: typeof import('../src/ts/01-changelog.ts').APP_VERSION;
   AREA_LABELS: typeof import('../src/ts/24-layout.ts').AREA_LABELS;
+  ASYM_NOTES: typeof import('../src/ts/15-drawing.ts').ASYM_NOTES;
   BIG: typeof import('../src/ts/05-definitions.ts').BIG;
   CARD_GROUP: typeof import('../src/ts/05-definitions.ts').CARD_GROUP;
   CARD_GROUPS: typeof import('../src/ts/05-definitions.ts').CARD_GROUPS;
@@ -491,6 +492,7 @@ declare var $: AppApi['$'];
 declare var ALL_PARAMS: AppApi['ALL_PARAMS'];
 declare var APP_VERSION: AppApi['APP_VERSION'];
 declare var AREA_LABELS: AppApi['AREA_LABELS'];
+declare var ASYM_NOTES: AppApi['ASYM_NOTES'];
 declare var BIG: AppApi['BIG'];
 declare var CARD_GROUP: AppApi['CARD_GROUP'];
 declare var CARD_GROUPS: AppApi['CARD_GROUPS'];

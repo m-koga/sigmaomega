@@ -687,7 +687,12 @@ export function drawBode(fr: FreqResult, frB: FreqResult = fr) {
   });
   showBodeRange(frB, frB !== fr);
   $('margins').innerHTML = metricsHTML(marginMetrics(fr));
-  $('bodeNote').textContent = fr.openUnstable ? T(TXT_BODE_UNSTABLE) : T(TXT_BODE_RANGE, { a: fr.w0, b: fr.w1 });
+  const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  $('bodeNote').innerHTML =
+    `<p>${esc(fr.openUnstable ? T(TXT_BODE_UNSTABLE) : T(TXT_BODE_RANGE, { a: fr.w0, b: fr.w1 }))}</p>` +
+    `<p><b>${esc(T('Straight-line approximation (button “L asymptotes”)'))}</b></p><ul>` +
+    ASYM_NOTES.map(k => `<li>${esc(T(k))}</li>`).join('') +
+    '</ul>';
 }
 
 // The frequency range of the Bode plot in its inputs, and whether it was set by hand
@@ -849,6 +854,12 @@ export function drawNyqCrossings(cv: HTMLCanvasElement) {
   });
   g.restore();
 }
+// The method of the straight-line approximation of the Bode plot, in the note under it
+export const ASYM_NOTES = [
+  'Gain: K/ω^q at low frequencies (q: the poles minus the zeros at the origin, K: the ratio of the lowest coefficients). At the break frequency ω_b = |s| of each pole or zero the slope changes by −20 dB/dec per real pole and +20 dB/dec per real zero, by ∓40 dB/dec per complex pair at ωn. The true gain differs by 3 dB at a real break and by −20 log10(2ζ) dB at a complex pair.',
+  'Phase: −90°·q at low frequencies (+180° when K < 0). A real pole changes it by −90° and a real zero by +90°, along a straight line in log ω from ω_b/10 to 10ω_b (45° per decade); a complex pair by ∓180° from ωn·10^(−ζ) to ωn·10^ζ (a step at ωn when ζ = 0). Poles and zeros in the right half-plane change it with the opposite sign. The line is shifted by a multiple of 360° onto the plotted phase.',
+  'Dead time: it does not change the gain, and its phase −ωL, which has no straight-line approximation, is added exactly.',
+];
 // M contours of the Nichols chart [dB] and the ones labelled
 export const M_CONTOURS = [12, 6, 3, 1, 0.5, 0, -1, -3, -6, -12, -20];
 // Nichols chart: the gain of L(jω) [dB] against its phase [deg] (ω > 0), over the M contours of the closed loop

@@ -438,14 +438,14 @@ test('every area under a plot has its tabs; each tab shows its section, remember
   for (const [a, keys] of areas as [string, string[]][]) {
     await expect(page.locator(`#${a} .ptab`)).toHaveCount(keys.length);
     // the first tab is shown at first; the area keeps the height of its tallest section (except the long sections —
-    // break frequencies, Nyquist criterion, root locus rules — which make it taller only while shown)
+    // break frequencies, the Bode note, Nyquist criterion, root locus rules — which make it taller only while shown)
     await expect(page.locator(`#${a} .ptab`).first()).toHaveAttribute('aria-selected', 'true');
     const h = (await boxOf(page, `#${a}`)).height;
     for (const k of keys) {
       await page.click(`#${a} [data-itab=${k}]`);
       await expect(page.locator(`#${a} .tsec[data-sec=${k}]`)).toBeVisible();
       for (const o of keys.filter(o => o !== k)) await expect(page.locator(`#${a} .tsec[data-sec=${o}]`)).toBeHidden();
-      if (['pzrules', 'nyqcrit', 'bodeasym'].includes(k))
+      if (['pzrules', 'nyqcrit', 'bodeasym', 'bodenote'].includes(k))
         expect((await boxOf(page, `#${a}`)).height).toBeGreaterThan(h);
       else expect((await boxOf(page, `#${a}`)).height).toBe(h);
     }
