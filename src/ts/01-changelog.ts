@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.98.2',
+    d: '2026-11-27',
+    en: [
+      'Time efficiency (PERFORMANCE.md and the manual) measured again for this version: with every panel, curve and analysis shown a change takes 31–60 ms (0.16–0.28 s on a processor 4 times slower), the page is ready after 0.33 s (1.3 s), and changing the language takes 0.15 s (0.7 s); a new section compares the start-up and the update with version 1.75.0, and the download times are corrected for the larger page',
+      'Development: npm run performance also times the straight-line approximation, the Nyquist count, the root-locus rules, the Routh–Hurwitz and steady-state panels and the change of language, and shows every curve and analysis; a test checks that the analyses of the loop stay fast',
+    ],
+    ja: [
+      '時間効率（PERFORMANCE.md とマニュアル）をこの版で計測し直した：すべての図・曲線・解析を表示して 1 回の変更は 31〜60 ms（処理速度 4 分の 1 では 0.16〜0.28 秒）、ページは 0.33 秒（1.3 秒）で使えるようになり、言語の切り替えは 0.15 秒（0.7 秒）。版 1.75.0 との起動と変更の時間の比較を加え、大きくなったページに合わせてダウンロードの時間を直した',
+      '開発：npm run performance が、折れ線近似、ナイキストの回転数、根軌跡の作図規則、ラウス・フルビッツの判別と定常偏差のパネル、言語の切り替えの時間も計測し、すべての曲線と解析を表示して計測するようにした。ループの解析が速いままであることをテストで確かめる',
+    ],
+  },
+  {
     v: '1.98.1',
     d: '2026-11-27',
     en: [

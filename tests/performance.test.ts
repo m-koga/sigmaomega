@@ -66,3 +66,23 @@ test('the most time steps and a sweep of 8 values take bounded time', () => {
   const tSweep = ms(() => a.sweepRuns(), 1);
   assert.ok(tSweep < 10000, `sweep of 8 values took ${tSweep.toFixed(0)} ms`);
 });
+
+test('the analyses of the loop take bounded time, also for an eighth-order plant and a dead time', () => {
+  for (const set of [
+    () => a.defaults(),
+    eighthOrder, // an eightfold pole: many break frequencies grouped, a long Routh table
+    () => Object.assign((a.defaults(), a.S), { plant: 'dead', L: 1 }), // the exact delay in the Nyquist count
+  ]) {
+    set();
+    const t = ms(() => {
+      a.bodeAsymptote();
+      a.nyquistCount();
+      a.locusRules();
+      a.errorConstants();
+      a.steadyErrors();
+      const { D, N } = a.charPolyK();
+      a.hurwitzK(D, N);
+    });
+    assert.ok(t < 500, `the analyses took ${t.toFixed(0)} ms`);
+  }
+});

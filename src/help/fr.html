@@ -190,10 +190,11 @@ Avec <i>K</i><sub>I</sub> = 0.4, le temps de réponse est d’environ 8.8 s, la 
 <section id="performance" title="Efficacité en temps">
 <p>Tout est calculé dans votre navigateur, à nouveau après chaque changement. Mesures faites dans Chrome sur un ordinateur ordinaire, et avec le processeur ralenti 4 fois (comme un téléphone) :</p>
 <ul>
-<li><b>Ouverture de la page</b> : les graphiques sont prêts après environ 0.25 s (0.8 s sur le processeur ralenti) et les formules un peu plus tard, une fois la page téléchargée (environ 1.4 MB, et 0.7 MB pour les formules à la première visite).</li>
-<li><b>Changement d’une valeur</b> : tout est recalculé et redessiné en 4–19 ms avec les panneaux affichés à la première visite, et en 22–43 ms avec tous les panneaux (0.1–0.2 s sur le processeur ralenti) : l’effet paraît immédiat.</li>
-<li><b>Déplacement d’un curseur</b> : les graphiques suivent environ 20–50 fois par seconde (6–11 sur le processeur ralenti), avec à chaque fois le résultat complet.</li>
-<li><b>Balayage de paramètre</b> : huit calculs complets par changement, 0.06–0.2 s (jusqu’à environ 1 s sur le processeur ralenti).</li>
+<li><b>Ouverture de la page</b> : les graphiques sont prêts après environ 0.33 s (1.3 s sur le processeur ralenti) et les formules un peu plus tard, une fois la page téléchargée (environ 1.4 MB, et 0.7 MB pour les formules à la première visite).</li>
+<li><b>Changement d’une valeur</b> : tout est recalculé et redessiné en 4–23 ms avec les panneaux affichés à la première visite, et en 31–60 ms avec tous les panneaux (0.16–0.28 s sur le processeur ralenti) : l’effet paraît immédiat.</li>
+<li><b>Déplacement d’un curseur</b> : les graphiques suivent environ 20–30 fois par seconde (5–7 sur le processeur ralenti), avec à chaque fois le résultat complet.</li>
+<li><b>Balayage de paramètre</b> : huit calculs complets par changement, 0.06–0.22 s (jusqu’à environ 1 s sur le processeur ralenti).</li>
+<li><b>Changer de langue</b> : environ 0.15 s (0.7 s avec le processeur plus lent), car tous les textes de la page sont réécrits.</li>
 </ul>
 <p>Le travail pour un changement est borné (au plus 400 000 pas de temps, 2400 fréquences et 8 valeurs de balayage) ; la page ne reste donc jamais longtemps figée. Sur un appareil lent, masquez les panneaux inutiles (la carte des pôles et zéros avec son lieu des racines est la plus coûteuse) et désactivez le balayage pendant que vous déplacez des curseurs.</p>
 <p>La méthode de mesure et tous les résultats se trouvent dans <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> sur GitHub.</p>

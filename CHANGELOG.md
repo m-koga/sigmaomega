@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.98.2 (2026-11-27)
+- Time efficiency (PERFORMANCE.md and the manual) measured again for this version: with every panel, curve and analysis shown a change takes 31–60 ms (0.16–0.28 s on a processor 4 times slower), the page is ready after 0.33 s (1.3 s), and changing the language takes 0.15 s (0.7 s); a new section compares the start-up and the update with version 1.75.0, and the download times are corrected for the larger page
+- Development: npm run performance also times the straight-line approximation, the Nyquist count, the root-locus rules, the Routh–Hurwitz and steady-state panels and the change of language, and shows every curve and analysis; a test checks that the analyses of the loop stay fast
+
 ## v1.98.1 (2026-11-27)
 - The peak of the disturbance gain max|Gyd| is refined between the frequency points, like Ms and Mt; it could be up to 1.6 % too small for a lightly damped loop (ζ = 0.05)
 - Numerical accuracy (ACCURACY.md and the manual): the evaluation also covers the closed-loop peaks and bandwidth, the stable range of k (Routh–Hurwitz and root locus), the steady-state errors, the Nyquist criterion (189 cases), the straight-line approximation of the Bode plot and the construction rules of the root locus, against exact values and independent references; the tests check these bounds

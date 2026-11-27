@@ -190,10 +190,11 @@ Mit <i>K</i><sub>I</sub> = 0.4 beträgt die Ausregelzeit etwa 8.8 s, die Phasenr
 <section id="performance" title="Zeiteffizienz">
 <p>Alles wird in Ihrem Browser berechnet, nach jeder Änderung erneut. Gemessen in Chrome auf einem gewöhnlichen Computer und mit 4-fach verlangsamtem Prozessor (wie ein Telefon):</p>
 <ul>
-<li><b>Öffnen der Seite</b>: Die Diagramme sind nach etwa 0.25 s bereit (0.8 s mit dem langsameren Prozessor) und die Formeln etwas später, sobald die Seite heruntergeladen ist (etwa 1.4 MB, beim ersten Besuch 0.7 MB für die Formeln).</li>
-<li><b>Ändern eines Werts</b>: Alles wird in 4–19 ms neu berechnet und gezeichnet mit den beim ersten Besuch gezeigten Feldern und in 22–43 ms mit allen Feldern (0.1–0.2 s mit dem langsameren Prozessor): Es wirkt sofort.</li>
-<li><b>Ziehen eines Schiebereglers</b>: Die Diagramme folgen etwa 20–50-mal pro Sekunde (6–11-mal mit dem langsameren Prozessor), jedes Mal mit dem vollständigen Ergebnis.</li>
-<li><b>Parametervariation</b>: acht vollständige Berechnungen pro Änderung, 0.06–0.2 s (bis etwa 1 s mit dem langsameren Prozessor).</li>
+<li><b>Öffnen der Seite</b>: Die Diagramme sind nach etwa 0.33 s bereit (1.3 s mit dem langsameren Prozessor) und die Formeln etwas später, sobald die Seite heruntergeladen ist (etwa 1.4 MB, beim ersten Besuch 0.7 MB für die Formeln).</li>
+<li><b>Ändern eines Werts</b>: Alles wird in 4–23 ms neu berechnet und gezeichnet mit den beim ersten Besuch gezeigten Feldern und in 31–60 ms mit allen Feldern (0.16–0.28 s mit dem langsameren Prozessor): Es wirkt sofort.</li>
+<li><b>Ziehen eines Schiebereglers</b>: Die Diagramme folgen etwa 20–30-mal pro Sekunde (5–7-mal mit dem langsameren Prozessor), jedes Mal mit dem vollständigen Ergebnis.</li>
+<li><b>Parametervariation</b>: acht vollständige Berechnungen pro Änderung, 0.06–0.22 s (bis etwa 1 s mit dem langsameren Prozessor).</li>
+<li><b>Sprache wechseln</b>: etwa 0.15 s (0.7 s mit dem langsameren Prozessor), da alle Texte der Seite neu geschrieben werden.</li>
 </ul>
 <p>Der Aufwand für eine Änderung ist nach oben begrenzt (höchstens 400 000 Zeitschritte, 2400 Frequenzen und 8 Variationswerte), sodass die Seite nie lange hängt. Blenden Sie auf einem langsamen Gerät nicht benötigte Felder aus (das Pol-Nullstellen-Diagramm mit seiner Wurzelortskurve kostet am meisten) und schalten Sie die Variation ab, während Sie Schieberegler ziehen.</p>
 <p>Wie gemessen wurde und alle Ergebnisse stehen in <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> auf GitHub.</p>

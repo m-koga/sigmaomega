@@ -4,7 +4,7 @@
 // start, to respond to a slider and to redraw, and how long each computation takes, for typical and for the
 // heaviest settings, at the normal speed of this computer and with the processor slowed down 4 times (like a
 // slower laptop or phone). Prints the tables of PERFORMANCE.md as Markdown.
-// Usage: npm run performance   (about two minutes)
+// Usage: npm run performance   (about eight minutes)
 // Uses CHROME_PATH, or /usr/bin/google-chrome when it exists, or Playwright's own Chromium. MathJax is served from
 // node_modules and the web fonts are left out, so the network is not measured (its share is estimated separately).
 import { chromium } from '@playwright/test';
@@ -120,6 +120,10 @@ interface CaseResult {
   freq: number;
   poles: number;
   locus: number;
+  /** the straight-line approximation, the Nyquist count and the root-locus rules */
+  analyses: number;
+  /** the panels drawn a moment after the change: the Routh–Hurwitz test and the steady-state error */
+  deferred: number;
   sweep: number;
   redraw: number;
   update: number;
@@ -139,9 +143,10 @@ async function setCase(page: Page, c: Case) {
       }
     }
     S.sweep = c.sweep ? { on: true, p: 'Kp', vals: c.sweep } : { on: false, p: 'Kp', vals: [1] };
-    // every panel shown, with the root locus, the controller poles and the grid on the pole-zero map
+    // every panel shown, with every curve and analysis it offers (the heaviest case)
     setShownPanels(PANELS);
-    for (const id of ['bodeL', 'bodeP', 'bodeC', 'bodeS', 'bodeT', 'pzCtrl', 'pzGrid', 'pzLocus']) {
+    const boxes = ['bodeL', 'bodeP', 'bodeC', 'bodeS', 'bodeT', 'bodeA', 'bodeAc', 'nyqCount', 'nyqMs'];
+    for (const id of [...boxes, 'pzCtrl', 'pzGrid', 'pzLocus', 'pzRules']) {
       const e = document.getElementById(id) as HTMLInputElement | null;
       if (e) e.checked = true;
     }
@@ -193,6 +198,15 @@ async function measureCase(page: Page, c: Case, runs: number): Promise<CaseResul
           resetLoopCache();
           locus();
           stableKRanges();
+        }).med,
+        analyses: time(() => {
+          bodeAsymptote();
+          nyquistCount();
+          locusRules();
+        }).med,
+        deferred: time(() => {
+          renderRouth();
+          renderSSE();
         }).med,
         sweep: sweep ? time(() => sweepRuns()).med : 0,
         redraw: time(() => redraw()).med,
@@ -319,12 +333,12 @@ p(
 );
 p();
 p(
-  '| Settings | Substeps | Simulation | Frequency response | Poles | Root locus | Sweep | Drawing | All (update) | All, slowest run |',
+  '| Settings | Substeps | Simulation | Frequency response | Poles | Root locus | Analyses | Sweep | Drawing | All (update) | All, slowest run | Routh and steady-state panels |',
 );
-p('|---|---|---|---|---|---|---|---|---|---|');
+p('|---|---|---|---|---|---|---|---|---|---|---|---|');
 for (const [c, r] of results)
   p(
-    `| ${c.name} | ${r.substeps * 4000} | ${ms(r.simulate)} | ${ms(r.freq)} | ${ms(r.poles)} | ${ms(r.locus)} | ${c.sweep ? ms(r.sweep) : '—'} | ${ms(r.redraw)} | ${ms(r.update)} | ${ms(r.updateMax)} |`,
+    `| ${c.name} | ${r.substeps * 4000} | ${ms(r.simulate)} | ${ms(r.freq)} | ${ms(r.poles)} | ${ms(r.locus)} | ${ms(r.analyses)} | ${c.sweep ? ms(r.sweep) : '—'} | ${ms(r.redraw)} | ${ms(r.update)} | ${ms(r.updateMax)} | ${ms(r.deferred)} |`,
   );
 p();
 p('### Computing and drawing everything again (update), by the panels shown (this computer)');
@@ -349,6 +363,37 @@ p();
 p(`| Settings | This computer | Processor ${SLOW}× slower |`);
 p('|---|---|---|');
 results.forEach(([c, r], i) => p(`| ${c.name} | ${ms(r.update)} ms | ${ms(slow[i][1].update)} ms |`));
+p();
+
+// changing the language: every text of the page and the manual again, with every panel shown
+const langTimes: number[] = [];
+for (const rate of [1, SLOW]) {
+  const page = await openPage(rate);
+  await page.goto('file://' + html);
+  await page.waitForFunction(() => document.querySelector('#tex-C svg'), null, { timeout: 60000 });
+  await setCase(page, cases[0]);
+  langTimes.push(
+    await page.evaluate(() => {
+      const t: number[] = [];
+      for (const l of ['de', 'ja', 'ru', 'en', 'fr', 'zh', 'en'] as Parameters<typeof setLang>[0][]) {
+        const t0 = performance.now();
+        setLang(l);
+        t.push(performance.now() - t0);
+      }
+      return t.sort((a, b) => a - b)[Math.floor(t.length / 2)];
+    }),
+  );
+  await page.close();
+}
+p('### Changing the language');
+p();
+p(
+  `Start-up settings, every panel shown; median of 7 changes between English, German, Japanese, Russian, French and Chinese.`,
+);
+p();
+p(`| | This computer | Processor ${SLOW}× slower |`);
+p('|---|---|---|');
+p(`| Changing the language | ${ms(langTimes[0])} ms | ${ms(langTimes[1])} ms |`);
 p();
 
 p('### Dragging the K_P slider with the mouse');

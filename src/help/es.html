@@ -190,10 +190,11 @@ Con <i>K</i><sub>I</sub> = 0.4 el tiempo de establecimiento es de unos 8.8 s, el
 <section id="performance" title="Eficiencia en tiempo">
 <p>Todo se calcula en su navegador, de nuevo tras cada cambio. Medido en Chrome en un ordenador corriente, y con el procesador ralentizado 4 veces (como un teléfono):</p>
 <ul>
-<li><b>Abrir la página</b>: las gráficas están listas tras unos 0.25 s (0.8 s con el procesador más lento) y las fórmulas un poco después, una vez descargada la página (unos 1.4 MB, y 0.7 MB para las fórmulas en la primera visita).</li>
-<li><b>Cambiar un valor</b>: todo se recalcula y se redibuja en 4–19 ms con los paneles de la primera visita, y en 22–43 ms con todos los paneles (0.1–0.2 s con el procesador más lento): se percibe como inmediato.</li>
-<li><b>Arrastrar un deslizador</b>: las gráficas siguen unas 20–50 veces por segundo (6–11 con el procesador más lento), cada vez con el resultado completo.</li>
-<li><b>Barrido de parámetro</b>: ocho cálculos completos por cambio, 0.06–0.2 s (hasta 1 s aproximadamente con el procesador más lento).</li>
+<li><b>Abrir la página</b>: las gráficas están listas tras unos 0.33 s (1.3 s con el procesador más lento) y las fórmulas un poco después, una vez descargada la página (unos 1.4 MB, y 0.7 MB para las fórmulas en la primera visita).</li>
+<li><b>Cambiar un valor</b>: todo se recalcula y se redibuja en 4–23 ms con los paneles de la primera visita, y en 31–60 ms con todos los paneles (0.16–0.28 s con el procesador más lento): se percibe como inmediato.</li>
+<li><b>Arrastrar un deslizador</b>: las gráficas siguen unas 20–30 veces por segundo (5–7 con el procesador más lento), cada vez con el resultado completo.</li>
+<li><b>Barrido de parámetro</b>: ocho cálculos completos por cambio, 0.06–0.22 s (hasta 1 s aproximadamente con el procesador más lento).</li>
+<li><b>Cambiar de idioma</b>: unos 0.15 s (0.7 s con el procesador más lento), ya que se vuelven a escribir todos los textos de la página.</li>
 </ul>
 <p>El trabajo de un cambio tiene un límite superior (como máximo 400 000 pasos de tiempo, 2400 frecuencias y 8 valores de barrido), así que la página nunca se queda bloqueada mucho tiempo. En un dispositivo lento, oculte los paneles que no necesite (el mapa de polos y ceros con su lugar de las raíces es el que más carga) y desactive el barrido mientras arrastra deslizadores.</p>
 <p>Cómo se midió y todos los resultados están en <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> en GitHub.</p>

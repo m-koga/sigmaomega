@@ -190,10 +190,11 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.8 s, the phase marg
 <section id="performance" title="Time efficiency">
 <p>Everything is computed in your browser, again after every change. Measured in Chrome on an ordinary computer, and with the processor slowed down 4 times (like a phone):</p>
 <ul>
-<li><b>Opening the page</b>: the plots are ready after about 0.25 s (0.8 s on the slower processor) and the formulas a little later, once the page has been downloaded (about 1.4 MB, and 0.7 MB for the formulas on the first visit).</li>
-<li><b>Changing a value</b>: everything is computed and drawn again in 4–19 ms with the panels shown at a first visit, and in 22–43 ms with every panel (0.1–0.2 s on the slower processor): it feels immediate.</li>
-<li><b>Dragging a slider</b>: the plots follow about 20–50 times a second (6–11 on the slower processor), each time with the complete result.</li>
-<li><b>Parameter sweep</b>: eight full computations per change, 0.06–0.2 s (up to about 1 s on the slower processor).</li>
+<li><b>Opening the page</b>: the plots are ready after about 0.33 s (1.3 s on the slower processor) and the formulas a little later, once the page has been downloaded (about 1.4 MB, and 0.7 MB for the formulas on the first visit).</li>
+<li><b>Changing a value</b>: everything is computed and drawn again in 4–23 ms with the panels shown at a first visit, and in 31–60 ms with every panel (0.16–0.28 s on the slower processor): it feels immediate.</li>
+<li><b>Dragging a slider</b>: the plots follow about 20–30 times a second (5–7 on the slower processor), each time with the complete result.</li>
+<li><b>Parameter sweep</b>: eight full computations per change, 0.06–0.22 s (up to about 1 s on the slower processor).</li>
+<li><b>Changing the language</b>: about 0.15 s (0.7 s on the slower processor), since every text of the page is written again.</li>
 </ul>
 <p>The work for one change has an upper limit (at most 400,000 time steps, 2400 frequencies and 8 sweep values), so the page never stalls for long. On a slow device, hide the panels you do not need (the pole-zero map with its root locus adds the most) and switch the sweep off while you drag sliders.</p>
 <p>How it was measured and all the results are in <a href="https://github.com/m-koga/sigmaomega/blob/main/PERFORMANCE.md" target="_blank" rel="noopener">PERFORMANCE.md</a> on GitHub.</p>

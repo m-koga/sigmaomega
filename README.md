@@ -59,7 +59,7 @@ The full specification (screens, functions, computation methods, non-functional 
 
 The numerical accuracy (how it was evaluated against exact solutions and independent references, and the results) is in [ACCURACY.md](ACCURACY.md) ([日本語](ACCURACY.ja.md)); the user manual summarizes it in its section "Numerical accuracy".
 
-The time efficiency (how long the page takes to open, to respond to a change and to follow a slider, measured in Chrome at normal speed and with the processor slowed down 4 times, with the upper limits of the work done) is in [PERFORMANCE.md](PERFORMANCE.md) ([日本語](PERFORMANCE.ja.md)); the user manual summarizes it in its section "Time efficiency".
+The time efficiency (how long the page takes to open, to respond to a change, to follow a slider and to change the language, measured in Chrome at normal speed and with the processor slowed down 4 times, with the upper limits of the work done) is in [PERFORMANCE.md](PERFORMANCE.md) ([日本語](PERFORMANCE.ja.md)); the user manual summarizes it in its section "Time efficiency".
 
 ## Automated tests
 
@@ -101,7 +101,7 @@ They check the following (`tests/` folder).
 | `modules.test.ts` | The layers of `src/ts`: every file is in a layer by its number and starts with its title; a file imports only from files with a lower number (so there are no cycles), and the files below 40 (basics, model, computing) do not touch the page; no file is longer than 600 lines (the change log excepted) and no function longer than 80 lines |
 | `license-headers.test.ts` | Every source file starts with the SPDX license identifier and the copyright line |
 | `tutorial.test.ts` | The numbers quoted in the user manual's chapter "Trying the exercises": each step of the four exercises (manual tuning, tuning rules, the sweep of K_I, set-point weights, stabilizing an unstable plant) gives the values the manual states |
-| `performance.test.ts` | Time efficiency (PERFORMANCE.md): the root locus and the stable gain ranges, the root finding with large poles, the simulation with the most time steps and a sweep of 8 values stay far below the time they took before they were made faster |
+| `performance.test.ts` | Time efficiency (PERFORMANCE.md): the root locus and the stable gain ranges, the root finding with large poles, the simulation with the most time steps and a sweep of 8 values stay far below the time they took before they were made faster, and the analyses of the loop (straight-line approximation, Nyquist count, root-locus rules, steady-state errors, Routh–Hurwitz) stay fast |
 | `accuracy.test.ts` | Numerical accuracy (ACCURACY.md): the time response against the exact closed loop and against a continuous reference with the exact dead time, the response metrics, the margins and Ms against a dense frequency scan, the discretization, the roots and the Padé approximation, and the sine metrics, the closed-loop peaks and bandwidth, the stable range of k, the steady-state errors, the Nyquist count, the straight-line approximation and the root-locus rules stay within the stated bounds |
 | `loop.test.ts` | Loop transfer functions: L, S, T, G_yr and G_yd as rational functions equal their frequency responses (dead time, 2-DOF PID, PI-D, compensators, entered transfer functions); their formulas (definition, rational function, e^(−Ls)) and the choice of formulas by the buttons; the poles of P, C and L, the closed-loop poles as roots of 1 + L, the zeros as roots of the numerators, and the Padé poles with a dead time |
 | `routh.test.ts` | Routh–Hurwitz test: textbook tables (ε for a zero first entry, auxiliary polynomial for a row of zeros); the sign changes equal the closed-loop poles in the right half-plane; the first column equals the ratios of Hurwitz determinants; the stable range of k equals the one from the root locus (also with a dead time) |
@@ -205,7 +205,7 @@ npm test         # build, type-check, then run the automated tests
 npm run docs     # build, then generate CHANGELOG.md and CHANGELOG.ja.md
 npm run pixcmp -- old.html   # compare the plots, metrics, analysis panels and block diagram of an older build with index.html exactly
 npm run accuracy # compare the results with exact solutions and print the tables of ACCURACY.md (about 25 s)
-npm run performance # measure the times in Chrome and print the tables of PERFORMANCE.md (about 8 minutes)
+npm run performance # measure the times in Chrome and print the tables of PERFORMANCE.md (about 4 minutes)
 npm run edits -- 1.62.1      # text replacements from the published version 1.62.1 to index.html (/tmp/publish-edits.json),
                              # and the lines to read back after publishing (/tmp/publish-edits-checks.json)
 npm run icon     # make the PNG icons (src/icon-180.png, -192, -512, -maskable-512) from src/icon.svg again (then npm run build)
