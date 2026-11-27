@@ -361,14 +361,14 @@ With <i>K</i><sub>I</sub> = 0.4 the settling time is about 8.8 s, the phase marg
     id: 'other',
     en: ['Language, smartphones, keyboard and data', `
 <ul>
-<li><b>Language</b>: choose English, Japanese, Chinese, Korean, Thai, French, German or Spanish at the top right; the choice is remembered.</li>
+<li><b>Language</b>: choose English, Japanese, Chinese, Korean, Thai, French, German, Spanish, Portuguese or Russian at the top right; the choice is remembered.</li>
 <li><b>Narrow screens</b>: the panels are shown in one column and the menus without their icons. On a smartphone, the bar at the bottom switches between <b>Setup</b> and <b>Plots</b>.</li>
 <li><b>Keyboard</b>: every menu, handle and button can be used with the keyboard. In a menu, <kbd>↑</kbd> <kbd>↓</kbd> move and <kbd>Enter</kbd> chooses; <kbd>Esc</kbd> closes a menu or this manual.</li>
 <li><b>Data</b>: the computation runs in your browser, and the simulator sends neither your settings nor the results anywhere. Saved scenarios, the layout and the language are kept in this browser only. When the page opens, the browser loads the fonts from Google Fonts and the formula display (MathJax) from jsDelivr; as with any web page, these services and the server of the page learn your IP address and browser, but not your settings. A link made with <b>Copy link</b> carries the settings after <code>#</code> in the address, a part that the browser does not send to the server.</li>
 </ul>`],
     ja: ['言語・スマートフォン・キーボード・データ', `
 <ul>
-<li><b>言語</b>：右上で日本語・英語・中国語・韓国語・タイ語・フランス語・ドイツ語・スペイン語を選べます。選んだ言語は記憶されます。</li>
+<li><b>言語</b>：右上で日本語・英語・中国語・韓国語・タイ語・フランス語・ドイツ語・スペイン語・ポルトガル語・ロシア語を選べます。選んだ言語は記憶されます。</li>
 <li><b>狭い画面</b>：区画を 1 列に並べ、メニューのアイコンを省きます。スマートフォンでは画面下のバーで <b>設定</b> と <b>図</b> を切り替えます。</li>
 <li><b>キーボード</b>：すべてのメニュー・つまみ・ボタンをキーボードで操作できます。メニューでは <kbd>↑</kbd> <kbd>↓</kbd> で移動し <kbd>Enter</kbd> で選びます。<kbd>Esc</kbd> でメニューやこのマニュアルを閉じます。</li>
 <li><b>データ</b>：計算はブラウザの中で行い、入力した設定や計算結果をシミュレーターが外部に送ることはありません。保存した例題・レイアウト・言語は、このブラウザの中だけに保存します。ページを開くとき、ブラウザは Google Fonts からフォントを、jsDelivr から数式表示の MathJax を読み込みます。このとき、一般のウェブページと同じく、それらのサービスとページを配信するサーバーには IP アドレスやブラウザの種類が伝わりますが、設定は伝わりません。<b>リンクをコピー</b> で作るリンクは、設定をアドレスの <code>#</code> の後に入れます。この部分はブラウザがサーバーに送りません。</li>

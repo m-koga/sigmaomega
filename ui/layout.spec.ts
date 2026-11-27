@@ -716,7 +716,7 @@ test('menu bar design: a dark bar, an icon on each menu on wide screens, the cur
   await page.waitForTimeout(250);
   expect(await underlined('panelBtn')).toBe(false);
   // one row from 770 px in every language (without the icons below 960 px)
-  for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de', 'es']) {
+  for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de', 'es', 'pt', 'ru']) {
     await page.selectOption('#langSel', lang);
     for (const width of [770, 1300]) {
       await page.setViewportSize({ width, height: 800 });
@@ -734,7 +734,7 @@ test('menu bar design: a dark bar, an icon on each menu on wide screens, the cur
 test('phones: the menus show short names, so that they fit in at most two rows in every language', async ({ page }) => {
   const ids = ['#smenuBtn-file', '#panelBtn', '#smenuBtn-sys', '#smenuBtn-ana', '#pcolsBtn', '#mviewBtn'];
   const short = ['File', 'Plots', 'System', 'Design', 'Layout', 'Metrics'];
-  for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de', 'es']) {
+  for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de', 'es', 'pt', 'ru']) {
     await page.setViewportSize({ width: 1300, height: 800 });
     await page.selectOption('#langSel', lang);
     // wide: the full names

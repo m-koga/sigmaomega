@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Internationalization: languages, the dictionary and T() =================
-   UI strings are written in English and translated into Japanese, Chinese, Korean, Thai, French, German and Spanish
+   UI strings are written in English and translated into Japanese, Chinese, Korean, Thai, French, German, Spanish,
+   Portuguese and Russian
    through the dictionary I18N (keys are the English strings).
    T(english, {vars}) returns the string in the current language; strings missing from the dictionary stay in English. */
 // prettier-ignore
@@ -20,6 +21,8 @@ export const LANGUAGES = {
   fr: { tag: 'fr', name: 'Français', font: '"Noto Sans JP",sans-serif', docs: 'en' },
   de: { tag: 'de', name: 'Deutsch', font: '"Noto Sans JP",sans-serif', docs: 'en' },
   es: { tag: 'es', name: 'Español', font: '"Noto Sans JP",sans-serif', docs: 'en' },
+  pt: { tag: 'pt', name: 'Português', font: '"Noto Sans JP",sans-serif', docs: 'en' },
+  ru: { tag: 'ru', name: 'Русский', font: '"Noto Sans JP",sans-serif', docs: 'en' },
 } as const satisfies Record<string, { tag: string; name: string; font: string; docs: 'ja' | 'en' }>;
 /** Display language */
 export type Lang = keyof typeof LANGUAGES;

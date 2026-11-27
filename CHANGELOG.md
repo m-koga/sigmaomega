@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.97.0 (2026-11-27)
+- Portuguese and Russian: the language menu at the top right has Português and Русский, and a browser set to Portuguese or Russian opens the page in that language. Every text of the page is translated (the user manual and the change log are shown in English, with a note, as in the other languages but Japanese)
+
 ## v1.96.0 (2026-11-27)
 - Spanish: the language menu at the top right has Español, and a browser set to Spanish opens the page in Spanish. Every text of the page is translated (the user manual and the change log are shown in English, with a note, as in the other languages but Japanese)
 

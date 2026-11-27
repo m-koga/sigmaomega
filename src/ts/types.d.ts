@@ -168,7 +168,7 @@ interface Layout {
 }
 
 /** Translation dictionary: English text → language code → translation */
-type I18nDict = Record<string, Partial<Record<'ja' | 'zh' | 'ko' | 'th' | 'fr' | 'de' | 'es', string>>>;
+type I18nDict = Record<string, Partial<Record<'ja' | 'zh' | 'ko' | 'th' | 'fr' | 'de' | 'es' | 'pt' | 'ru', string>>>;
 /** Values inserted into a translated string ({name} placeholders) */
 type TVars = Record<string, string | number>;
 

@@ -36,7 +36,7 @@ All menus sit in the menu bar in the order below. The menu bar is a dark band; e
 | Analysis & design | Design specifications, Auto-tuning (tuning rules), Lead and lag compensator design, Parameter sweep, Estimation exercise; below a separator, Routh–Hurwitz test, Steady-state error | A card: shows it in the settings panel. The last two show or hide their panels like the items of Plots to show (checked when shown; the list stays open) |
 | Plot arrangement | 1 column, 2 columns, 1 row, Free (drag ⠿), Rows (drag ⠿) | Changes how the plot panels are arranged |
 | Metrics display | Cards, Table | Changes how the response metrics are shown |
-| Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean, Thai, French, German and Spanish); × , Esc or a click beside it closes it. On phones the button shows only its icon |
+| Help (button at the right end) | — | Opens the user manual in a dialog: a list of its eleven sections (one of them walks through the four exercises step by step, with screenshots of the plots and tables it describes, of the English or the Japanese screen); figures and tables are numbered by section (Fig. 8.1, Table 2.1) with captions, and a reference in the text scrolls to its figure or table beside the text (above it on phones), in English and Japanese (English with a note in Chinese, Korean, Thai, French, German, Spanish, Portuguese and Russian); × , Esc or a click beside it closes it. On phones the button shows only its icon |
 
 A drop-down opens and closes with its button, and closes on a click outside the list or on Esc. While it is open, ↑ and ↓ move between items and Enter chooses one. Only one drop-down is open at a time.
 
@@ -268,10 +268,10 @@ The interface can be shown in five languages, chosen at the top right of the hea
 
 | Item | Specification |
 | --- | --- |
-| Languages | English, Japanese, Chinese (Simplified), Korean, Thai, French, German, Spanish |
+| Languages | English, Japanese, Chinese (Simplified), Korean, Thai, French, German, Spanish, Portuguese, Russian |
 | First language | The first supported language in the browser's language settings; otherwise English |
 | Remembered | The chosen language is saved in the browser (`ctrlsim-lang`) |
-| Dictionary | `src/i18n.json`. Keys are the English strings; 629 entries in version 1.96.0, each with Japanese, Chinese, Korean, Thai, French, German and Spanish translations |
+| Dictionary | `src/i18n.json`. Keys are the English strings; 629 entries in version 1.97.0, each with Japanese, Chinese, Korean, Thai, French, German, Spanish, Portuguese and Russian translations |
 | Covered | Menus, cards, metrics, notes, messages, tooltips, the change log (English and Japanese), names and task texts of the exercise scenarios |
 
 Formulas are shown with MathJax (TeX, SVG output); TeX inside translated text is used as is in every language. Tests check that placeholders such as `{n}` match in every translation (section 11).
