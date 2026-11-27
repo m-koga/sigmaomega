@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.92.1 (2026-11-27)
+- Fix: the page stopped while starting when the lead and lag compensator card had been open at the last visit (it was drawn before it was built), leaving the page in English, without plots and unusable.
+
 ## v1.92.0 (2026-11-27)
 - Lead and lag compensator design: the new kind "Lead-lag compensator" combines both by the classical steps: the new crossover ωc (the phase crossover of K_c P, or a value given), the phase lead φm to add there with α and T1 = 1/(ωc√α), and the lag β = |K_c P(jωc)|/√α with T2 = 10/ωc, so that ωc becomes the gain crossover; "Apply to the controller" sets the lead-lag compensator
 

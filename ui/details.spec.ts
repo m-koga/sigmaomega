@@ -579,3 +579,14 @@ test('the block diagram shows the saturation, the disturbance and the noise only
   await page.selectOption('#plant', 'dead');
   await expect(page.locator('#lbl-Pnote')).not.toBeEmpty();
 });
+
+test('the page starts with any card of the settings panel remembered from the last visit', async ({ page }) => {
+  for (const k of await page.evaluate(() => [...CARD_KEYS])) {
+    await openCard(page, k);
+    await page.reload();
+    await page.waitForSelector('#metrics .m');
+    await expect(page.locator(`.side > .card[data-card=${k}]`), k).toBeVisible();
+    expect(await page.locator('#langSel option').count(), k).toBe(5);
+    if (k === 'comp') await expect(page.locator('#compOut')).not.toBeEmpty();
+  }
+});

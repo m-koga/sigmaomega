@@ -1062,7 +1062,8 @@ export function compVisible() {
 }
 export function renderComp() {
   const box = byId('compOut');
-  if (!compVisible()) {
+  // the card is built after the layout is restored at startup; update() renders it then
+  if (!box || !compVisible()) {
     lastComp = null;
     return;
   } // computed only while its card is shown

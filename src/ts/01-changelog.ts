@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.92.1',
+    d: '2026-11-27',
+    en: [
+      'Fix: the page stopped while starting when the lead and lag compensator card had been open at the last visit (it was drawn before it was built), leaving the page in English, without plots and unusable.',
+    ],
+    ja: [
+      '修正：前回、位相進み・遅れ補償器のカードを開いたまま閉じると、次の起動が途中で止まり、英語のまま図が描かれず操作できなかった（カードを作る前に描こうとしていた）。',
+    ],
+  },
+  {
     v: '1.92.0',
     d: '2026-11-27',
     en: [
