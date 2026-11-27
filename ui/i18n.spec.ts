@@ -6,7 +6,11 @@ const test = base;
 
 const JP = /[぀-ヿ一-鿿]/,
   KANA = /[぀-ヿ]/,
-  EN_WORD = /\b[A-Za-z][a-z]{3,}\b/g;
+  EN_WORD = /\b[A-Za-z][a-z]{3,}\b/g,
+  // in French and German (written in the same letters), untranslated text shows as common English words
+  EN_SMALL = /\b(?:the|of|and|with|from|this|when|which|is|are|to|by)\b/i;
+// languages written in Latin letters, checked by EN_SMALL rather than by any English word
+const LATIN = ['fr', 'de'];
 // English words that may appear in every language: names, keys, and technical terms given in parentheses
 const ALLOWED = new Set([
   'English',
@@ -85,7 +89,9 @@ test('the default language follows the browser (English if not supported)', asyn
     ['en-US', 'en'],
     ['ko-KR', 'ko'],
     ['th-TH', 'th'],
-    ['fr-FR', 'en'],
+    ['fr-FR', 'fr'],
+    ['de-DE', 'de'],
+    ['es-ES', 'en'],
   ]) {
     const ctx = await browser.newContext({ locale });
     const page = await ctx.newPage();
@@ -96,7 +102,7 @@ test('the default language follows the browser (English if not supported)', asyn
   }
 });
 
-for (const lang of ['en', 'ja', 'zh', 'ko', 'th']) {
+for (const lang of ['en', 'ja', 'zh', 'ko', 'th', 'fr', 'de']) {
   test(`no untranslated text in ${lang}`, async ({ page }) => {
     await page.selectOption('#langSel', lang);
     const bad = new Set();
@@ -105,7 +111,9 @@ for (const lang of ['en', 'ja', 'zh', 'ko', 'th']) {
       for (const t of await page.evaluate(collect)) {
         if (lang === 'en' && JP.test(t)) bad.add(t);
         if (lang === 'zh' && KANA.test(t)) bad.add(t);
-        if (lang !== 'en' && (t.match(EN_WORD) || []).some(w => !ALLOWED.has(w))) bad.add(t);
+        if (LATIN.includes(lang)) {
+          if (EN_SMALL.test(t)) bad.add(t);
+        } else if (lang !== 'en' && (t.match(EN_WORD) || []).some(w => !ALLOWED.has(w))) bad.add(t);
       }
     }
     expect([...bad]).toEqual([]);

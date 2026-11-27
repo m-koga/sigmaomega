@@ -142,7 +142,7 @@ test('the copyright notice is shown under the user manual and the change log, th
   page,
 }) => {
   const notice = 'Copyright © 2026 Masanobu Koga';
-  for (const lang of ['en', 'ja', 'th']) {
+  for (const lang of ['en', 'ja', 'th', 'de']) {
     await page.selectOption('#langSel', lang);
     await page.click('#helpBtn');
     const foot = page.locator('#helpBack .cl-foot');

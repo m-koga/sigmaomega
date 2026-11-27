@@ -39,7 +39,7 @@ SigmaOmega is a browser-based simulator for feedback control systems. Its name c
 - Arrange the panels in rows, each row with its own number of panels side by side (layout "Rows": for example the block diagram alone, then two plots, then three; the panels of a row as tall as the tallest): drag ⠿ into another row or a new row, and drag the boundary between two panels of a row to change their widths
 - Choose the plots to show in a drop-down list (a check for each, several at a time) and show them side by side in 1 column, 2 columns or 1 row, or arrange them freely: drag the ⠿ handle of a plot (or use the arrow keys) to move it within a column, to another column or into a new column, and drag the boundary between columns to change their widths (remembered in the browser); drag the bottom edge of a plot area to change its height, with all its plots scaled by the same ratio; zoom and pan every plot (wheel, drag, double-click to reset)
 - Resize and show/hide display areas (saved in the browser)
-- Multilingual: Japanese, English, Chinese (Simplified), Korean, and Thai (switch at the top right; follows the browser language on first visit, English if not supported; the choice is saved in the browser)
+- Multilingual: Japanese, English, Chinese (Simplified), Korean, Thai, French and German (switch at the top right; follows the browser language on first visit, English if not supported; the choice is saved in the browser)
 
 ## Usage
 
@@ -291,7 +291,7 @@ The kinds of plant and controller, their parameters, the tuning rules, the plots
 
 ## Translation
 
-- UI strings are written in English and translated into Japanese, Chinese, Korean, and Thai through the dictionary in `src/i18n.json` (keys are the English strings). Wrap UI strings in `T('…')`.
+- UI strings are written in English and translated into Japanese, Chinese, Korean, Thai, French and German through the dictionary in `src/i18n.json` (keys are the English strings). Wrap UI strings in `T('…')`.
 - On first visit the display language follows the browser language (English if it is not supported). The selected language is saved in the browser.
 - When you add or change a string, add its translations to the dictionary under the same English key. Strings missing from the dictionary are shown in English (and `npm test` reports them).
 - The in-app change log shows Japanese items in Japanese and English items in all other languages.

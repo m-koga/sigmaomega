@@ -637,7 +637,9 @@ test('the page starts with any card of the settings panel remembered from the la
     await page.reload();
     await page.waitForSelector('#metrics .m');
     await expect(page.locator(`.side > .card[data-card=${k}]`), k).toBeVisible();
-    expect(await page.locator('#langSel option').count(), k).toBe(5);
+    expect(await page.locator('#langSel option').count(), k).toBe(
+      await page.evaluate(() => Object.keys(LANGUAGES).length),
+    );
     if (k === 'comp') await expect(page.locator('#compOut')).not.toBeEmpty();
   }
 });

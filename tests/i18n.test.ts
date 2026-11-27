@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
-// i18n tests: UI strings are written in English and translated into Japanese, Chinese, Korean, and Thai through the dictionary
+// i18n tests: UI strings are written in English and translated into Japanese, Chinese, Korean, Thai, French and German through the dictionary
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { load } from './harness.ts';
@@ -8,7 +8,7 @@ import { uiStrings } from './ui-strings.ts';
 
 const { api, html } = load();
 // the translated languages: every language of the page but English (src/ts/02-i18n.ts, LANGUAGES)
-const LANGS = Object.keys(api.LANGUAGES).filter(l => l !== 'en') as ('ja' | 'zh' | 'ko' | 'th')[];
+const LANGS = Object.keys(api.LANGUAGES).filter(l => l !== 'en') as ('ja' | 'zh' | 'ko' | 'th' | 'fr' | 'de')[];
 const JP = /[぀-ヿ一-鿿]/;
 const placeholders = (s: string) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map(m => m[1]))].sort().join(',');
 const count = (s: string, sub: string) => s.split(sub).length - 1;
@@ -20,8 +20,11 @@ test('the default language follows the browser language (English if not supporte
     [['zh-CN', 'zh'], 'zh'],
     [['ko-KR'], 'ko'],
     [['th-TH'], 'th'],
-    [['fr-FR', 'ko'], 'ko'],
-    [['fr-FR', 'de'], 'en'],
+    [['fr-FR', 'fr'], 'fr'],
+    [['de-DE'], 'de'],
+    [['de-AT', 'fr'], 'de'],
+    [['es-ES', 'ko'], 'ko'],
+    [['es-ES', 'it'], 'en'],
   ];
   for (const [languages, want] of cases) assert.equal(load({ languages }).api.getLang(), want, `browser ${languages}`);
 });

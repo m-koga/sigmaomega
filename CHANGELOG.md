@@ -6,6 +6,9 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.95.0 (2026-11-27)
+- French and German: the language menu at the top right has Français and Deutsch, and a browser set to French or German opens the page in that language. Every text of the page is translated (the user manual and the change log are shown in English, with a note, as in Chinese, Korean and Thai)
+
 ## v1.94.3 (2026-11-27)
 - Development: the script is in 57 files of one topic each instead of 30 (the largest held up to 1,300 lines and a dozen topics): the analyses of the loop (Routh–Hurwitz test, Bode asymptotes, Nyquist criterion, root-locus rules, steady-state error), the tuning rules, the compensator design and the exercises, each plot, each panel (block diagram, formulas, poles, Routh test, steady-state errors, design cards, sweep), the parts of the settings panel and the scenarios have their own files
 - Development: the number of a file says its layer (basics 01–09, model 10–14, computing 15–39, page basics 40–44, showing 45–69, controls 70–98, start-up 99), with room for new files in each; the test of the modules checks that every file is in a layer, starts with its title and is at most 600 lines long, and that the files below 40 do not touch the page. The page is unchanged (pixel comparison identical)

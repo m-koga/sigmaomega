@@ -8,6 +8,16 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.95.0',
+    d: '2026-11-27',
+    en: [
+      'French and German: the language menu at the top right has Français and Deutsch, and a browser set to French or German opens the page in that language. Every text of the page is translated (the user manual and the change log are shown in English, with a note, as in Chinese, Korean and Thai)',
+    ],
+    ja: [
+      'フランス語とドイツ語：右上の言語メニューに Français と Deutsch を追加し、ブラウザの言語がフランス語かドイツ語ならその言語で開くようにした。ページのすべての文言を訳した（利用者マニュアルと更新履歴は、中国語・韓国語・タイ語と同じく注記付きの英語で表示する）',
+    ],
+  },
+  {
     v: '1.94.3',
     d: '2026-11-27',
     en: [
