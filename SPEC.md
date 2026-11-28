@@ -73,6 +73,11 @@ The system is a single loop: reference r → controller C(s) → control input u
 | First-order lag + dead time | K e^(−Ls)/(Ts+1) | K, T, L |
 | Integrator + first-order lag | K/(s(Ts+1)) | K, T |
 | Unstable first-order | K/(Ts−1) | K, T |
+| Mass–spring–damper (input force u [N], output position [m]: m ÿ + c ẏ + k y = u) | 1/(ms²+cs+k) | m [kg], c [N·s/m], k [N/m] |
+| RLC circuit (input voltage [V], output voltage of the capacitor [V]: LC ÿ + RC ẏ + y = u) | 1/(LCs²+RCs+1) | R [Ω], L [H], C [F] |
+| DC motor (speed) (input armature voltage [V], output speed ω [rad/s]: L_a i̇ + R_a i = u − K_m ω, J ω̇ + b ω = K_m i) | K_m/((Js+b)(L_a s+R_a)+K_m²) | J [kg·m²], b [N·m·s/rad], K_m [N·m/A], R_a [Ω], L_a [H] |
+| DC motor (angle) (the same, output angle θ [rad], θ̇ = ω) | K_m/(s((Js+b)(L_a s+R_a)+K_m²)) | the same |
+| Two water tanks in series (input inflow [m³/s], output level of tank 2 [m]: A_1 ḣ_1 = u − h_1/R_1, A_2 ḣ_2 = h_1/R_1 − h_2/R_2) | R_2/((A_1R_1s+1)(A_2R_2s+1)) | A_1, A_2 [m²], R_1, R_2 [s/m²] |
 | Enter transfer function | N(s)/D(s)·e^(−Ls) | Numerator and denominator polynomials, dead time L |
 
 An entered transfer function is written as an expression in s, such as `2*s + 1` or `(s+1)^2(0.5s+1)`, or as a coefficient vector in descending powers, such as `[1 3 2]`. The denominator may be up to degree 10, and the numerator degree must be less than the denominator degree (strictly proper). The poles, zeros, DC gain and stability are shown as it is typed, and errors are explained.
@@ -318,14 +323,14 @@ The work for one change has upper limits: at most 4000 recorded points × 100 ti
 
 ## 11. Development and quality assurance
 
-The source is TypeScript in `src/` (64 script files in layers, one topic each, about 14,400 lines), built into `index.html`. The number of a file says its layer; a file uses only files with a lower number, and the files below 40 do not touch the page (`tests/modules.test.ts`). In version 1.61.4 all 109 unit tests and 99 browser tests pass.
+The source is TypeScript in `src/` (65 script files in layers, one topic each, about 14,400 lines), built into `index.html`. The number of a file says its layer; a file uses only files with a lower number, and the files below 40 do not touch the page (`tests/modules.test.ts`). In version 1.61.4 all 109 unit tests and 99 browser tests pass.
 
 ### 11.1 Source layout
 
 | File | Contents |
 | --- | --- |
 | `src/index.html`, `src/style.css`, `src/i18n.json` | Page template, stylesheet, translation dictionary |
-| `01-changelog` to `04-parser` | Basics: change log, translation, complex numbers and polynomials, transfer-function parser |
+| `01-changelog` to `04-parser`, `09-physical-models` | Basics: change log, translation, complex numbers and polynomials, transfer-function parser; the plants that are physical models (their parameters and transfer functions, added to the tables of `10-definitions`) |
 | `10-definitions`, `11-state` | Model: definitions of plants, controllers, references, parameters and specifications; the settings, what follows from them, and the last results |
 | `15-frequency` to `31-modes` | Computing (no access to the page): frequency response, simulation, the loop and root locus, Routh–Hurwitz test, Bode asymptotes, Nyquist criterion (and the sampled contour), root-locus rules, steady-state error, analyses of the current loop, the plant from its poles and zeros, the second-order approximation, the modes of the response, auto-tuning rules, compensator design, estimation exercises, design specifications, parameter sweep |
 | `40-dom`, `41-view` | Page basics: elements, files, messages and translation of the page; view state (layout and its defaults `defaultLayout()`, shown plots, zoomed views, colours) |
@@ -353,10 +358,10 @@ The source is TypeScript in `src/` (64 script files in layers, one topic each, a
 
 | Kind | Files | Main checks |
 | --- | --- | --- |
-| Unit tests (`tests/`, 33 files) | simulation, frequency, pole-zero, design, kinds, smoke, parser | Agreement with analytic solutions and published tuning tables, every combination of plant and controller, parsing |
+| Unit tests (`tests/`, 34 files) | simulation, frequency, pole-zero, design, kinds, smoke, parser | Agreement with analytic solutions and published tuning tables, every combination of plant and controller, parsing |
 | | files, tiles, rows | Scenarios, checking and converting saved layouts, moving panels |
 | | i18n, leftovers | Missing translations, hard-coded UI strings, unused translations, CSS and stored items |
-| | learning | Moving a pole or zero of the plant, the second-order approximation, the modes (partial fractions), the sampled Nyquist contour and its turns |
+| | learning, physical | Moving a pole or zero of the plant, the second-order approximation, the modes (partial fractions), the sampled Nyquist contour and its turns; the transfer functions of the physical models |
 | | build, version, publish-edits, tutorial, help, pages | `index.html` up to date, version number and change log consistent, the compact page script, publishing as text replacements, the numbers quoted in the manual's walkthrough of the exercises, the manual's figures, tables and references, the files of the GitHub Pages site |
 | Browser tests (`ui/`, Playwright, 19 files) | layout, plots, interaction, tiles, rows | Menus, panel arrangement and sizes, formula scaling, zoom and pan, smartphones |
 | | learning | Dragging a pole on the pole-zero map, the tabs of the second-order approximation and the modes, the lead design on the root locus, following the Nyquist contour |

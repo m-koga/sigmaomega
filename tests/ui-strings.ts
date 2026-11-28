@@ -19,7 +19,10 @@ export function uiStrings(api: ReturnType<typeof load>['api'], html: string): st
     if (v.W) keys.add(v.W);
   });
   [...api.EXAMPLES, ...api.CTRL_EXAMPLES].forEach(e => keys.add(e.label));
-  Object.values(api.PLANTS).forEach(v => keys.add(v.name));
+  Object.values(api.PLANTS).forEach(v => {
+    keys.add(v.name);
+    if (v.model) keys.add(v.model); // the description of a physical model
+  });
   Object.values(api.TUNE_RULES).forEach(v => keys.add(v.label));
   keys.add(api.ZOOM_HELP);
   keys.add(api.DIAG_ZOOM_HELP);

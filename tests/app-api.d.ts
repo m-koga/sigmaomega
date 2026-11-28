@@ -56,6 +56,8 @@ interface AppApi {
   PANELS_V: typeof import('../src/ts/41-view.ts').PANELS_V;
   PANEL_DEFS: typeof import('../src/ts/41-view.ts').PANEL_DEFS;
   PARAMS: typeof import('../src/ts/10-definitions.ts').PARAMS;
+  PHYSICAL_PARAMS: typeof import('../src/ts/09-physical-models.ts').PHYSICAL_PARAMS;
+  PHYSICAL_PLANTS: typeof import('../src/ts/09-physical-models.ts').PHYSICAL_PLANTS;
   PID_MODES: typeof import('../src/ts/10-definitions.ts').PID_MODES;
   PLANTS: typeof import('../src/ts/10-definitions.ts').PLANTS;
   PLANT_FMT: typeof import('../src/ts/02-i18n.ts').PLANT_FMT;
@@ -598,6 +600,8 @@ declare var PANELS: AppApi['PANELS'];
 declare var PANELS_V: AppApi['PANELS_V'];
 declare var PANEL_DEFS: AppApi['PANEL_DEFS'];
 declare var PARAMS: AppApi['PARAMS'];
+declare var PHYSICAL_PARAMS: AppApi['PHYSICAL_PARAMS'];
+declare var PHYSICAL_PLANTS: AppApi['PHYSICAL_PLANTS'];
 declare var PID_MODES: AppApi['PID_MODES'];
 declare var PLANTS: AppApi['PLANTS'];
 declare var PLANT_FMT: AppApi['PLANT_FMT'];

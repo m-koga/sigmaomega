@@ -3,6 +3,7 @@
 /* ================= Definitions ================= */
 // Entries of a set of setting definitions, with the keys typed as numeric settings of State
 import { cT, nT, pMul, pScale, ratTeX } from './03-math.ts';
+import { PHYSICAL_PARAMS, PHYSICAL_PLANTS } from './09-physical-models.ts';
 
 export const entriesOf = (defs: ParamDefs) => Object.entries(defs) as [NumKey, ParamDef][];
 // Typed values may go beyond the slider range up to the limits hard of each parameter (physically meaningful limits)
@@ -30,6 +31,7 @@ export const PARAMS: ParamDefs = {
     sym: 'ωn',
   },
   L: { label: 'Dead time \\(L\\) [s]', min: 0, max: 5, step: 0.05, val: 0.5, hard: [0, 1e4] },
+  ...PHYSICAL_PARAMS,
 };
 export const CTRL: ParamDefs = {
   Kp: { label: 'Proportional gain \\(K_P\\)', min: 0, max: 20, step: 0.05, val: 2, hard: [-BIG, BIG], sym: 'KP' },
@@ -324,20 +326,6 @@ export const specDefaults = (): Specs => ({
    To add a kind of plant, add an entry to PLANTS (and its new parameters to PARAMS, with their limits hard). The menu, the
    sliders, the formulas, simulation, frequency response, tuning rules and scenario files all follow from the
    entry; give the menu label's translations in i18n.json. */
-interface PlantType {
-  /** name in the menu (English; translated) */
-  name: string;
-  /** parameters shown as sliders */
-  p: NumKey[];
-  /** formula with symbols (null: entered as a transfer function) */
-  tex: string | null;
-  /** right-hand side of P(s)= with the numbers substituted */
-  texNum: (p: State) => string;
-  /** transfer function, with the dead time L */
-  tf: (p: State) => TF;
-  /** the plant alone is unstable (counts in the Nyquist criterion) */
-  unstable?: (p: State) => boolean;
-}
 const deadTeX = (L: number) => (L > 0 ? `\\,e^{-${nT(L)}s}` : ''); // e^{-Ls}
 const secondTF = (p: State): TF => ({ num: [p.K * p.wn * p.wn], den: [1, 2 * p.zeta * p.wn, p.wn * p.wn], L: 0 });
 export const PLANTS: Record<string, PlantType> = {
@@ -387,6 +375,7 @@ export const PLANTS: Record<string, PlantType> = {
     tf: p => ({ num: [p.K], den: [p.T, -1], L: 0 }),
     unstable: () => true,
   },
+  ...PHYSICAL_PLANTS,
   // Entered as a transfer function; its inputs are built by buildPlant
   custom: {
     name: 'Enter transfer function',

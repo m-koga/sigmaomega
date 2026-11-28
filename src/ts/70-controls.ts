@@ -154,6 +154,9 @@ export function buildPlant() {
     </div>`;
     html += subsec('p-L', 'Dead time', slider('L', PARAMS.L));
   } else {
+    const model = PLANTS[S.plant].model;
+    // a physical model: what it is and its equations, above its parameters
+    if (model) html += `<div class="hint plant-model">${T(model)}</div>`;
     html += keys.map(k => slider(k, PARAMS[k])).join('');
   }
   $('plant-params').innerHTML = html;

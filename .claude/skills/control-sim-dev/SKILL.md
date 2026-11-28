@@ -29,7 +29,7 @@ description: "Use when changing, testing or releasing the SigmaOmega (Feedback C
 - `src/ts/NN-*.ts` は ES モジュール。`scripts/build.ts` が型を除き、`import`/`export` を消して、ファイル名の順に 1 つのスクリプトにつなぎ、`index.html` を作る。
   - 新しいソースファイルの先頭には `// SPDX-License-Identifier: Apache-2.0` と `// Copyright 2026 Masanobu Koga` の 2 行を入れる（CSS・YAML・HTML はそれぞれのコメントの書き方。`tests/license-headers.test.ts` が確かめる）。
   - ファイルは層。番号が層を表し、各層の番号には空きがある（`tests/modules.test.ts` が確かめる：どのファイルもいずれかの層にある、先頭にタイトル（何を持つか）、番号の小さいファイルからだけ import する、40 未満はページに触れない、600 行以内（更新履歴を除く）、関数は 80 行以内）。1 ファイルに 1 つの話題。新しいファイルは関係するファイルの近くの空き番号にし、ほかの番号は変えない。下の層が上の層を呼ぶ必要ができたら、そのコードを下に移すか、上の層で設定する：
-    - 基礎 01–09：01 更新履歴、02 翻訳（`T()`・`LANGUAGES`）、03 複素数と多項式・数の表記（`groupRoots`・`originOrder` も）、04 構文解析。
+    - 基礎 01–09：01 更新履歴、02 翻訳（`T()`・`LANGUAGES`）、03 複素数と多項式・数の表記（`groupRoots`・`originOrder` も）、04 構文解析、09 物理モデルの制御対象（`PHYSICAL_PARAMS`・`PHYSICAL_PLANTS`。10 の表に加える）。
     - モデル 10–14：10 定義（設定パネルのカード `CARD_KEYS`・`CARD_GROUP` も）、11 状態（`S`、`ctrlRational`・`refValue` など設定から決まるもの、最後の結果 `lastSim` など。書き換えは `setResults()`）。
     - 計算 15–39：15 周波数応答、16 シミュレーション、17 ループ・閉ループ極・根軌跡、18 Routh–Hurwitz、19 ボード線図の折れ線近似、20 ナイキストの安定判別、21 根軌跡の作図規則、22 定常偏差、23 現在のループの解析（変更ごとに一度。`resetLoopCache`）、24 調整則、25 補償器の設計（`COMP_METHODS`）、26 推定の演習の制御対象と判定、27 設計仕様の評価、28 掃引の計算、29 極と零点から書いた制御対象（極・零点配置でドラッグして動かす）、30 代表極による 2次系近似、31 応答のモード（部分分数展開）。
     - ページの基礎 40–44：40 ページの要素（`$`・`byId`・`qs`・`must`）・ファイル・メッセージ・ページの翻訳、41 表示の状態（`layout`・`shownPanels`・`PLOT_VIEWS`・`COLORS`・`PANEL_DEFS`・行と列の配置の正規化）。

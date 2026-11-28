@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 // Aids to learning: dragging a pole of the plant on the pole-zero map, the second-order approximation and the
-// modes under the time response, the lead design on the root locus, and following the Nyquist contour
+// modes under the time response, the lead design on the root locus, following the Nyquist contour, and the plants
+// that are physical models
 import { test, expect, boxOf, togglePanel, openCard } from './fixtures.ts';
 import type { Page } from '@playwright/test';
 
@@ -103,4 +104,21 @@ test('following the Nyquist contour: the slider moves the point, play goes round
   // another tab: no mark on the plot
   await page.click('#itab-nyqcrit');
   expect(await page.evaluate(() => nyqMapAt)).toBeNull();
+});
+
+test('physical models: the model with its equations above its parameters, which set the transfer function', async ({
+  page,
+}) => {
+  await openCard(page, 'plant');
+  await page.selectOption('#plant', 'msd');
+  await expect(page.locator('#plant-params .plant-model')).toBeVisible();
+  await expect(page.locator('#in-mass')).toBeVisible();
+  await page.fill('#v-mass', '4');
+  await page.press('#v-mass', 'Enter');
+  expect(await page.evaluate(() => [S.mass, PLANTS[S.plant].tf(S).den])).toEqual([4, [4, 1, 2]]);
+  // a preset without a model has no description
+  await page.selectOption('#plant', 'first');
+  await expect(page.locator('#plant-params .plant-model')).toHaveCount(0);
+  await page.selectOption('#plant', 'motorA');
+  expect(await page.evaluate(() => PLANTS[S.plant].tf(S).den.at(-1))).toBe(0); // the integrator of the angle
 });

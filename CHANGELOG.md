@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.100.0 (2026-11-28)
+- Plants that are physical models: mass–spring–damper, RLC circuit, DC motor (speed), DC motor (angle) and two water tanks in series. Their parameters are physical quantities in SI units (mass, damping and spring constants; resistance, inductance and capacitance; moment of inertia, friction, motor constant and the armature; cross-sections and outflow resistances), the card shows what the model is, its input and output and its equations, and the transfer function follows from them; the default values give responses over seconds, stabilized by the default PID
+- User manual (every language), specification and README: the physical models. Development: they are in src/ts/09-physical-models.ts, added to the tables of plants and parameters; new tests (tests/physical.test.ts, and in ui/learning.spec.ts)
+
 ## v1.99.2 (2026-11-28)
 - Time response: lightly damped loops are as accurate as the others. The time step is made smaller in proportion to the damping ratio ζ of the least damped closed-loop poles below ζ = 0.7 (up to 14 times for ζ = 0.05), since holding the controller output over a step acts like a delay of half a step that lowers the damping a little. The error of y is now within about 0.3 % down to ζ = 0.05 (before: 1 % for ζ = 0.1, 2 % for ζ = 0.05), the overshoot within about 0.3 point; the other plots do not change, and the times hardly do
 - Numerical accuracy (ACCURACY.md, the manual, the specification) and time efficiency (PERFORMANCE.md) updated for it; the screenshot of exercise 3 taken again

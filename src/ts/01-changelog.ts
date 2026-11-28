@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.100.0',
+    d: '2026-11-28',
+    en: [
+      'Plants that are physical models: mass–spring–damper, RLC circuit, DC motor (speed), DC motor (angle) and two water tanks in series. Their parameters are physical quantities in SI units (mass, damping and spring constants; resistance, inductance and capacitance; moment of inertia, friction, motor constant and the armature; cross-sections and outflow resistances), the card shows what the model is, its input and output and its equations, and the transfer function follows from them; the default values give responses over seconds, stabilized by the default PID',
+      'User manual (every language), specification and README: the physical models. Development: they are in src/ts/09-physical-models.ts, added to the tables of plants and parameters; new tests (tests/physical.test.ts, and in ui/learning.spec.ts)',
+    ],
+    ja: [
+      '物理モデルの制御対象を追加：質量・ばね・ダンパ系、RLC 回路、直流モータ（速度）、直流モータ（角度）、直列につないだ 2 つの水槽。パラメータは SI 単位の物理量（質量・減衰係数・ばね定数、抵抗・インダクタンス・静電容量、慣性モーメント・摩擦・モータ定数・電機子、断面積・流出抵抗）で、カードにはモデルの内容、入力と出力、方程式を示し、伝達関数はそこから決まる。既定値では応答が数秒の時間で、既定の PID で安定になる',
+      '利用者マニュアル（全言語）・仕様書・README：物理モデルを説明した。開発：物理モデルは src/ts/09-physical-models.ts に置き、制御対象とパラメータの表に加える。テストを追加した（tests/physical.test.ts、ui/learning.spec.ts）',
+    ],
+  },
+  {
     v: '1.99.2',
     d: '2026-11-28',
     en: [

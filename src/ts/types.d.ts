@@ -59,6 +59,22 @@ interface State {
   zeta: number;
   wn: number;
   L: number;
+  // parameters of the physical models: mass–spring–damper, RLC circuit, DC motor, two water tanks
+  mass: number;
+  damp: number;
+  spring: number;
+  resR: number;
+  indL: number;
+  capC: number;
+  motJ: number;
+  motB: number;
+  motK: number;
+  motR: number;
+  motL: number;
+  tankA1: number;
+  tankA2: number;
+  tankR1: number;
+  tankR2: number;
   // controller parameters
   Kp: number;
   Ki: number;
@@ -356,3 +372,20 @@ interface PlotPoint {
 }
 /** Label and value of a metric */
 type Metric = [string, string];
+/** A kind of plant (10-definitions.ts: PLANTS) */
+interface PlantType {
+  /** name in the menu (English; translated) */
+  name: string;
+  /** parameters shown as sliders */
+  p: NumKey[];
+  /** formula with symbols (null: entered as a transfer function) */
+  tex: string | null;
+  /** right-hand side of P(s)= with the numbers substituted */
+  texNum: (p: State) => string;
+  /** transfer function, with the dead time L */
+  tf: (p: State) => TF;
+  /** the plant alone is unstable (counts in the Nyquist criterion) */
+  unstable?: (p: State) => boolean;
+  /** a physical model: what it is, its input and output, and its equations (English; translated) */
+  model?: string;
+}
