@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.101.0 (2026-11-28)
+- Physical models: the plant card shows a figure of each model above its parameters — the mass on its spring and damper, the RLC circuit, the DC motor with its armature circuit and the inertia on its shaft, the two water tanks with their valves — labelled with the symbols of the parameters, the input u in the colour of u(t) and the output y in the colour of y(t)
+- User manual (every language), specification and README: the figures; tests for them
+
 ## v1.100.0 (2026-11-28)
 - Plants that are physical models: mass–spring–damper, RLC circuit, DC motor (speed), DC motor (angle) and two water tanks in series. Their parameters are physical quantities in SI units (mass, damping and spring constants; resistance, inductance and capacitance; moment of inertia, friction, motor constant and the armature; cross-sections and outflow resistances), the card shows what the model is, its input and output and its equations, and the transfer function follows from them; the default values give responses over seconds, stabilized by the default PID
 - User manual (every language), specification and README: the physical models. Development: they are in src/ts/09-physical-models.ts, added to the tables of plants and parameters; new tests (tests/physical.test.ts, and in ui/learning.spec.ts)

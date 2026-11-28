@@ -112,6 +112,10 @@ test('physical models: the model with its equations above its parameters, which 
   await openCard(page, 'plant');
   await page.selectOption('#plant', 'msd');
   await expect(page.locator('#plant-params .plant-model')).toBeVisible();
+  await expect(page.locator('#plant-params .plant-fig svg')).toBeVisible(); // the figure of the model
+  expect(await page.locator('#plant-params .plant-fig svg').getAttribute('aria-label')).toBe(
+    await page.evaluate(() => T(PLANTS.msd.name)),
+  );
   await expect(page.locator('#in-mass')).toBeVisible();
   await page.fill('#v-mass', '4');
   await page.press('#v-mass', 'Enter');
@@ -119,6 +123,7 @@ test('physical models: the model with its equations above its parameters, which 
   // a preset without a model has no description
   await page.selectOption('#plant', 'first');
   await expect(page.locator('#plant-params .plant-model')).toHaveCount(0);
+  await expect(page.locator('#plant-params .plant-fig')).toHaveCount(0);
   await page.selectOption('#plant', 'motorA');
   expect(await page.evaluate(() => PLANTS[S.plant].tf(S).den.at(-1))).toBe(0); // the integrator of the angle
 });

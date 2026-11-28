@@ -157,6 +157,9 @@ export function buildPlant() {
     const model = PLANTS[S.plant].model;
     // a physical model: what it is and its equations, above its parameters
     if (model) html += `<div class="hint plant-model">${T(model)}</div>`;
+    const fig = PLANTS[S.plant].figure;
+    if (fig)
+      html += `<figure class="plant-fig">${fig.replace('role="img"', `role="img" aria-label="${T(PLANTS[S.plant].name)}"`)}</figure>`;
     html += keys.map(k => slider(k, PARAMS[k])).join('');
   }
   $('plant-params').innerHTML = html;

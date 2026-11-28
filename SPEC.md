@@ -80,6 +80,8 @@ The system is a single loop: reference r → controller C(s) → control input u
 | Two water tanks in series (input inflow [m³/s], output level of tank 2 [m]: A_1 ḣ_1 = u − h_1/R_1, A_2 ḣ_2 = h_1/R_1 − h_2/R_2) | R_2/((A_1R_1s+1)(A_2R_2s+1)) | A_1, A_2 [m²], R_1, R_2 [s/m²] |
 | Enter transfer function | N(s)/D(s)·e^(−Ls) | Numerator and denominator polynomials, dead time L |
 
+The card of a physical model shows what it is with its equations and a figure (SVG: the input u in the colour of u(t), the output y in that of y(t), labelled with the symbols of the parameters), above its parameters.
+
 An entered transfer function is written as an expression in s, such as `2*s + 1` or `(s+1)^2(0.5s+1)`, or as a coefficient vector in descending powers, such as `[1 3 2]`. The denominator may be up to degree 10, and the numerator degree must be less than the denominator degree (strictly proper). The poles, zeros, DC gain and stability are shown as it is typed, and errors are explained.
 
 ### 3.2 Controller C(s)

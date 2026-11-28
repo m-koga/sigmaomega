@@ -388,4 +388,6 @@ interface PlantType {
   unstable?: (p: State) => boolean;
   /** a physical model: what it is, its input and output, and its equations (English; translated) */
   model?: string;
+  /** a physical model: its figure (SVG markup), shown in the plant card */
+  figure?: string;
 }

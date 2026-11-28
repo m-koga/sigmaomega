@@ -11,7 +11,7 @@ SigmaOmega is a browser-based simulator for feedback control systems. Its name c
 - A dark menu bar under the header holds every menu (File, Plots to show, System setup, Analysis & design, Plot arrangement, Metrics display), each with a line icon; the open menu and the one whose card is shown are underlined in red; the settings panel below it shows one card at a time, chosen from the menus File, System setup and Analysis & design, and can be folded into a narrow strip (≪); metrics can be shown as cards or as a table; on smartphones a bottom bar switches between the settings and the plots
 - A user manual in the app: Help at the right end of the menu bar opens it (eleven sections with a contents list, among them a step-by-step walkthrough of the four exercises with screenshots, in every language of the page)
 
-- Plant: six presets, five physical models (mass–spring–damper, RLC circuit, DC motor speed and angle, two water tanks in series; parameters in physical units, the model and its equations shown in the card), or enter any transfer function (including dead time)
+- Plant: six presets, five physical models (mass–spring–damper, RLC circuit, DC motor speed and angle, two water tanks in series; parameters in physical units, the model shown in the card with a figure and its equations), or enter any transfer function (including dead time)
 - Controller: P / PI / PD / PID, lead, lag, and lead-lag compensators, or enter any transfer function
 - Response of the plant alone to the reference (open loop) overlaid on the time response, or shown by itself (no reference and no feedback loop) with its own metrics
 - Reference: step, ramp, parabola, trapezoid, pulse, square wave, sine wave, impulse (with its peak, the area ∫y dt and its theory A·T(0))

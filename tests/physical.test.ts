@@ -52,6 +52,15 @@ test('two water tanks: R2/((A1R1 s + 1)(A2R2 s + 1)), the time constants A1R1 an
   assert.ok(near(ts[0], 1.5, 1e-9) && near(ts[1], 2, 1e-9), String(ts));
 });
 
+test('each physical model has a figure: an SVG with its input u and its output y marked', () => {
+  for (const plant of ['msd', 'rlc', 'motorW', 'motorA', 'tanks']) {
+    const f = a.PLANTS[plant].figure ?? '';
+    assert.ok(f.startsWith('<svg') && f.endsWith('</svg>'), plant);
+    assert.ok(/class="pf-t pf-u"[^>]*>u</.test(f) && /class="pf-t pf-y"[^>]*>y/.test(f), plant);
+  }
+  assert.ok(a.PLANTS.motorA.figure!.includes('y = θ') && a.PLANTS.motorW.figure!.includes('y = ω'));
+});
+
 test('each physical model with its default values is stabilized by the default PID, on a time scale of seconds', () => {
   for (const plant of ['msd', 'rlc', 'motorW', 'motorA', 'tanks']) {
     a.defaults();

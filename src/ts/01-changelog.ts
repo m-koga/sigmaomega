@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.101.0',
+    d: '2026-11-28',
+    en: [
+      'Physical models: the plant card shows a figure of each model above its parameters — the mass on its spring and damper, the RLC circuit, the DC motor with its armature circuit and the inertia on its shaft, the two water tanks with their valves — labelled with the symbols of the parameters, the input u in the colour of u(t) and the output y in the colour of y(t)',
+      'User manual (every language), specification and README: the figures; tests for them',
+    ],
+    ja: [
+      '物理モデル：制御対象のカードに、パラメータの上に各モデルの図を表示するようにした（ばねとダンパにつながれた質量、RLC 回路、電機子回路と軸の慣性を描いた直流モータ、弁のある 2 つの水槽）。図にはパラメータの記号を書き込み、入力 u は u(t) の色、出力 y は y(t) の色で示す',
+      '利用者マニュアル（全言語）・仕様書・README：図を説明した。図のテストを追加した',
+    ],
+  },
+  {
     v: '1.100.0',
     d: '2026-11-28',
     en: [

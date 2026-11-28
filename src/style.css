@@ -501,3 +501,19 @@ table.pzt.rules .how{display:block;margin-top:2px;color:#666b75;font-family:"Jet
 .routh-box table.pzt th.rn mjx-container{display:inline-block;margin:3px 0 !important}
 .routh-box table.pzt tr.cur td,.routh-box table.pzt tr.cur th{background:rgba(25,118,210,.08)}
 .routh-box mjx-container[display='true']{text-align:left !important;margin:4px 0 !important}
+/* figures of the physical models in the plant card (09-physical-models.ts): u in the colour of u(t), y in that of y(t) */
+.plant-fig{margin:6px 0 10px}
+.plant-svg{display:block;width:100%;max-width:320px;height:auto;margin:0 auto;color:var(--ink,#1b1d22)}
+.plant-svg .pf-line{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.plant-svg .pf-body{fill:rgba(0,0,0,.04)}
+.plant-svg .pf-thin{fill:none;stroke:currentColor;stroke-width:1}
+.plant-svg .pf-fill{fill:currentColor;stroke:none}
+.plant-svg .pf-dash{stroke-dasharray:3 3}
+.plant-svg .pf-water{fill:rgba(31,95,191,.15);stroke:none}
+.plant-svg .pf-t{font:italic 15px "Times New Roman",serif;fill:currentColor;stroke:none}
+.plant-svg .pf-sub{font-size:10px}
+.plant-svg .pf-sign{font-style:normal;font-size:13px}
+.plant-svg line.pf-u,.plant-svg path.pf-u{stroke:#d9822b;stroke-width:2;fill:none}
+.plant-svg polygon.pf-u,.plant-svg text.pf-u{fill:#d9822b;stroke:none}
+.plant-svg line.pf-y,.plant-svg path.pf-y{stroke:#1f5fbf;stroke-width:2;fill:none}
+.plant-svg polygon.pf-y,.plant-svg text.pf-y{fill:#1f5fbf;stroke:none}
