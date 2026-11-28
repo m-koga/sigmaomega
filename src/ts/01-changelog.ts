@@ -8,6 +8,18 @@
 export const CHANGELOG = [
   // en: English, ja: Japanese (same number of items, in the same order)
   {
+    v: '1.99.2',
+    d: '2026-11-28',
+    en: [
+      'Time response: lightly damped loops are as accurate as the others. The time step is made smaller in proportion to the damping ratio ζ of the least damped closed-loop poles below ζ = 0.7 (up to 14 times for ζ = 0.05), since holding the controller output over a step acts like a delay of half a step that lowers the damping a little. The error of y is now within about 0.3 % down to ζ = 0.05 (before: 1 % for ζ = 0.1, 2 % for ζ = 0.05), the overshoot within about 0.3 point; the other plots do not change, and the times hardly do',
+      'Numerical accuracy (ACCURACY.md, the manual, the specification) and time efficiency (PERFORMANCE.md) updated for it; the screenshot of exercise 3 taken again',
+    ],
+    ja: [
+      '時間応答：減衰の小さいループもほかと同じ精度にした。制御器の出力を刻みのあいだ保持することは半刻みの遅れのように働き、減衰をわずかに下げる。そこで、最も減衰の小さい閉ループ極の減衰比 ζ が 0.7 未満のときは、時間刻みを ζ に比例して小さくする（ζ = 0.05 で最大 14 分の 1）。y の誤差は ζ = 0.05 まで 約 0.3 % 以内（以前は ζ = 0.1 で 1 %、ζ = 0.05 で 2 %）、オーバーシュートは 約 0.3 ポイント以内になった。ほかの図は変わらず、時間もほとんど変わらない',
+      '数値精度（ACCURACY.md、マニュアル、仕様書）と時間効率（PERFORMANCE.md）をこれに合わせて更新した。例題 3 のスクリーンショットを撮り直した',
+    ],
+  },
+  {
     v: '1.99.1',
     d: '2026-11-28',
     en: [

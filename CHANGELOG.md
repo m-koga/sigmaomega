@@ -6,6 +6,10 @@ Version numbers follow [Semantic Versioning](https://semver.org/) (the second nu
 
 > This file is generated from the change log in `src/ts/01-changelog.ts` by `npm run docs`. Do not edit it directly.
 
+## v1.99.2 (2026-11-28)
+- Time response: lightly damped loops are as accurate as the others. The time step is made smaller in proportion to the damping ratio ζ of the least damped closed-loop poles below ζ = 0.7 (up to 14 times for ζ = 0.05), since holding the controller output over a step acts like a delay of half a step that lowers the damping a little. The error of y is now within about 0.3 % down to ζ = 0.05 (before: 1 % for ζ = 0.1, 2 % for ζ = 0.05), the overshoot within about 0.3 point; the other plots do not change, and the times hardly do
+- Numerical accuracy (ACCURACY.md, the manual, the specification) and time efficiency (PERFORMANCE.md) updated for it; the screenshot of exercise 3 taken again
+
 ## v1.99.1 (2026-11-28)
 - Numerical accuracy (ACCURACY.md and the manual): the time response is also evaluated for lightly damped loops (pure second-order closed loops with ζ = 0.35 to 0.05, and a second-order plant with PI). The error grows as the damping falls, since the controller sees the output once per time step: for ζ = 0.1 y is off by about 1 % and the overshoot about 1 point too large, for ζ = 0.05 by 2 % and 1.3 points, and below ζ = 0.2 the settling time can be later by up to half a period. The summary, the limits and the manual now say so (they gave 0.3 % and 0.1 point for every case)
 - Development: npm run accuracy prints the table of the lightly damped loops, and tests/accuracy.test.ts checks their bounds

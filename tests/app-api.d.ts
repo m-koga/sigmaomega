@@ -302,6 +302,7 @@ interface AppApi {
   metricCols: typeof import('../src/ts/45-plot.ts').metricCols;
   metricWindow: typeof import('../src/ts/16-simulation.ts').metricWindow;
   metricsHTML: typeof import('../src/ts/45-plot.ts').metricsHTML;
+  minDamping: typeof import('../src/ts/16-simulation.ts').minDamping;
   modeSeries: typeof import('../src/ts/46-time-plot.ts').modeSeries;
   modeValue: typeof import('../src/ts/31-modes.ts').modeValue;
   movePlantRoot: typeof import('../src/ts/29-plant-roots.ts').movePlantRoot;
@@ -330,7 +331,7 @@ interface AppApi {
   pAddDesc: typeof import('../src/ts/03-math.ts').pAddDesc;
   pMul: typeof import('../src/ts/03-math.ts').pMul;
   pScale: typeof import('../src/ts/03-math.ts').pScale;
-  pade3: typeof import('../src/ts/17-loop.ts').pade3;
+  pade3: typeof import('../src/ts/03-math.ts').pade3;
   panelsChanged: typeof import('../src/ts/79-layout.ts').panelsChanged;
   paramDef: typeof import('../src/ts/10-definitions.ts').paramDef;
   paramSym: typeof import('../src/ts/10-definitions.ts').paramSym;
@@ -843,6 +844,7 @@ declare var matchRoots: AppApi['matchRoots'];
 declare var metricCols: AppApi['metricCols'];
 declare var metricWindow: AppApi['metricWindow'];
 declare var metricsHTML: AppApi['metricsHTML'];
+declare var minDamping: AppApi['minDamping'];
 declare var modeSeries: AppApi['modeSeries'];
 declare var modeValue: AppApi['modeValue'];
 declare var movePlantRoot: AppApi['movePlantRoot'];

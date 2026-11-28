@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Modes of the response to the reference: partial fractions of Y(s) = G_yr(s) R(s) and the term of each pole ================= */
-import { cadd, cdiv, cmul, groupRoots, pMul, polyRoots, trimPoly } from './03-math.ts';
+import { cadd, cdiv, cmul, groupRoots, pMul, pade3, polyRoots, trimPoly } from './03-math.ts';
 import { S } from './11-state.ts';
-import { loopTFs, pade3 } from './17-loop.ts';
+import { loopTFs } from './17-loop.ts';
 
 /** The term of a pole p (and of its conjugate when p is complex) in y(t):
  *  Σₖ c[k−1] t^{k−1}/(k−1)! e^{pt} (twice its real part for a complex pole); kind 'input' for the poles of R(s) (the

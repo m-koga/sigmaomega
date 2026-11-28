@@ -56,22 +56,16 @@ test('time response: within 0.3 % of the exact closed loop; metrics within 0.2 %
   }
 });
 
-test('lightly damped loops: the error grows as the damping falls, within the bounds stated in ACCURACY.md', () => {
-  // [ζ, largest relative error of y, of the overshoot in points, relative error of the settling time] (the settling
-  // time of a lightly damped loop jumps by up to half a period when a peak is near the edge of the ±2 % band)
-  const bounds: [number, number, number, number][] = [
-    [0.35, 4e-3, 0.4, 5e-3],
-    [0.2, 4e-3, 0.4, 5e-3],
-    [0.15, 1e-2, 1.1, 0.15],
-    [0, 2.5e-2, 1.5, 0.15],
-  ];
+test('lightly damped loops: the time step shrinks with the damping, so they are as accurate as the others', () => {
+  // the substep is chosen from ζ (16-simulation.ts): y within 0.3 %, the overshoot within 0.35 point; the settling
+  // time of a very lightly damped loop (ζ < 0.1) can still move by part of a period, as a peak is near the edge of the
+  // ±2 % band and the envelope crosses it slowly
   for (const [name, zeta, set] of LIGHT_CASES) {
-    const r = timeCase(set),
-      [, eY, eOs, eTs] = bounds.find(([z]) => zeta >= z)!;
-    assert.ok(r.rel < eY, `${name}: error ${r.rel}`);
-    assert.ok(Math.abs((r.got?.os ?? 0) - r.ref.os) < eOs, `${name}: overshoot ${r.got?.os} / ${r.ref.os}`);
+    const r = timeCase(set);
+    assert.ok(r.rel < 3e-3, `${name}: error ${r.rel}`);
+    assert.ok(Math.abs((r.got?.os ?? 0) - r.ref.os) < 0.35, `${name}: overshoot ${r.got?.os} / ${r.ref.os}`);
     assert.ok(rel(r.got?.rise, r.ref.rise) < 5e-3, `${name}: rise ${r.got?.rise} / ${r.ref.rise}`);
-    assert.ok(rel(r.got?.ts, r.ref.ts) < eTs, `${name}: settling ${r.got?.ts} / ${r.ref.ts}`);
+    assert.ok(rel(r.got?.ts, r.ref.ts) < (zeta < 0.1 ? 0.05 : 5e-3), `${name}: settling ${r.got?.ts} / ${r.ref.ts}`);
   }
 });
 

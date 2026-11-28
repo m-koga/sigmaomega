@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright 2026 Masanobu Koga
 /* ================= Simulation ================= */
-import { polyRoots } from './03-math.ts';
+import { pAddDesc, pMul, pade3, polyRoots } from './03-math.ts';
 import { PLANTS, hasTerm } from './10-definitions.ts';
 import { S, ctrlRational, isTFMode, refValue } from './11-state.ts';
 import { evalCP, evalT, freqRange, spWeights } from './15-frequency.ts';
@@ -145,17 +145,33 @@ export function ctrlFastest(st: State = S): number {
   if (isTFMode(st)) return Math.max(0, ...polyRoots(ctrlRational(st).den).map(z => Math.hypot(z[0], z[1])));
   return hasTerm(st, 'D') && st.Kd !== 0 ? st.N : 0;
 }
+/** The smallest damping ratio of the closed-loop poles that oscillate and decay (1 when there are none); a dead time
+ *  by its third-order Padé approximation */
+export function minDamping(tf: TF, st: State = S): number {
+  const c = ctrlRational(st),
+    { Nd, Dd } = pade3(tf.L),
+    chr = pAddDesc(pMul(pMul(tf.den, c.den), Dd), pMul(pMul(tf.num, c.num), Nd));
+  let z = 1;
+  for (const p of polyRoots(chr)) {
+    const r = Math.hypot(p[0], p[1]);
+    if (p[0] < 0 && Math.abs(p[1]) > 1e-6 * r) z = Math.min(z, -p[0] / r);
+  }
+  return z;
+}
 // Time steps: NS recorded points, and m substeps of length h between them (the controller is updated at every
 // substep). Holding the controller output over a step h acts like a delay of h/2, so h is chosen to keep ω·h ≤ 0.02
 // (phase error ≤ 0.6°) at the gain crossover, at the frequency of a periodic reference and at the fastest dynamics
-// of the controller (e.g. the derivative filter N); m is at most 100.
+// of the controller (e.g. the derivative filter N). That small delay lowers the damping a little, which shows in a
+// lightly damped loop over its many periods: below ζ = 0.4 the limit is lowered in proportion to ζ (down to ζ = 0.05,
+// a limit of 0.0025). m is at most 100.
 const SIM_POINTS = 4000;
 function simSteps(tf: TF, st: State): { dt: number; m: number; h: number } {
   const dt = st.Tsim / SIM_POINTS;
   const wh = crossoverHigh(tf, st),
     wr = st.refType === 'sine' || st.refType === 'square' ? (2 * Math.PI) / st.rPer : 0,
-    wc = ctrlFastest(st);
-  const m = Math.max(1, Math.min(100, Math.ceil((dt * Math.max(wh, wr, wc)) / 0.02)));
+    wc = ctrlFastest(st),
+    lim = 0.02 * Math.min(1, Math.max(minDamping(tf, st), 0.05) / 0.7);
+  const m = Math.max(1, Math.min(100, Math.ceil((dt * Math.max(wh, wr, wc)) / lim)));
   return { dt, m, h: dt / m };
 }
 /** The controller during a simulation: out() gives its output before saturation for the reference r and the

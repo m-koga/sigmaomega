@@ -155,3 +155,9 @@ export function groupRoots(rs: Complex[]): { z: Complex; mult: number }[] {
   }
   return out.map(({ z, mult }) => ({ z: [z[0], Math.abs(z[1]) < 1e-9 ? 0 : z[1]], mult }));
 }
+/** The third-order Padé approximation of e^{−Ls} as Nd(s)/Dd(s) (1/1 when there is no dead time) */
+export function pade3(L: number): { Nd: Poly; Dd: Poly } {
+  return L > 0
+    ? { Nd: [-(L ** 3) / 120, (L * L) / 10, -L / 2, 1], Dd: [L ** 3 / 120, (L * L) / 10, L / 2, 1] }
+    : { Nd: [1], Dd: [1] };
+}

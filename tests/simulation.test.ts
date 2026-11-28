@@ -261,3 +261,21 @@ test('an unstable closed loop is reported as diverged and gives no metrics', () 
   assert.equal(sim.diverged, true);
   assert.equal(a.stepMetrics(sim), null);
 });
+
+test('time step: smaller for a lightly damped closed loop, in proportion to ζ below 0.7', () => {
+  const a = fresh();
+  const steps = (Kp: number) => {
+    a.defaults();
+    Object.assign(a.S, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp, Tsim: 30 });
+    return { z: a.minDamping(a.PLANTS.integ.tf(a.S)), m: a.simulate().substeps };
+  };
+  // 1/(s(s + 1)) with P: ζ = 1/(2√Kp)
+  const z25 = steps(25),
+    z100 = steps(100);
+  assert.ok(Math.abs(z25.z - 0.1) < 1e-9 && Math.abs(z100.z - 0.05) < 1e-9);
+  assert.ok(z100.m > 3 * z25.m && z25.m >= 10, `${z25.m}, ${z100.m}`);
+  // a well damped loop (ζ = 1: no oscillating pole) keeps the plain rule
+  a.defaults();
+  Object.assign(a.S, { plant: 'integ', K: 1, T: 1, mode: 'P', Kp: 0.25 });
+  assert.equal(a.minDamping(a.PLANTS.integ.tf(a.S)), 1);
+});
